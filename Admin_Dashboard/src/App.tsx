@@ -1,0 +1,73 @@
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+} from "react-router-dom";
+
+import { LanguageProvider } from "./i18n/LanguageContext";
+import { AuthProvider } from "./auth/AuthContext";
+
+import { Layout } from "./components/Layout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+
+import { Login } from "./pages/Login";
+import { Overview } from "./pages/Overview";
+import { Applications } from "./pages/Applications";
+import { ApplicationDetails } from "./pages/ApplicationDetails";
+import { Documents } from "./pages/Documents";
+
+function AdminArea() {
+  return (
+    <ProtectedRoute>
+      <Layout>
+        <Routes>
+          <Route
+            index
+            element={<Overview />}
+          />
+
+          <Route
+            path="applications"
+            element={<Applications />}
+          />
+
+          <Route
+            path="applications/:id"
+            element={
+              <ApplicationDetails />
+            }
+          />
+
+          <Route
+            path="documents"
+            element={<Documents />}
+          />
+        </Routes>
+      </Layout>
+    </ProtectedRoute>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/login"
+              element={<Login />}
+            />
+
+            <Route
+              path="/*"
+              element={<AdminArea />}
+            />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </LanguageProvider>
+  );
+}
+
+export default App;
