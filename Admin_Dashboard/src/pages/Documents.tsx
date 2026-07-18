@@ -941,25 +941,4 @@ export function Documents() {
   );
 }
 
-function InfoItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-      <span className="text-xs font-black text-slate-400">
-        {label}
-      </span>
 
-      <strong
-        className="mt-1 block break-words text-sm text-[#0e3149]"
-        dir="auto"
-      >
-        {value}
-      </strong>
-    </div>
-  );
-}

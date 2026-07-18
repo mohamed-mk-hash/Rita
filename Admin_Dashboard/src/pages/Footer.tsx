@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card } from '../components/Card';
 import { useLanguage } from '../i18n/LanguageContext';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 interface LocalizedText {
   en: string;
   fr: string;
@@ -102,28 +103,64 @@ export const Footer: React.FC = () => {
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const fetchFooter = async () => {
-    try {
-      setLoading(true);
+  setLoading(true);
+  setError('');
 
-      const docRef = doc(db, 'siteContent', 'footer');
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setForm({
-          ...defaultFooterContent,
-          ...(docSnap.data() as Partial<FooterContent>),
-        });
-      } else {
-        await setDoc(docRef, defaultFooterContent, { merge: true });
-        setForm(defaultFooterContent);
+  try {
+    const response = await fetch(
+      `${API_URL}/admin/content/footer`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          Accept: 'application/json',
+        },
       }
-    } catch (err) {
-      console.error(err);
-      setError(isFrench ? 'Erreur lors du chargement' : 'Error loading footer');
-    } finally {
-      setLoading(false);
+    );
+
+    /*
+     * في حال لم تتم إضافة بيانات Footer بعد،
+     * نعرض البيانات الافتراضية.
+     */
+    if (response.status === 404) {
+      setForm(defaultFooterContent);
+      return;
     }
-  };
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || 'Could not load footer'
+      );
+    }
+
+    const footerData =
+      data.footer || data.content || data;
+
+    setForm({
+      ...defaultFooterContent,
+      ...footerData,
+    });
+  } catch (err) {
+    console.error('FETCH_FOOTER_ERROR:', err);
+
+    setError(
+      isFrench
+        ? 'Erreur lors du chargement'
+        : err instanceof Error
+          ? err.message
+          : 'Error loading footer'
+    );
+
+    /*
+     * نعرض البيانات الافتراضية حتى لا تبقى الصفحة فارغة.
+     */
+    setForm(defaultFooterContent);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchFooter();
@@ -270,27 +307,61 @@ const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
   }
 };
 
-  const saveFooter = async () => {
-    setMessage('');
-    setError('');
+ const saveFooter = async () => {
+  setMessage('');
+  setError('');
+  setSaving(true);
 
-    try {
-      setSaving(true);
+  try {
+    const response = await fetch(
+      `${API_URL}/admin/content/footer`,
+      {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(form),
+      }
+    );
 
-      await setDoc(doc(db, 'siteContent', 'footer'), form, { merge: true });
+    const data = await response
+      .json()
+      .catch(() => ({}));
 
-      setMessage(
-        isFrench
-          ? 'Footer enregistré avec succès'
-          : 'Footer saved successfully'
+    if (!response.ok) {
+      throw new Error(
+        data.message || 'Could not save footer'
       );
-    } catch (err) {
-      console.error(err);
-      setError(isFrench ? 'Erreur lors de l’enregistrement' : 'Error saving footer');
-    } finally {
-      setSaving(false);
     }
-  };
+
+    if (data.footer) {
+      setForm({
+        ...defaultFooterContent,
+        ...data.footer,
+      });
+    }
+
+    setMessage(
+      isFrench
+        ? 'Footer enregistré avec succès'
+        : 'Footer saved successfully'
+    );
+  } catch (err) {
+    console.error('SAVE_FOOTER_ERROR:', err);
+
+    setError(
+      isFrench
+        ? 'Erreur lors de l’enregistrement'
+        : err instanceof Error
+          ? err.message
+          : 'Error saving footer'
+    );
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (loading) {
     return (
