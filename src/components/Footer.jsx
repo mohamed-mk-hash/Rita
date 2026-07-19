@@ -6,9 +6,9 @@ import {
 } from "react-icons/fa6";
 
 const socialLinks = {
-  whatsapp: "https://wa.me/213XXXXXXXXX",
-  instagram: "https://www.instagram.com/your_username",
-  facebook: "https://www.facebook.com/your_page",
+  whatsapp: "https://wa.me/13124599528",
+  facebook:
+    "https://www.facebook.com/people/Rita-Digital-Services/61590008895440/",
 };
 
 function Footer({ t }) {
@@ -32,29 +32,27 @@ function Footer({ t }) {
               href={socialLinks.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="WhatsApp"
+              aria-label="Contact Rita Digital Services on WhatsApp"
               title="WhatsApp"
               className="footer-social-icon whatsapp"
             >
               <FaWhatsapp aria-hidden="true" />
             </a>
 
-            <a
-              href={socialLinks.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-              title="Instagram"
-              className="footer-social-icon instagram"
+            <span
+              aria-label="Instagram — coming soon"
+              aria-disabled="true"
+              title="Instagram — coming soon"
+              className="footer-social-icon instagram social-icon-disabled"
             >
               <FaInstagram aria-hidden="true" />
-            </a>
+            </span>
 
             <a
               href={socialLinks.facebook}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Facebook"
+              aria-label="Visit Rita Digital Services on Facebook"
               title="Facebook"
               className="footer-social-icon facebook"
             >

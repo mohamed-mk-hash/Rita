@@ -15,7 +15,7 @@ import { Overview } from "./pages/Overview";
 import { Applications } from "./pages/Applications";
 import { ApplicationDetails } from "./pages/ApplicationDetails";
 import { Documents } from "./pages/Documents";
-
+import { ContactMessages } from "./pages/ContactMessages";
 function AdminArea() {
   return (
     <ProtectedRoute>
@@ -42,6 +42,11 @@ function AdminArea() {
             path="documents"
             element={<Documents />}
           />
+
+          <Route
+  path="/messages"
+  element={<ContactMessages />}
+/>
         </Routes>
       </Layout>
     </ProtectedRoute>

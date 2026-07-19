@@ -13,6 +13,10 @@ import documentRoutes from "./routes/document.routes.js";
 import adminAuthRoutes from "./routes/admin.auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 
+import contactRoutes from "./routes/contact.routes.js";
+
+import adminContactRoutes from "./routes/admin.contact.routes.js";
+
 const app = express();
 
 const allowedOrigins = [
@@ -113,6 +117,16 @@ app.use(
 app.use(
   "/api/admin/auth",
   adminAuthRoutes
+);
+
+app.use(
+  "/api/contact",
+  contactRoutes
+);
+
+app.use(
+  "/api/admin/contact-messages",
+  adminContactRoutes
 );
 
 /* =========================

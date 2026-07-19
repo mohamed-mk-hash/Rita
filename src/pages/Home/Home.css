@@ -199,11 +199,13 @@ a {
   transition: transform 0.24s ease;
 }
 
-.nav-links a:hover {
+.nav-links a:hover,
+.nav-links a.active {
   color: white;
 }
 
-.nav-links a:hover::after {
+.nav-links a:hover::after,
+.nav-links a.active::after {
   transform: scaleX(1);
 }
 
@@ -232,7 +234,10 @@ a {
   color: white;
   font-size: 13px;
   font-weight: 850;
-  transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease;
+  transition:
+    transform 0.22s ease,
+    background 0.22s ease,
+    border-color 0.22s ease;
 }
 
 .nav-tool-btn:hover {
@@ -240,6 +245,63 @@ a {
   background: rgba(255, 255, 255, 0.14);
   border-color: rgba(255, 255, 255, 0.35);
 }
+
+/* Navbar social-media icons */
+
+.nav-socials {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-right: 3px;
+}
+
+.nav-social-icon {
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  font-size: 16px;
+  transition:
+    transform 0.22s ease,
+    background 0.22s ease,
+    border-color 0.22s ease,
+    color 0.22s ease;
+}
+
+a.nav-social-icon:hover {
+  color: white;
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.nav-social-icon.whatsapp:hover {
+  background: #25d366;
+}
+
+.nav-social-icon.facebook:hover {
+  background: #1877f2;
+}
+
+.social-icon-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  user-select: none;
+}
+
+/* Footer Instagram icon is visible but not clickable */
+
+.footer-social-icon.social-icon-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* Mobile navigation */
 
 .mobile-menu {
   display: none;
@@ -254,6 +316,75 @@ a {
 
 .mobile-actions {
   display: none;
+}
+
+.mobile-nav-socials {
+  width: 100%;
+  margin: 10px 0 0;
+  padding-top: 16px;
+  justify-content: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mobile-nav-socials .nav-social-icon {
+  width: 42px;
+  height: 42px;
+  font-size: 18px;
+}
+
+/*
+  Keep your existing mobile breakpoint if you already have one.
+  Otherwise, this breakpoint can be used.
+*/
+
+@media (max-width: 1050px) {
+  .nav-links,
+  .nav-actions {
+    display: none;
+  }
+
+  .mobile-actions {
+    display: flex;
+  }
+
+  .mobile-menu {
+    display: grid;
+  }
+
+  .mobile-nav-panel {
+    position: absolute;
+    top: 76px;
+    left: 0;
+    right: 0;
+    padding: 16px 0 22px;
+    background: rgba(14, 49, 73, 0.98);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(18px);
+  }
+
+  .mobile-nav-panel .container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+  }
+
+  .mobile-nav-panel a:not(.nav-social-icon) {
+    padding: 12px 14px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 15px;
+    font-weight: 750;
+    border-radius: 10px;
+    transition:
+      color 0.22s ease,
+      background 0.22s ease;
+  }
+
+  .mobile-nav-panel a:not(.nav-social-icon):hover,
+  .mobile-nav-panel a.active:not(.nav-social-icon) {
+    color: white;
+    background: rgba(255, 255, 255, 0.09);
+  }
 }
 
 /* =============================

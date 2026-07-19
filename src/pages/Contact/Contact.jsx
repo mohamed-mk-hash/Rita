@@ -17,6 +17,7 @@ import {
 
 import Navbar from "../../components/Navbar.jsx";
 import Footer from "../../components/Footer.jsx";
+import { sendContactMessageRequest } from "../../api/contactApi.js";
 import "./Contact.css";
 
 const copy = {
@@ -32,6 +33,7 @@ const copy = {
       lang: "العربية",
       toggleLang: "Change language",
     },
+
     hero: {
       label: "Contact",
       title: "Get in touch with RITA DIGITAL SERVICES",
@@ -40,12 +42,14 @@ const copy = {
       primary: "Send a message",
       secondary: "Contact details",
     },
+
     section: {
       label: "Contact us",
       title: "Let’s talk about your U.S. business setup.",
       text:
         "Tell us what you need and our team will help you choose the right path for LLC formation, EIN assistance, banking guidance, or compliance support.",
     },
+
     info: {
       title: "Contact Information",
       emailLabel: "Email",
@@ -53,48 +57,72 @@ const copy = {
       phoneLabel: "Phone",
       phone: "+1 (773) 640-4849",
       addressLabel: "Address",
-      address: "6500 W Irving Park Rd, Chicago, Illinois 60634",
+      address:
+        "6500 W Irving Park Rd, Chicago, Illinois 60634",
       hoursLabel: "Business Hours",
-      hours: "Monday – Friday: 9:00 AM – 6:00 PM (EST)",
+      hours:
+        "Monday – Friday: 9:00 AM – 6:00 PM (EST)",
     },
+
     form: {
       title: "Send us a message",
-      subtitle: "We usually reply within one business day.",
+      subtitle:
+        "We usually reply within one business day.",
+
       fullName: "Full Name",
       fullNamePlaceholder: "Full Name",
+
       email: "Email Address",
       emailPlaceholder: "john@example.com",
+
       phone: "Phone Number",
       phonePlaceholder: "+1 234 567 8900",
+
       subject: "Subject",
       subjectPlaceholder: "Subject",
+
       message: "Your Message",
-      messagePlaceholder: "Tell us about your business goals...",
+      messagePlaceholder:
+        "Tell us about your business goals...",
+
       button: "Send Message",
-      success: "Message ready. Connect this form to your backend to receive submissions.",
+      loading: "Sending...",
+
+      success:
+        "Your message has been sent successfully. We will contact you as soon as possible.",
+
+      error:
+        "We could not send your message. Please try again.",
     },
+
     cards: [
       {
         icon: "shield",
         title: "Clear guidance",
-        text: "Get straightforward answers about formation, EIN, banking, and compliance.",
+        text:
+          "Get straightforward answers about formation, EIN, banking, and compliance.",
       },
       {
         icon: "globe",
         title: "Global founders",
-        text: "Built for non-U.S. residents who want to operate with confidence.",
+        text:
+          "Built for non-U.S. residents who want to operate with confidence.",
       },
       {
         icon: "clock",
         title: "Fast response",
-        text: "Send your question and our team will respond with the next step.",
+        text:
+          "Send your question and our team will respond with the next step.",
       },
     ],
+
     cta: {
       title: "Ready to start your U.S. business?",
-      text: "Reach out today and we’ll help you understand the right package and process for your goals.",
+      text:
+        "Reach out today and we’ll help you understand the right package and process for your goals.",
       button: "Start my LLC",
     },
+
     footer: {
       text:
         "One-stop-shop solution to establish, operate, and grow your US LLC from anywhere in the world.",
@@ -110,10 +138,12 @@ const copy = {
       startLLC: "Start my LLC",
       banking: "Banking solutions",
       compliance: "Compliance support",
-      rights: "© 2026 Rita Digital Services. All rights reserved.",
+      rights:
+        "© 2026 Rita Digital Services. All rights reserved.",
       legal: "Privacy Policy · Terms of Use",
     },
   },
+
   ar: {
     nav: {
       services: "الخدمات",
@@ -126,6 +156,7 @@ const copy = {
       lang: "English",
       toggleLang: "تغيير اللغة",
     },
+
     hero: {
       label: "تواصل معنا",
       title: "تواصل مع RITA DIGITAL SERVICES",
@@ -134,12 +165,14 @@ const copy = {
       primary: "أرسل رسالة",
       secondary: "معلومات التواصل",
     },
+
     section: {
       label: "تواصل معنا",
       title: "دعنا نتحدث عن إعداد شركتك الأمريكية.",
       text:
         "أخبرنا بما تحتاجه، وسنساعدك في اختيار المسار المناسب لتأسيس LLC، أو المساعدة في EIN، أو الإرشاد البنكي، أو دعم الامتثال.",
     },
+
     info: {
       title: "معلومات التواصل",
       emailLabel: "البريد الإلكتروني",
@@ -147,48 +180,71 @@ const copy = {
       phoneLabel: "الهاتف",
       phone: "+1 (773) 640-4849",
       addressLabel: "العنوان",
-      address: "6500 W Irving Park Rd, Chicago, Illinois 60634",
+      address:
+        "6500 W Irving Park Rd, Chicago, Illinois 60634",
       hoursLabel: "ساعات العمل",
-      hours: "من الإثنين إلى الجمعة: 9:00 صباحًا – 6:00 مساءً (EST)",
+      hours:
+        "من الإثنين إلى الجمعة: 9:00 صباحًا – 6:00 مساءً (EST)",
     },
+
     form: {
       title: "أرسل لنا رسالة",
       subtitle: "عادةً نرد خلال يوم عمل واحد.",
+
       fullName: "الاسم الكامل",
       fullNamePlaceholder: "الاسم الكامل",
+
       email: "البريد الإلكتروني",
       emailPlaceholder: "john@example.com",
+
       phone: "رقم الهاتف",
       phonePlaceholder: "+1 234 567 8900",
+
       subject: "الموضوع",
       subjectPlaceholder: "الموضوع",
+
       message: "رسالتك",
-      messagePlaceholder: "اكتب لنا أهدافك التجارية...",
+      messagePlaceholder:
+        "اكتب لنا أهدافك التجارية...",
+
       button: "إرسال الرسالة",
-      success: "الرسالة جاهزة. اربط هذا النموذج بالـ backend حتى تستقبل الطلبات.",
+      loading: "جاري الإرسال...",
+
+      success:
+        "تم إرسال رسالتك بنجاح. سنتواصل معك في أقرب وقت ممكن.",
+
+      error:
+        "تعذر إرسال رسالتك. يرجى المحاولة مرة أخرى.",
     },
+
     cards: [
       {
         icon: "shield",
         title: "إرشاد واضح",
-        text: "احصل على إجابات مباشرة حول التأسيس، EIN، الحسابات البنكية، والامتثال.",
+        text:
+          "احصل على إجابات مباشرة حول التأسيس، EIN، الحسابات البنكية، والامتثال.",
       },
       {
         icon: "globe",
         title: "للمؤسسين حول العالم",
-        text: "مصمم لغير المقيمين في أمريكا لتشغيل أعمالهم بثقة ووضوح.",
+        text:
+          "مصمم لغير المقيمين في أمريكا لتشغيل أعمالهم بثقة ووضوح.",
       },
       {
         icon: "clock",
         title: "رد سريع",
-        text: "أرسل سؤالك، وسنرجع لك بخطوة واضحة تساعدك على التقدم.",
+        text:
+          "أرسل سؤالك، وسنرجع لك بخطوة واضحة تساعدك على التقدم.",
       },
     ],
+
     cta: {
       title: "جاهز لبدء شركتك الأمريكية؟",
-      text: "تواصل معنا اليوم وسنساعدك على فهم الباقة والمسار المناسبين لأهدافك.",
+      text:
+        "تواصل معنا اليوم وسنساعدك على فهم الباقة والمسار المناسبين لأهدافك.",
       button: "ابدأ LLC",
     },
+
     footer: {
       text:
         "حل متكامل لتأسيس وتشغيل وتنمية شركتك الأمريكية من أي مكان في العالم.",
@@ -204,10 +260,19 @@ const copy = {
       startLLC: "ابدأ LLC",
       banking: "الحلول البنكية",
       compliance: "دعم الامتثال",
-      rights: "© 2026 Rita Digital Services. جميع الحقوق محفوظة.",
+      rights:
+        "© 2026 Rita Digital Services. جميع الحقوق محفوظة.",
       legal: "سياسة الخصوصية · شروط الاستخدام",
     },
   },
+};
+
+const initialForm = {
+  fullName: "",
+  email: "",
+  phone: "",
+  subject: "",
+  message: "",
 };
 
 const iconMap = {
@@ -217,53 +282,134 @@ const iconMap = {
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
+  hidden: {
+    opacity: 0,
+    y: 28,
+  },
+
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.72, ease: [0.16, 1, 0.3, 1] },
+
+    transition: {
+      duration: 0.72,
+      ease: [0.16, 1, 0.3, 1],
+    },
   },
 };
 
 const stagger = {
   hidden: {},
+
   visible: {
-    transition: { staggerChildren: 0.11 },
+    transition: {
+      staggerChildren: 0.11,
+    },
   },
 };
 
-function ContactInfoItem({ icon: Icon, label, value }) {
+function ContactInfoItem({
+  icon: Icon,
+  label,
+  value,
+}) {
   return (
     <motion.div
       className="contact-info-item"
       variants={fadeUp}
       whileHover={{ x: 6 }}
-      transition={{ type: "spring", stiffness: 260, damping: 22 }}
+      transition={{
+        type: "spring",
+        stiffness: 260,
+        damping: 22,
+      }}
     >
       <div className="contact-info-icon">
         <Icon size={22} />
       </div>
-      <div>
+
+      <div className="contact-info-content">
         <span>{label}</span>
-        <strong>{value}</strong>
+
+        <strong dir="auto">
+          {value}
+        </strong>
       </div>
     </motion.div>
   );
 }
 
 function Contact() {
-  const { lang, isArabic, changeLanguage } = useLanguage();
-  const [sent, setSent] = useState(false);
+  const {
+    lang,
+    isArabic,
+    changeLanguage,
+  } = useLanguage();
+
   const t = copy[lang];
 
-  function handleSubmit(event) {
+  const [form, setForm] = useState(initialForm);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+
+    if (sent) {
+      setSent(false);
+    }
+
+    if (error) {
+      setError("");
+    }
+  }
+
+  async function handleSubmit(event) {
     event.preventDefault();
-    setSent(true);
+
+    if (loading) {
+      return;
+    }
+
+    setSent(false);
+    setError("");
+    setLoading(true);
+
+    try {
+      await sendContactMessageRequest(form);
+
+      setSent(true);
+      setForm(initialForm);
+    } catch (requestError) {
+      console.error(
+        "CONTACT_FORM_ERROR:",
+        requestError
+      );
+
+      setError(t.form.error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className={`contact-page ${isArabic ? "rtl" : "ltr"}`}>
-      <Navbar t={t.nav} lang={lang} onChangeLang={changeLanguage} />
+    <div
+      className={`contact-page ${
+        isArabic ? "rtl" : "ltr"
+      }`}
+      dir={isArabic ? "rtl" : "ltr"}
+    >
+      <Navbar
+        t={t.nav}
+        lang={lang}
+        onChangeLang={changeLanguage}
+      />
 
       <main>
         <section className="contact-hero">
@@ -276,34 +422,62 @@ function Contact() {
             animate="visible"
             variants={stagger}
           >
-            <motion.div className="contact-pill" variants={fadeUp}>
+            <motion.div
+              className="contact-pill"
+              variants={fadeUp}
+            >
               <MessageCircle size={16} />
               <span>{t.hero.label}</span>
             </motion.div>
 
-            <motion.h1 variants={fadeUp}>{t.hero.title}</motion.h1>
-            <motion.div className="contact-red-line" variants={fadeUp} />
-            <motion.p variants={fadeUp}>{t.hero.text}</motion.p>
+            <motion.h1 variants={fadeUp}>
+              {t.hero.title}
+            </motion.h1>
 
-            <motion.div className="contact-hero-actions" variants={fadeUp}>
-              <a href="#contact-form" className="contact-btn contact-btn-red">
+            <motion.div
+              className="contact-red-line"
+              variants={fadeUp}
+            />
+
+            <motion.p variants={fadeUp}>
+              {t.hero.text}
+            </motion.p>
+
+            <motion.div
+              className="contact-hero-actions"
+              variants={fadeUp}
+            >
+              <a
+                href="#contact-form"
+                className="contact-btn contact-btn-red"
+              >
                 {t.hero.primary}
                 <ArrowRight size={17} />
               </a>
-              <a href="#contact-info" className="contact-btn contact-btn-muted">
+
+              <a
+                href="#contact-info"
+                className="contact-btn contact-btn-muted"
+              >
                 {t.hero.secondary}
               </a>
             </motion.div>
           </motion.div>
         </section>
 
-        <section className="contact-main-section" id="contact-form">
+        <section
+          className="contact-main-section"
+          id="contact-form"
+        >
           <div className="contact-container">
             <motion.div
               className="contact-section-heading"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.4 }}
+              viewport={{
+                once: true,
+                amount: 0.4,
+              }}
               variants={fadeUp}
             >
               <span>{t.section.label}</span>
@@ -315,41 +489,94 @@ function Contact() {
               <motion.aside
                 className="contact-info-card"
                 id="contact-info"
-                initial={{ opacity: 0, y: 38, scale: 0.97 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+                initial={{
+                  opacity: 0,
+                  y: 38,
+                  scale: 0.97,
+                }}
+                whileInView={{
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                }}
+                viewport={{
+                  once: true,
+                  amount: 0.3,
+                }}
+                transition={{
+                  duration: 0.72,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
               >
                 <div className="contact-card-glow" />
+
                 <h3>{t.info.title}</h3>
 
                 <motion.div
                   className="contact-info-list"
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: true, amount: 0.4 }}
+                  viewport={{
+                    once: true,
+                    amount: 0.4,
+                  }}
                   variants={stagger}
                 >
-                  <ContactInfoItem icon={Mail} label={t.info.emailLabel} value={t.info.email} />
-                  <ContactInfoItem icon={Phone} label={t.info.phoneLabel} value={t.info.phone} />
-                  <ContactInfoItem icon={MapPin} label={t.info.addressLabel} value={t.info.address} />
-                  <ContactInfoItem icon={Clock} label={t.info.hoursLabel} value={t.info.hours} />
+                  <ContactInfoItem
+                    icon={Mail}
+                    label={t.info.emailLabel}
+                    value={t.info.email}
+                  />
+
+                  <ContactInfoItem
+                    icon={Phone}
+                    label={t.info.phoneLabel}
+                    value={t.info.phone}
+                  />
+
+                  <ContactInfoItem
+                    icon={MapPin}
+                    label={t.info.addressLabel}
+                    value={t.info.address}
+                  />
+
+                  <ContactInfoItem
+                    icon={Clock}
+                    label={t.info.hoursLabel}
+                    value={t.info.hours}
+                  />
                 </motion.div>
               </motion.aside>
 
               <motion.form
                 className="contact-form-card"
                 onSubmit={handleSubmit}
-                initial={{ opacity: 0, y: 38, scale: 0.97 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, amount: 0.25 }}
-                transition={{ duration: 0.72, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+                initial={{
+                  opacity: 0,
+                  y: 38,
+                  scale: 0.97,
+                }}
+                whileInView={{
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                }}
+                viewport={{
+                  once: true,
+                  amount: 0.25,
+                }}
+                transition={{
+                  duration: 0.72,
+                  delay: 0.08,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
               >
                 <div className="contact-form-top">
-                  <div>
+                  <div className="contact-form-heading">
                     <h3>{t.form.title}</h3>
                     <p>{t.form.subtitle}</p>
                   </div>
+
                   <div className="contact-form-icon">
                     <Send size={20} />
                   </div>
@@ -357,45 +584,152 @@ function Contact() {
 
                 <div className="contact-form-grid">
                   <label>
-                    <span>{t.form.fullName}</span>
-                    <input type="text" placeholder={t.form.fullNamePlaceholder} required />
+                    <span>
+                      {t.form.fullName}
+                    </span>
+
+                    <input
+                      name="fullName"
+                      type="text"
+                      autoComplete="name"
+                      placeholder={
+                        t.form.fullNamePlaceholder
+                      }
+                      value={form.fullName}
+                      onChange={handleChange}
+                      maxLength={150}
+                      disabled={loading}
+                      required
+                    />
                   </label>
 
                   <label>
-                    <span>{t.form.email}</span>
-                    <input type="email" placeholder={t.form.emailPlaceholder} required />
+                    <span>
+                      {t.form.email}
+                    </span>
+
+                    <input
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder={
+                        t.form.emailPlaceholder
+                      }
+                      value={form.email}
+                      onChange={handleChange}
+                      maxLength={255}
+                      disabled={loading}
+                      required
+                    />
                   </label>
 
                   <label>
-                    <span>{t.form.phone}</span>
-                    <input type="tel" placeholder={t.form.phonePlaceholder} />
+                    <span>
+                      {t.form.phone}
+                    </span>
+
+                    <input
+                      name="phone"
+                      type="tel"
+                      autoComplete="tel"
+                      placeholder={
+                        t.form.phonePlaceholder
+                      }
+                      value={form.phone}
+                      onChange={handleChange}
+                      maxLength={50}
+                      disabled={loading}
+                    />
                   </label>
 
                   <label>
-                    <span>{t.form.subject}</span>
-                    <input type="text" placeholder={t.form.subjectPlaceholder} required />
+                    <span>
+                      {t.form.subject}
+                    </span>
+
+                    <input
+                      name="subject"
+                      type="text"
+                      placeholder={
+                        t.form.subjectPlaceholder
+                      }
+                      value={form.subject}
+                      onChange={handleChange}
+                      maxLength={200}
+                      disabled={loading}
+                      required
+                    />
                   </label>
 
                   <label className="full">
-                    <span>{t.form.message}</span>
-                    <textarea placeholder={t.form.messagePlaceholder} rows="6" required />
+                    <span>
+                      {t.form.message}
+                    </span>
+
+                    <textarea
+                      name="message"
+                      placeholder={
+                        t.form.messagePlaceholder
+                      }
+                      rows="6"
+                      value={form.message}
+                      onChange={handleChange}
+                      maxLength={5000}
+                      disabled={loading}
+                      required
+                    />
                   </label>
                 </div>
+
+                {error && (
+                  <motion.div
+                    className="contact-error"
+                    role="alert"
+                    aria-live="assertive"
+                    initial={{
+                      opacity: 0,
+                      y: 10,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                    }}
+                  >
+                    <span>{error}</span>
+                  </motion.div>
+                )}
 
                 {sent && (
                   <motion.div
                     className="contact-success"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    role="status"
+                    aria-live="polite"
+                    initial={{
+                      opacity: 0,
+                      y: 10,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                    }}
                   >
                     <CheckCircle2 size={18} />
-                    <span>{t.form.success}</span>
+                    <span>
+                      {t.form.success}
+                    </span>
                   </motion.div>
                 )}
 
-                <button className="contact-submit" type="submit">
+                <button
+                  className="contact-submit"
+                  type="submit"
+                  disabled={loading}
+                >
                   <Send size={17} />
-                  {t.form.button}
+
+                  {loading
+                    ? t.form.loading
+                    : t.form.button}
                 </button>
               </motion.form>
             </div>
@@ -412,15 +746,31 @@ function Contact() {
                   <motion.article
                     className="contact-support-card"
                     key={card.title}
-                    initial={{ opacity: 0, y: 32 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.35 }}
-                    transition={{ duration: 0.62, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
-                    whileHover={{ y: -8 }}
+                    initial={{
+                      opacity: 0,
+                      y: 32,
+                    }}
+                    whileInView={{
+                      opacity: 1,
+                      y: 0,
+                    }}
+                    viewport={{
+                      once: true,
+                      amount: 0.35,
+                    }}
+                    transition={{
+                      duration: 0.62,
+                      delay: index * 0.08,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
+                    whileHover={{
+                      y: -8,
+                    }}
                   >
                     <div className="contact-support-icon">
                       <Icon size={23} />
                     </div>
+
                     <h3>{card.title}</h3>
                     <p>{card.text}</p>
                   </motion.article>
@@ -430,28 +780,40 @@ function Contact() {
           </div>
         </section>
 
-        <section className="final-cta" id="start">
-  <div className="container">
-    <div className="final-cta-card">
-      <div className="cta-orbit one" />
-      <div className="cta-orbit two" />
+        <section
+          className="final-cta"
+          id="start"
+        >
+          <div className="container">
+            <div className="final-cta-card">
+              <div className="cta-orbit one" />
+              <div className="cta-orbit two" />
 
-      <h2>{isArabic ? "ابدأ مشروعك الأمريكي مع Rita." : "Start your dream business with Rita."}</h2>
+              <h2>
+                {isArabic
+                  ? "ابدأ مشروعك الأمريكي مع Rita."
+                  : "Start your dream business with Rita."}
+              </h2>
 
-      <p>
-        {isArabic
-          ? "أطلق، أدر، وانمُ بشركتك الأمريكية من خلال منصة رقمية واضحة."
-          : "Launch, manage, and grow your US business with one clean digital platform."}
-      </p>
+              <p>
+                {isArabic
+                  ? "أطلق، أدر، وانمُ بشركتك الأمريكية من خلال منصة رقمية واضحة."
+                  : "Launch, manage, and grow your US business with one clean digital platform."}
+              </p>
 
-      <div>
-        <a href="#contact-form" className="btn btn-white">
-          {isArabic ? "ابدأ شركتي" : "Start my company"}
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
+              <div>
+                <a
+                  href="#contact-form"
+                  className="btn btn-white"
+                >
+                  {isArabic
+                    ? "ابدأ شركتي"
+                    : "Start my company"}
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       <Footer t={t.footer} />

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ritaLogo from "../assets/rita-logo.png";
 import {
   NavLink,
   useNavigate,
@@ -9,6 +10,7 @@ import {
   Files,
   LayoutDashboard,
   LogOut,
+  MessageSquareText,
 } from "lucide-react";
 
 import { useLanguage } from "../i18n/LanguageContext";
@@ -28,6 +30,7 @@ export const Sidebar: React.FC = () => {
       label: t.overview,
       icon: LayoutDashboard,
     },
+
     {
       path: "/applications",
       label: isArabic
@@ -35,12 +38,21 @@ export const Sidebar: React.FC = () => {
         : "Applications",
       icon: Files,
     },
+
     {
       path: "/documents",
       label: isArabic
         ? "الوثائق"
         : "Documents",
       icon: FileCheck2,
+    },
+
+    {
+      path: "/messages",
+      label: isArabic
+        ? "رسائل التواصل"
+        : "Contact Messages",
+      icon: MessageSquareText,
     },
   ];
 
@@ -78,6 +90,7 @@ export const Sidebar: React.FC = () => {
       }`}
     >
       {/* Logo */}
+
       <div
         className={`flex ${
           isArabic
@@ -86,13 +99,14 @@ export const Sidebar: React.FC = () => {
         }`}
       >
         <img
-          src="/rita-logo.png"
-          alt="Rita Digital Services"
-          className="h-[68px] w-[105px] rounded-xl bg-white object-contain p-3 shadow-sm"
-        />
+  src={ritaLogo}
+  alt="Rita Digital Services"
+  className="h-[68px] w-[105px] rounded-xl bg-white object-contain p-3 shadow-sm"
+/>
       </div>
 
       {/* Navigation */}
+
       <nav className="mt-8 grid gap-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -101,15 +115,7 @@ export const Sidebar: React.FC = () => {
             <NavLink
               key={item.path}
               to={item.path}
-
-              /*
-                end يجب أن يكون true فقط للرابط "/".
-                حتى لا يبقى Overview نشطاً عند فتح:
-                /applications
-                /documents
-              */
               end={item.path === "/"}
-
               className={({ isActive }) =>
                 `flex min-h-12 items-center gap-3 rounded-xl px-4 text-sm font-black transition-colors ${
                   isActive
@@ -119,7 +125,6 @@ export const Sidebar: React.FC = () => {
               }
             >
               <Icon className="h-5 w-5 shrink-0" />
-
               <span>{item.label}</span>
             </NavLink>
           );
@@ -127,9 +132,12 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {/* Logout */}
+
       <button
         type="button"
-        onClick={() => void handleLogout()}
+        onClick={() =>
+          void handleLogout()
+        }
         disabled={loggingOut}
         className="mt-auto flex min-h-12 w-full items-center justify-center gap-3 rounded-xl bg-[#df3341] px-4 text-sm font-black text-white shadow-lg transition-colors hover:bg-[#c92b38] disabled:cursor-not-allowed disabled:opacity-60"
       >
