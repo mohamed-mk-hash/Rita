@@ -1,5 +1,6 @@
 import {
   BrowserRouter,
+  Navigate,
   Route,
   Routes,
 } from "react-router-dom";
@@ -16,15 +17,13 @@ import { Applications } from "./pages/Applications";
 import { ApplicationDetails } from "./pages/ApplicationDetails";
 import { Documents } from "./pages/Documents";
 import { ContactMessages } from "./pages/ContactMessages";
+
 function AdminArea() {
   return (
     <ProtectedRoute>
       <Layout>
         <Routes>
-          <Route
-            index
-            element={<Overview />}
-          />
+          <Route index element={<Overview />} />
 
           <Route
             path="applications"
@@ -33,9 +32,7 @@ function AdminArea() {
 
           <Route
             path="applications/:id"
-            element={
-              <ApplicationDetails />
-            }
+            element={<ApplicationDetails />}
           />
 
           <Route
@@ -44,9 +41,14 @@ function AdminArea() {
           />
 
           <Route
-  path="/messages"
-  element={<ContactMessages />}
-/>
+            path="messages"
+            element={<ContactMessages />}
+          />
+
+          <Route
+            path="*"
+            element={<Navigate to="/" replace />}
+          />
         </Routes>
       </Layout>
     </ProtectedRoute>
@@ -57,7 +59,7 @@ function App() {
   return (
     <LanguageProvider>
       <AuthProvider>
-        <BrowserRouter>
+        <BrowserRouter basename="/admin">
           <Routes>
             <Route
               path="/login"

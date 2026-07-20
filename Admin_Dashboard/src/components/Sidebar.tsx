@@ -25,36 +25,29 @@ export const Sidebar: React.FC = () => {
     useState(false);
 
   const menuItems = [
-    {
-      path: "/",
-      label: t.overview,
-      icon: LayoutDashboard,
-    },
-
-    {
-      path: "/applications",
-      label: isArabic
-        ? "الطلبات"
-        : "Applications",
-      icon: Files,
-    },
-
-    {
-      path: "/documents",
-      label: isArabic
-        ? "الوثائق"
-        : "Documents",
-      icon: FileCheck2,
-    },
-
-    {
-      path: "/messages",
-      label: isArabic
-        ? "رسائل التواصل"
-        : "Contact Messages",
-      icon: MessageSquareText,
-    },
-  ];
+  {
+    path: "/",
+    label: t.overview,
+    icon: LayoutDashboard,
+  },
+  {
+    path: "/applications",
+    label: isArabic ? "الطلبات" : "Applications",
+    icon: Files,
+  },
+  {
+    path: "/documents",
+    label: isArabic ? "الوثائق" : "Documents",
+    icon: FileCheck2,
+  },
+  {
+    path: "/messages",
+    label: isArabic
+      ? "رسائل التواصل"
+      : "Contact Messages",
+    icon: MessageSquareText,
+  },
+];
 
   async function handleLogout() {
     if (loggingOut) {
