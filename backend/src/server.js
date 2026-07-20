@@ -9,13 +9,12 @@ import { pool } from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
 import applicationRoutes from "./routes/application.routes.js";
 import documentRoutes from "./routes/document.routes.js";
-
-import adminAuthRoutes from "./routes/admin.auth.routes.js";
-import adminRoutes from "./routes/admin.routes.js";
-
 import contactRoutes from "./routes/contact.routes.js";
 
+import adminAuthRoutes from "./routes/admin.auth.routes.js";
 import adminContactRoutes from "./routes/admin.contact.routes.js";
+import adminDocumentsRoutes from "./routes/admin.documents.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();
 
@@ -24,15 +23,9 @@ const allowedOrigins = [
   process.env.ADMIN_URL,
 ].filter(Boolean);
 
-/* =========================
-   CORS
-========================= */
-
 app.use(
   cors({
     origin(origin, callback) {
-      // يسمح بطلبات مثل Postman أو Server-to-Server
-      // التي لا تحتوي على Origin
       if (!origin) {
         return callback(null, true);
       }
@@ -48,34 +41,27 @@ app.use(
       );
     },
 
-    // ضروري لإرسال واستقبال Cookies
     credentials: true,
+
+    exposedHeaders: [
+      "Content-Disposition",
+      "Content-Length",
+      "Content-Type",
+    ],
   })
 );
-
-/* =========================
-   Global middleware
-========================= */
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-/* =========================
-   Basic route
-========================= */
-
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   return res.json({
     message: "Rita backend API is running",
   });
 });
 
-/* =========================
-   Database health check
-========================= */
-
-app.get("/api/health", async (req, res) => {
+app.get("/api/health", async (_req, res) => {
   try {
     await pool.query("SELECT NOW() AS now");
 
@@ -94,34 +80,22 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
-/* =========================
-   Client routes
-========================= */
-
+/* Client routes */
 app.use("/api/auth", authRoutes);
+app.use("/api/applications", applicationRoutes);
+app.use("/api/documents", documentRoutes);
+app.use("/api/contact", contactRoutes);
 
+/* Admin authentication */
+app.use("/api/admin/auth", adminAuthRoutes);
+
+/*
+  Must be mounted before /api/admin.
+  It replaces the old local-disk admin document handlers.
+*/
 app.use(
-  "/api/applications",
-  applicationRoutes
-);
-
-app.use(
-  "/api/documents",
-  documentRoutes
-);
-
-/* =========================
-   Admin authentication
-========================= */
-
-app.use(
-  "/api/admin/auth",
-  adminAuthRoutes
-);
-
-app.use(
-  "/api/contact",
-  contactRoutes
+  "/api/admin/documents",
+  adminDocumentsRoutes
 );
 
 app.use(
@@ -129,37 +103,22 @@ app.use(
   adminContactRoutes
 );
 
-/* =========================
-   Protected admin routes
-========================= */
+/* Remaining protected admin routes */
+app.use("/api/admin", adminRoutes);
 
-app.use(
-  "/api/admin",
-  adminRoutes
-);
-
-/* =========================
-   404 route
-========================= */
-
-app.use((req, res) => {
+app.use((_req, res) => {
   return res.status(404).json({
     message: "Route not found",
   });
 });
 
-/* =========================
-   Error handler
-========================= */
-
-app.use((error, req, res, next) => {
+app.use((error, _req, res, next) => {
   console.error("SERVER_ERROR:", error);
 
   if (res.headersSent) {
     return next(error);
   }
 
-  // خطأ CORS
   if (
     error.message?.includes(
       "is not allowed by CORS"
@@ -175,13 +134,7 @@ app.use((error, req, res, next) => {
   });
 });
 
-/* =========================
-   Start server
-========================= */
-
-const port = Number(
-  process.env.PORT || 5000
-);
+const port = Number(process.env.PORT || 5000);
 
 app.listen(port, () => {
   console.log(

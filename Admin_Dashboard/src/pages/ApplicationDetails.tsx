@@ -60,6 +60,37 @@ const workflowSteps = [
   { value: "completed", en: "Service completed", ar: "اكتملت الخدمة" },
 ];
 
+function getStatusFromWorkflowStep(
+  step: string,
+  currentStatus: AdminApplicationStatus
+): AdminApplicationStatus {
+  switch (step) {
+    case "intake_submitted":
+      return "submitted";
+
+    case "document_review":
+      return "in_review";
+
+    case "waiting_required_documents":
+    case "document_corrections_required":
+      return "waiting_documents";
+
+    case "documents_approved":
+    case "preparing_filing":
+    case "filing_submitted":
+    case "ein_processing":
+    case "banking_setup":
+    case "compliance_review":
+      return "processing";
+
+    case "completed":
+      return "completed";
+
+    default:
+      return currentStatus;
+  }
+}
+
 function formatDate(value: string | null, isArabic: boolean) {
   if (!value) return "—";
 
@@ -231,13 +262,20 @@ export function ApplicationDetails() {
     setError("");
     setMessage("");
 
+    const nextStatus = getStatusFromWorkflowStep(
+      currentStep,
+      status
+    );
+
     try {
       await updateAdminApplication(application.id, {
-        status,
+        status: nextStatus,
         progress,
         currentStep,
         notes,
       });
+
+      setStatus(nextStatus);
 
       setMessage(
         isArabic
@@ -622,9 +660,18 @@ export function ApplicationDetails() {
 
               <select
                 value={currentStep}
-                onChange={(event) =>
-                  setCurrentStep(event.target.value)
-                }
+                onChange={(event) => {
+                  const nextStep = event.target.value;
+
+                  setCurrentStep(nextStep);
+
+                  setStatus((currentStatus) =>
+                    getStatusFromWorkflowStep(
+                      nextStep,
+                      currentStatus
+                    )
+                  );
+                }}
                 className="min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 font-bold outline-none focus:border-blue-500"
               >
                 <option value="">

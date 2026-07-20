@@ -85,13 +85,43 @@ async function readErrorMessage(
   }
 }
 
+function getDownloadFileName(
+  response: Response,
+  fallbackFileName: string
+) {
+  const disposition =
+    response.headers.get("content-disposition") || "";
+
+  const utf8Match = disposition.match(
+    /filename\*=UTF-8''([^;]+)/i
+  );
+
+  const regularMatch = disposition.match(
+    /filename="?([^";]+)"?/i
+  );
+
+  try {
+    if (utf8Match?.[1]) {
+      return decodeURIComponent(utf8Match[1]);
+    }
+
+    if (regularMatch?.[1]) {
+      return regularMatch[1];
+    }
+  } catch {
+    // Use the fallback below.
+  }
+
+  return fallbackFileName || "document";
+}
+
 export async function getAdminDocuments(
   filters: AdminDocumentsFilters = {}
 ): Promise<AdminDocumentsResponse> {
   const params = new URLSearchParams();
 
-  if (filters.search) {
-    params.set("search", filters.search);
+  if (filters.search?.trim()) {
+    params.set("search", filters.search.trim());
   }
 
   if (filters.status) {
@@ -106,8 +136,12 @@ export async function getAdminDocuments(
     params.set("limit", String(filters.limit));
   }
 
+  const queryString = params.toString();
+
   const response = await fetch(
-    `${API_URL}/admin/documents?${params.toString()}`,
+    `${API_URL}/admin/documents${
+      queryString ? `?${queryString}` : ""
+    }`,
     {
       method: "GET",
       credentials: "include",
@@ -174,18 +208,23 @@ export async function downloadAdminDocument(
   }
 
   const blob = await response.blob();
-  const objectUrl = URL.createObjectURL(blob);
+  const filename = getDownloadFileName(
+    response,
+    fallbackFileName
+  );
 
-  const anchor =
-    window.document.createElement("a");
+  const objectUrl = URL.createObjectURL(blob);
+  const anchor = window.document.createElement("a");
 
   anchor.href = objectUrl;
-  anchor.download =
-    fallbackFileName || "document";
+  anchor.download = filename;
+  anchor.style.display = "none";
 
   window.document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
 
-  URL.revokeObjectURL(objectUrl);
+  window.setTimeout(() => {
+    URL.revokeObjectURL(objectUrl);
+  }, 0);
 }

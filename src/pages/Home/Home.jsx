@@ -1,6 +1,11 @@
 import { useLanguage } from "../../context/LanguageContext.jsx";
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useInView,
+  useReducedMotion,
+} from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
@@ -17,7 +22,7 @@ import {
 
 import Navbar from "../../components/Navbar.jsx";
 import Footer from "../../components/Footer.jsx";
-import "./Home.css"
+import "./Home.css";
 
 const copy = {
   en: {
@@ -37,15 +42,23 @@ const copy = {
     },
     hero: {
       pillNew: "RITA ONE",
-      eyebrow: "For Algerian founders, freelancers, agencies, and online sellers",
-      pillText: "Rita Digital Services — form a US LLC and unlock global payment access.",
+      eyebrow:
+        "For Algerian founders, freelancers, agencies, and online sellers",
+      pillText:
+        "Rita Digital Services — form a US LLC and unlock global payment access.",
       learnMore: "Learn more",
-      title: "Create your US company and unlock global payments.",
+      title:
+        "Launch your US company and get ready to receive payments worldwide.",
       subtitle:
         "Rita helps non-US residents form a US LLC, prepare EIN documents, and get guided banking and payment options — with every step tracked online.",
       primary: "Start my US company",
       secondary: "See the process",
-      quickFacts: ["US LLC", "EIN documents", "Banking & payments", "Client portal"],
+      quickFacts: [
+        "US LLC",
+        "EIN documents",
+        "Banking & payments",
+        "Client portal",
+      ],
       problemLabel: "The problem",
       solutionLabel: "Rita solution",
       problems: [
@@ -60,7 +73,13 @@ const copy = {
         "Client portal tracking",
       ],
       audienceLabel: "Built for",
-      audiences: ["Freelancers", "E-commerce sellers", "Agencies", "Startups", "IT consultants"],
+      audiences: [
+        "Freelancers",
+        "E-commerce sellers",
+        "Agencies",
+        "Startups",
+        "IT consultants",
+      ],
       visualLabel: "How it works",
       visualTitle: "A clear path from local idea to payment-ready US business.",
       visualSubtitle:
@@ -71,7 +90,8 @@ const copy = {
         "Choose banking and payment options",
         "Track delivery from your portal",
       ],
-      localTrust: "A local trusted intermediary for Algerian and Arab entrepreneurs.",
+      localTrust:
+        "A local trusted intermediary for Algerian and Arab entrepreneurs.",
       trust:
         "The visitor should understand this in the first 5 seconds: Rita turns a local founder into a globally ready US business.",
     },
@@ -101,8 +121,7 @@ const copy = {
         {
           label: "Explore Start",
           heading: "Form your US LLC without paperwork headaches.",
-          text:
-            "Rita turns the complex steps — company formation, state filing, document preparation, and EIN assistance — into one guided process for Algerian and Arab founders.",
+          text: "Rita turns the complex steps — company formation, state filing, document preparation, and EIN assistance — into one guided process for Algerian and Arab founders.",
           button: "Start my company",
           type: "timeline",
         },
@@ -110,8 +129,7 @@ const copy = {
           label: "Explore Rita One",
           badge: "New",
           heading: "Run your company setup from one connected portal.",
-          text:
-            "Instead of following your file through WhatsApp, email, and separate folders, clients can upload documents, see progress, and receive banking/payment updates in one place.",
+          text: "Instead of following your file through WhatsApp, email, and separate folders, clients can upload documents, see progress, and receive banking/payment updates in one place.",
           button: "Explore Rita One",
           type: "portal",
         },
@@ -234,6 +252,70 @@ const copy = {
         },
       ],
     },
+    pricing: {
+      label: "Simple pricing",
+      title: "Choose the setup package that matches your stage.",
+      text: "Clear one-time packages for launching your US company with the level of guidance you need.",
+      recommended: "Most popular",
+      oneTime: "one-time payment",
+      plans: [
+        {
+          slug: "starter",
+          tone: "starter",
+          number: "01",
+          name: "Starter Package",
+          audience: "Best for founders at the beginning.",
+          price: "299",
+          button: "Start now",
+          features: [
+            "Assistance forming an LLC in Wyoming or New Mexico",
+            "Company name availability check",
+            "Articles of Organization filing preparation",
+            "Operating Agreement template",
+            "Company formation consultation",
+            "Compliance checklist",
+            "Email support",
+          ],
+        },
+        {
+          slug: "growth",
+          tone: "growth",
+          number: "02",
+          name: "Growth Package",
+          audience: "Best for founders preparing to operate.",
+          price: "399",
+          button: "Choose Growth",
+          recommended: true,
+          features: [
+            "Everything in the Starter Package",
+            "EIN application assistance",
+            "Business banking guidance",
+            "Digital company documents package",
+            "Business launch checklist",
+            "Priority email support",
+            "One compliance consultation",
+          ],
+        },
+        {
+          slug: "premium",
+          tone: "premium",
+          number: "03",
+          name: "Premium Package",
+          audience: "Best for founders who want hands-on setup support.",
+          price: "499",
+          button: "Choose Premium",
+          features: [
+            "Everything in the Growth Package",
+            "EIN follow-up assistance",
+            "Introduction to banking solutions",
+            "Compliance monitoring reminders",
+            "Annual report reminder service",
+            "Priority support",
+            "One-on-one company setup consultation",
+          ],
+        },
+      ],
+    },
     trust: {
       quote:
         "“Rita Digital Services helps non-US residents worldwide establish, operate, and manage their US business with confidence.”",
@@ -252,8 +334,7 @@ const copy = {
       secondary: "Talk to Rita",
     },
     footer: {
-      text:
-        "One-stop-shop solution to establish, operate, and grow your US LLC from anywhere in the world.",
+      text: "One-stop-shop solution to establish, operate, and grow your US LLC from anywhere in the world.",
       company: "Company",
       support: "Support",
       start: "Start",
@@ -287,10 +368,12 @@ const copy = {
     },
     hero: {
       pillNew: "RITA ONE",
-      eyebrow: "للمستقلين، الوكالات، المتاجر الإلكترونية ورواد الأعمال في الجزائر",
-      pillText: "Rita Digital Services — أسّس شركة أمريكية وافتح طريقك للمدفوعات العالمية.",
+      eyebrow:
+        "للمستقلين، الوكالات، المتاجر الإلكترونية ورواد الأعمال في الجزائر",
+      pillText:
+        "Rita Digital Services — أسّس شركة أمريكية وافتح طريقك للمدفوعات العالمية.",
       learnMore: "اعرف أكثر",
-      title: "أسّس شركتك الأمريكية وافتح طريق المدفوعات العالمية.",
+      title: "أطلق شركتك الأمريكية واستعد لاستقبال المدفوعات من العالم.",
       subtitle:
         "تساعد Rita غير المقيمين في أمريكا على تأسيس LLC، تجهيز وثائق EIN، واختيار حلول بنكية وبوابات دفع مناسبة — مع تتبع كل خطوة أونلاين.",
       primary: "ابدأ تأسيس شركتي",
@@ -310,7 +393,13 @@ const copy = {
         "تتبع الملف من البوابة",
       ],
       audienceLabel: "مناسب لـ",
-      audiences: ["المستقلون", "تجار E-commerce", "الوكالات", "الشركات الناشئة", "متخصصو IT"],
+      audiences: [
+        "المستقلون",
+        "تجار E-commerce",
+        "الوكالات",
+        "الشركات الناشئة",
+        "متخصصو IT",
+      ],
       visualLabel: "كيف تعمل الخدمة",
       visualTitle: "مسار واضح من فكرة محلية إلى شركة أمريكية جاهزة للدفع.",
       visualSubtitle:
@@ -351,8 +440,7 @@ const copy = {
         {
           label: "استكشف البداية",
           heading: "أسس شركتك الأمريكية بدون تعقيد الورق.",
-          text:
-            "تحوّل Rita خطوات التأسيس المعقدة — ملف الولاية، الوثائق، ومساعدة EIN — إلى مسار واضح للمؤسسين الجزائريين والعرب.",
+          text: "تحوّل Rita خطوات التأسيس المعقدة — ملف الولاية، الوثائق، ومساعدة EIN — إلى مسار واضح للمؤسسين الجزائريين والعرب.",
           button: "ابدأ شركتي",
           type: "timeline",
         },
@@ -360,8 +448,7 @@ const copy = {
           label: "استكشف Rita One",
           badge: "جديد",
           heading: "أدر ملف شركتك من بوابة واحدة مترابطة.",
-          text:
-            "بدل متابعة الملف عبر واتساب والإيميل ومجلدات متفرقة، يستطيع العميل رفع الوثائق، رؤية التقدم، واستقبال تحديثات البنوك والمدفوعات في مكان واحد.",
+          text: "بدل متابعة الملف عبر واتساب والإيميل ومجلدات متفرقة، يستطيع العميل رفع الوثائق، رؤية التقدم، واستقبال تحديثات البنوك والمدفوعات في مكان واحد.",
           button: "استكشف Rita One",
           type: "portal",
         },
@@ -484,6 +571,70 @@ const copy = {
         },
       ],
     },
+    pricing: {
+      label: "أسعار واضحة",
+      title: "اختر باقة التأسيس المناسبة لمرحلة مشروعك.",
+      text: "باقات بدفعة واحدة لإطلاق شركتك الأمريكية مع مستوى الدعم الذي تحتاجه.",
+      recommended: "الأكثر اختياراً",
+      oneTime: "دفعة واحدة",
+      plans: [
+        {
+          slug: "starter",
+          tone: "starter",
+          number: "01",
+          name: "باقة البداية",
+          audience: "الأفضل لأصحاب الأعمال في البداية.",
+          price: "299",
+          button: "ابدأ الآن",
+          features: [
+            "مساعدة في تأسيس LLC في وايومنغ أو نيو مكسيكو",
+            "التحقق من توفر اسم الشركة",
+            "تجهيز وتقديم Articles of Organization",
+            "نموذج Operating Agreement",
+            "استشارة تأسيس الشركة",
+            "قائمة تحقق للامتثال",
+            "دعم عبر البريد الإلكتروني",
+          ],
+        },
+        {
+          slug: "growth",
+          tone: "growth",
+          number: "02",
+          name: "باقة النمو",
+          audience: "الأفضل لرواد الأعمال الجاهزين للتشغيل.",
+          price: "399",
+          button: "اختر النمو",
+          recommended: true,
+          features: [
+            "كل مزايا باقة البداية مشمولة",
+            "مساعدة في طلب EIN",
+            "إرشاد للحسابات البنكية التجارية",
+            "حزمة وثائق رقمية",
+            "قائمة إطلاق العمل",
+            "دعم أولوية عبر البريد الإلكتروني",
+            "استشارة امتثال واحدة",
+          ],
+        },
+        {
+          slug: "premium",
+          tone: "premium",
+          number: "03",
+          name: "الباقة المميزة",
+          audience: "الأفضل لمن يريد إعداداً كاملاً للشركة.",
+          price: "499",
+          button: "اختر المميزة",
+          features: [
+            "كل مزايا باقة النمو مشمولة",
+            "مساعدة في متابعة EIN",
+            "إرشاد للتعرّف على الحلول البنكية",
+            "تذكيرات لمراقبة الامتثال",
+            "خدمة تذكير التقرير السنوي",
+            "دعم أولوية",
+            "استشارة فردية لإعداد الشركة",
+          ],
+        },
+      ],
+    },
     trust: {
       quote:
         "“تساعد Rita Digital Services غير المقيمين في أمريكا على تأسيس وتشغيل وإدارة أعمالهم الأمريكية بثقة.”",
@@ -502,8 +653,7 @@ const copy = {
       secondary: "تحدث مع Rita",
     },
     footer: {
-      text:
-        "حل متكامل لتأسيس وتشغيل وتنمية شركتك الأمريكية من أي مكان في العالم.",
+      text: "حل متكامل لتأسيس وتشغيل وتنمية شركتك الأمريكية من أي مكان في العالم.",
       company: "الشركة",
       support: "الدعم",
       start: "ابدأ",
@@ -521,6 +671,49 @@ const copy = {
     },
   },
 };
+
+const paymentPlatforms = [
+  {
+    name: "Wise",
+    sources: [
+      "https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/wise.svg",
+      "https://unpkg.com/simple-icons@v16/icons/wise.svg",
+      "https://cdn.simpleicons.org/wise/163300",
+    ],
+  },
+  {
+    name: "PayPal",
+    sources: [
+      "https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/paypal.svg",
+      "https://unpkg.com/simple-icons@v16/icons/paypal.svg",
+      "https://cdn.simpleicons.org/paypal/003087",
+    ],
+  },
+  {
+    name: "Shopify Payments",
+    sources: [
+      "https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/shopify.svg",
+      "https://unpkg.com/simple-icons@v16/icons/shopify.svg",
+      "https://cdn.simpleicons.org/shopify/7AB55C",
+    ],
+  },
+  {
+    name: "Payoneer",
+    sources: [
+      "https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/payoneer.svg",
+      "https://unpkg.com/simple-icons@v16/icons/payoneer.svg",
+      "https://cdn.simpleicons.org/payoneer/FF4800",
+    ],
+  },
+  {
+    name: "Stripe",
+    sources: [
+      "https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/stripe.svg",
+      "https://unpkg.com/simple-icons@v16/icons/stripe.svg",
+      "https://cdn.simpleicons.org/stripe/635BFF",
+    ],
+  },
+];
 
 const iconMap = {
   building: Building2,
@@ -606,7 +799,8 @@ function StartGrowSection({ t }) {
   }, [isInView, hasStarted]);
 
   useEffect(() => {
-    if (reduceMotion || !hasStarted || !isInView || tabs.length < 2) return undefined;
+    if (reduceMotion || !hasStarted || !isInView || tabs.length < 2)
+      return undefined;
 
     const timer = setTimeout(() => {
       setActive((currentIndex) => (currentIndex + 1) % tabs.length);
@@ -647,11 +841,14 @@ function StartGrowSection({ t }) {
                     {item.badge && <small>{item.badge}</small>}
                   </span>
 
-                  {safeActive === index && hasStarted && isInView && !reduceMotion && (
-                    <i className="sg-progress">
-                      <b key={progressKey} />
-                    </i>
-                  )}
+                  {safeActive === index &&
+                    hasStarted &&
+                    isInView &&
+                    !reduceMotion && (
+                      <i className="sg-progress">
+                        <b key={progressKey} />
+                      </i>
+                    )}
                 </button>
               ))}
 
@@ -689,7 +886,9 @@ function StartGrowSection({ t }) {
 
                 {current.type === "timeline" && (
                   <>
-                    <div className="sg-panel-title">{t.startGrow.visual.timelineTitle}</div>
+                    <div className="sg-panel-title">
+                      {t.startGrow.visual.timelineTitle}
+                    </div>
                     <div className="sg-timeline">
                       <div>
                         <i>✓</i>
@@ -729,7 +928,6 @@ function StartGrowSection({ t }) {
                     </div>
                   </>
                 )}
-
               </motion.div>
             </AnimatePresence>
           </Reveal>
@@ -898,6 +1096,153 @@ function PartnersSection({ t }) {
   );
 }
 
+function PaymentLogo({ platform }) {
+  const [sourceIndex, setSourceIndex] = useState(0);
+  const [isHidden, setIsHidden] = useState(false);
+
+  if (isHidden) return null;
+
+  function tryNextSource() {
+    setSourceIndex((currentIndex) => {
+      const nextIndex = currentIndex + 1;
+
+      if (nextIndex >= platform.sources.length) {
+        setIsHidden(true);
+        return currentIndex;
+      }
+
+      return nextIndex;
+    });
+  }
+
+  return (
+    <img
+      src={platform.sources[sourceIndex]}
+      alt={platform.name}
+      loading="eager"
+      decoding="async"
+      onError={tryNextSource}
+    />
+  );
+}
+
+function PaymentPlatformsSection() {
+  return (
+    <section
+      className="payment-platforms-section"
+      aria-label="Supported payment platforms"
+    >
+      <div className="container payment-platforms-container">
+        <div className="payment-logo-marquee">
+          <div className="payment-logo-track">
+            {[0, 1].map((groupIndex) => (
+              <div
+                className="payment-logo-group"
+                key={groupIndex}
+                aria-hidden={groupIndex === 1 ? "true" : undefined}
+              >
+                {paymentPlatforms.map((platform) => (
+                  <div
+                    className="payment-logo-item"
+                    key={`${groupIndex}-${platform.name}`}
+                  >
+                    <PaymentLogo platform={platform} />
+                    <span>{platform.name}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PricingSection({ t }) {
+  const planIcons = [Building2, Sparkles, BadgeCheck];
+
+  return (
+    <section
+      className="pricing-section"
+      id="pricing"
+      aria-labelledby="pricing-title"
+    >
+      <div className="container">
+        <Reveal>
+          <div className="section-heading compact pricing-heading">
+            <span>{t.pricing.label}</span>
+            <h2 id="pricing-title">{t.pricing.title}</h2>
+            <p>{t.pricing.text}</p>
+          </div>
+        </Reveal>
+
+        <div className="pricing-grid">
+          {t.pricing.plans.map((plan, index) => {
+            const PlanIcon = planIcons[index] || BadgeCheck;
+
+            return (
+              <Reveal
+                key={plan.slug}
+                delay={index * 0.08}
+                className="pricing-reveal"
+              >
+                <motion.article
+                  className={`pricing-card pricing-card-${plan.tone} ${
+                    plan.recommended ? "is-recommended" : ""
+                  }`}
+                  whileHover={{ y: -9 }}
+                  transition={{ type: "spring", stiffness: 250, damping: 18 }}
+                >
+                  {plan.recommended && (
+                    <div className="pricing-ribbon">
+                      {t.pricing.recommended}
+                    </div>
+                  )}
+
+                  <span className="pricing-number">{plan.number}</span>
+
+                  <div className="pricing-plan-icon">
+                    <PlanIcon size={21} />
+                  </div>
+
+                  <div className="pricing-plan-copy">
+                    <h3>{plan.name}</h3>
+                    <p>{plan.audience}</p>
+                  </div>
+
+                  <div className="pricing-price-row">
+                    <strong>${plan.price}</strong>
+                    <span>/ {t.pricing.oneTime}</span>
+                  </div>
+
+                  <ul className="pricing-features">
+                    {plan.features.map((feature) => (
+                      <li key={feature}>
+                        <CheckCircle2 size={17} />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <a
+                    href={`/contact?plan=${plan.slug}`}
+                    className="pricing-button"
+                    aria-label={`${plan.button} - ${plan.name}`}
+                  >
+                    <span>{plan.button}</span>
+                    <ArrowRight size={17} />
+                  </a>
+                </motion.article>
+              </Reveal>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function TrustSection({ t }) {
   return (
     <section className="trust-section">
@@ -940,10 +1285,10 @@ function FinalCTA({ t }) {
             <h2>{t.finalCta.title}</h2>
             <p>{t.finalCta.text}</p>
             <div>
-              <a href="#application" className="btn btn-white">
+              <a href="/services" className="btn btn-white">
                 {t.finalCta.primary}
               </a>
-              <a href="#contact" className="btn btn-muted">
+              <a href="/contact" className="btn btn-muted">
                 {t.finalCta.secondary}
               </a>
             </div>
@@ -964,11 +1309,7 @@ function Home() {
 
   return (
     <div className={`site-shell dark ${isArabic ? "rtl" : "ltr"}`}>
-      <Navbar
-        t={t.nav}
-        lang={lang}
-        onChangeLang={changeLanguage}
-      />
+      <Navbar t={t.nav} lang={lang} onChangeLang={changeLanguage} />
 
       <main>
         <section className="fb-hero">
@@ -1017,8 +1358,10 @@ function Home() {
             </div>
           </motion.div>
         </section>
+        <PaymentPlatformsSection />
         <StartGrowSection t={t} />
         <ExploreSection t={t} />
+        <PricingSection t={t} />
         <BundleSection t={t} />
         <BenefitsSection t={t} />
         <PartnersSection t={t} />

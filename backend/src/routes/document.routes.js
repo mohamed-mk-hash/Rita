@@ -1,42 +1,198 @@
 import crypto from "crypto";
-import fs from "fs";
-import fsPromises from "fs/promises";
 import path from "path";
-import { fileURLToPath } from "url";
 import express from "express";
 import multer from "multer";
+
 import { pool } from "../config/db.js";
+import {
+  supabaseAdmin,
+  SUPABASE_STORAGE_BUCKET,
+} from "../config/supabase.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const backendRoot = path.resolve(__dirname, "../..");
-const uploadRoot = path.join(backendRoot, "uploads", "documents");
-
-fs.mkdirSync(uploadRoot, { recursive: true });
-
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
 const allowedMimeTypes = new Set([
   "application/pdf",
   "image/jpeg",
   "image/png",
 ]);
-const allowedExtensions = new Set([".pdf", ".jpg", ".jpeg", ".png"]);
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, callback) => {
-    callback(null, uploadRoot);
-  },
-  filename: (_req, file, callback) => {
-    const extension = path.extname(file.originalname).toLowerCase();
-    callback(null, `${Date.now()}-${crypto.randomUUID()}${extension}`);
-  },
-});
+const allowedExtensions = new Set([
+  ".pdf",
+  ".jpg",
+  ".jpeg",
+  ".png",
+]);
+
+/*
+  These are the default important documents for every service.
+  They are inserted automatically only after the admin changes the
+  application to a document-requesting workflow/status.
+*/
+const DEFAULT_DOCUMENT_REQUIREMENTS = {
+  us_llc: [
+    {
+      documentCode: "us_llc_passport",
+      titleEn: "Passport copy",
+      titleAr: "نسخة من جواز السفر",
+      descriptionEn:
+        "Upload a clear copy of the passport information page.",
+      descriptionAr:
+        "ارفع نسخة واضحة من صفحة المعلومات في جواز السفر.",
+      required: true,
+      sortOrder: 1,
+      maxSizeMb: 5,
+    },
+    {
+      documentCode: "us_llc_proof_of_address",
+      titleEn: "Proof of address",
+      titleAr: "إثبات العنوان",
+      descriptionEn:
+        "Upload a recent utility bill, bank statement, or official document showing your address.",
+      descriptionAr:
+        "ارفع فاتورة خدمات حديثة أو كشف حساب بنكي أو وثيقة رسمية تظهر عنوانك.",
+      required: true,
+      sortOrder: 2,
+      maxSizeMb: 5,
+    },
+  ],
+
+  ein_assistance: [
+    {
+      documentCode: "ein_assistance_passport",
+      titleEn: "Passport copy",
+      titleAr: "نسخة من جواز السفر",
+      descriptionEn:
+        "Upload a clear copy of the passport information page.",
+      descriptionAr:
+        "ارفع نسخة واضحة من صفحة المعلومات في جواز السفر.",
+      required: true,
+      sortOrder: 1,
+      maxSizeMb: 5,
+    },
+    {
+      documentCode: "ein_company_formation_document",
+      titleEn: "Company formation document",
+      titleAr: "وثيقة تأسيس الشركة",
+      descriptionEn:
+        "Upload the company formation certificate or Articles of Organization.",
+      descriptionAr:
+        "ارفع شهادة تأسيس الشركة أو وثيقة Articles of Organization.",
+      required: true,
+      sortOrder: 2,
+      maxSizeMb: 5,
+    },
+  ],
+
+  banking_payment_setup: [
+    {
+      documentCode: "banking_passport",
+      titleEn: "Passport copy",
+      titleAr: "نسخة من جواز السفر",
+      descriptionEn:
+        "Upload a clear copy of the passport information page.",
+      descriptionAr:
+        "ارفع نسخة واضحة من صفحة المعلومات في جواز السفر.",
+      required: true,
+      sortOrder: 1,
+      maxSizeMb: 5,
+    },
+    {
+      documentCode: "banking_proof_of_address",
+      titleEn: "Proof of address",
+      titleAr: "إثبات العنوان",
+      descriptionEn:
+        "Upload a recent document showing your residential address.",
+      descriptionAr:
+        "ارفع وثيقة حديثة تظهر عنوان إقامتك.",
+      required: true,
+      sortOrder: 2,
+      maxSizeMb: 5,
+    },
+    {
+      documentCode: "banking_formation_document",
+      titleEn: "Company formation document",
+      titleAr: "وثيقة تأسيس الشركة",
+      descriptionEn:
+        "Upload the company formation certificate or Articles of Organization.",
+      descriptionAr:
+        "ارفع شهادة تأسيس الشركة أو وثيقة Articles of Organization.",
+      required: true,
+      sortOrder: 3,
+      maxSizeMb: 5,
+    },
+    {
+      documentCode: "banking_ein_letter",
+      titleEn: "EIN confirmation letter",
+      titleAr: "خطاب تأكيد EIN",
+      descriptionEn:
+        "Upload the EIN confirmation letter issued for the company.",
+      descriptionAr:
+        "ارفع خطاب تأكيد EIN الصادر للشركة.",
+      required: true,
+      sortOrder: 4,
+      maxSizeMb: 5,
+    },
+  ],
+
+  compliance_support: [
+    {
+      documentCode: "compliance_formation_document",
+      titleEn: "Company formation document",
+      titleAr: "وثيقة تأسيس الشركة",
+      descriptionEn:
+        "Upload the company formation certificate or Articles of Organization.",
+      descriptionAr:
+        "ارفع شهادة تأسيس الشركة أو وثيقة Articles of Organization.",
+      required: true,
+      sortOrder: 1,
+      maxSizeMb: 5,
+    },
+    {
+      documentCode: "compliance_ein_letter",
+      titleEn: "EIN confirmation letter",
+      titleAr: "خطاب تأكيد EIN",
+      descriptionEn:
+        "Upload the EIN confirmation letter issued for the company.",
+      descriptionAr:
+        "ارفع خطاب تأكيد EIN الصادر للشركة.",
+      required: true,
+      sortOrder: 2,
+      maxSizeMb: 5,
+    },
+    {
+      documentCode: "compliance_previous_report",
+      titleEn: "Previous compliance document",
+      titleAr: "وثيقة امتثال سابقة",
+      descriptionEn:
+        "Upload a previous annual report or compliance notice, if available.",
+      descriptionAr:
+        "ارفع تقريرًا سنويًا سابقًا أو إشعار امتثال إن كان متوفرًا.",
+      required: false,
+      sortOrder: 3,
+      maxSizeMb: 5,
+    },
+  ],
+};
+
+const DOCUMENT_VISIBLE_STEPS = new Set([
+  "document_review",
+  "waiting_required_documents",
+  "document_corrections_required",
+  "documents_approved",
+  "preparing_filing",
+  "filing_submitted",
+  "ein_processing",
+  "banking_setup",
+  "compliance_review",
+  "completed",
+]);
 
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: MAX_FILE_SIZE,
     files: 1,
@@ -69,37 +225,137 @@ function cleanInteger(value) {
   return Number.isInteger(number) && number > 0 ? number : null;
 }
 
-function normalizeStoredPath(filePath) {
-  return String(filePath || "").replaceAll("\\", "/");
-}
-
-function absoluteStoredPath(filePath) {
-  const normalized = normalizeStoredPath(filePath);
-  const absolutePath = path.resolve(backendRoot, normalized);
-  const normalizedUploadRoot = `${path.resolve(uploadRoot)}${path.sep}`;
-
-  if (
-    absolutePath !== path.resolve(uploadRoot) &&
-    !absolutePath.startsWith(normalizedUploadRoot)
-  ) {
-    return null;
+function shouldShowDocuments(application) {
+  if (!application) {
+    return false;
   }
 
-  return absolutePath;
+  if (
+    ["waiting_documents", "processing", "completed"].includes(
+      application.status
+    )
+  ) {
+    return true;
+  }
+
+  return DOCUMENT_VISIBLE_STEPS.has(application.current_step);
 }
 
-async function deleteFileSafely(filePath) {
-  if (!filePath) return;
+function createStoragePath({
+  userId,
+  applicationId,
+  requirementId,
+  originalName,
+}) {
+  const extension = path.extname(originalName).toLowerCase();
+  const generatedName = `${Date.now()}-${crypto.randomUUID()}${extension}`;
 
-  const absolutePath = absoluteStoredPath(filePath);
-  if (!absolutePath) return;
+  return [
+    `user-${userId}`,
+    `application-${applicationId}`,
+    `requirement-${requirementId}`,
+    generatedName,
+  ].join("/");
+}
+
+async function deleteStoredFileSafely(filePath) {
+  if (!filePath) {
+    return;
+  }
 
   try {
-    await fsPromises.unlink(absolutePath);
-  } catch (error) {
-    if (error.code !== "ENOENT") {
-      console.error("DELETE_DOCUMENT_FILE_ERROR:", error);
+    const { error } = await supabaseAdmin.storage
+      .from(SUPABASE_STORAGE_BUCKET)
+      .remove([filePath]);
+
+    if (error) {
+      console.error("DELETE_SUPABASE_FILE_ERROR:", error);
     }
+  } catch (error) {
+    console.error("DELETE_SUPABASE_FILE_ERROR:", error);
+  }
+}
+
+async function ensureDefaultDocumentRequirements(serviceType) {
+  const requirements = DEFAULT_DOCUMENT_REQUIREMENTS[serviceType] || [];
+
+  for (const requirement of requirements) {
+    const [existingRows] = await pool.query(
+      `
+      SELECT id
+      FROM document_requirements
+      WHERE service_type = ?
+        AND document_code = ?
+      LIMIT 1
+      `,
+      [serviceType, requirement.documentCode]
+    );
+
+    if (existingRows.length > 0) {
+      /*
+        If an older row exists but was disabled, reactivate and update it.
+      */
+      await pool.query(
+        `
+        UPDATE document_requirements
+        SET
+          title_en = ?,
+          title_ar = ?,
+          description_en = ?,
+          description_ar = ?,
+          is_required = ?,
+          sort_order = ?,
+          accepted_types = ?,
+          max_size_mb = ?,
+          is_active = 1
+        WHERE id = ?
+        `,
+        [
+          requirement.titleEn,
+          requirement.titleAr,
+          requirement.descriptionEn,
+          requirement.descriptionAr,
+          requirement.required ? 1 : 0,
+          requirement.sortOrder,
+          "application/pdf,image/jpeg,image/png",
+          requirement.maxSizeMb,
+          existingRows[0].id,
+        ]
+      );
+
+      continue;
+    }
+
+    await pool.query(
+      `
+      INSERT INTO document_requirements (
+        service_type,
+        document_code,
+        title_en,
+        title_ar,
+        description_en,
+        description_ar,
+        is_required,
+        sort_order,
+        accepted_types,
+        max_size_mb,
+        is_active
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+      `,
+      [
+        serviceType,
+        requirement.documentCode,
+        requirement.titleEn,
+        requirement.titleAr,
+        requirement.descriptionEn,
+        requirement.descriptionAr,
+        requirement.required ? 1 : 0,
+        requirement.sortOrder,
+        "application/pdf,image/jpeg,image/png",
+        requirement.maxSizeMb,
+      ]
+    );
   }
 }
 
@@ -113,7 +369,12 @@ async function loadApplication(req, res, next) {
 
     const [applications] = await pool.query(
       `
-      SELECT id, user_id, service_type, status
+      SELECT
+        id,
+        user_id,
+        service_type,
+        status,
+        current_step
       FROM applications
       WHERE id = ?
       LIMIT 1
@@ -172,9 +433,11 @@ function cleanDocumentRow(row) {
 
 function buildSummary(documents) {
   const requiredDocuments = documents.filter((document) => document.required);
+
   const uploadedRequired = requiredDocuments.filter(
     (document) => document.status !== "missing"
   ).length;
+
   const approvedRequired = requiredDocuments.filter(
     (document) => document.status === "approved"
   ).length;
@@ -198,17 +461,19 @@ function buildSummary(documents) {
     progress:
       requiredDocuments.length > 0
         ? Math.round((uploadedRequired / requiredDocuments.length) * 100)
-        : 100,
+        : 0,
     approvalProgress:
       requiredDocuments.length > 0
         ? Math.round((approvedRequired / requiredDocuments.length) * 100)
-        : 100,
+        : 0,
   };
 }
 
 function runUpload(req, res, next) {
   upload.single("document")(req, res, (error) => {
-    if (!error) return next();
+    if (!error) {
+      return next();
+    }
 
     if (error instanceof multer.MulterError) {
       if (error.code === "LIMIT_FILE_SIZE") {
@@ -229,6 +494,10 @@ function runUpload(req, res, next) {
   });
 }
 
+/* =========================
+   Get application documents
+========================= */
+
 router.get(
   "/application/:applicationId",
   requireAuth,
@@ -236,6 +505,25 @@ router.get(
   async (req, res) => {
     try {
       const application = req.applicationRecord;
+      const documentRequestActive = shouldShowDocuments(application);
+
+      if (!documentRequestActive) {
+        const documents = [];
+
+        return res.json({
+          application: {
+            id: application.id,
+            serviceType: application.service_type,
+            status: application.status,
+            currentStep: application.current_step,
+          },
+          documentRequestActive: false,
+          documents,
+          summary: buildSummary(documents),
+        });
+      }
+
+      await ensureDefaultDocumentRequirements(application.service_type);
 
       const [rows] = await pool.query(
         `
@@ -278,7 +566,9 @@ router.get(
           id: application.id,
           serviceType: application.service_type,
           status: application.status,
+          currentStep: application.current_step,
         },
+        documentRequestActive: true,
         documents,
         summary: buildSummary(documents),
       });
@@ -291,6 +581,10 @@ router.get(
   }
 );
 
+/* =========================
+   Upload document to Supabase
+========================= */
+
 router.post(
   "/application/:applicationId/requirement/:requirementId/upload",
   requireAuth,
@@ -298,19 +592,29 @@ router.post(
   runUpload,
   async (req, res) => {
     let connection = null;
+    let newStoragePath = null;
+    let databaseCommitted = false;
 
     try {
       const application = req.applicationRecord;
+
+      if (!shouldShowDocuments(application)) {
+        return res.status(409).json({
+          message: "Documents have not been requested for this application yet",
+        });
+      }
+
       const requirementId = cleanInteger(req.params.requirementId);
 
       if (!requirementId) {
-        if (req.file) await deleteFileSafely(req.file.path);
         return res.status(400).json({ message: "Invalid requirement ID" });
       }
 
       if (!req.file) {
         return res.status(400).json({ message: "Choose a file to upload" });
       }
+
+      await ensureDefaultDocumentRequirements(application.service_type);
 
       const [requirements] = await pool.query(
         `
@@ -325,25 +629,42 @@ router.post(
       );
 
       if (requirements.length === 0) {
-        await deleteFileSafely(req.file.path);
         return res.status(404).json({
           message: "Document requirement not found for this service",
         });
       }
 
       const requirement = requirements[0];
-      const requirementMaxBytes = Number(requirement.max_size_mb || 5) * 1024 * 1024;
+      const requirementMaxBytes =
+        Number(requirement.max_size_mb || 5) * 1024 * 1024;
 
       if (req.file.size > requirementMaxBytes) {
-        await deleteFileSafely(req.file.path);
         return res.status(400).json({
-          message: `The file is larger than ${requirement.max_size_mb || 5} MB`,
+          message: `The file is larger than ${
+            requirement.max_size_mb || 5
+          } MB`,
         });
       }
 
-      const relativePath = normalizeStoredPath(
-        path.relative(backendRoot, req.file.path)
-      );
+      newStoragePath = createStoragePath({
+        userId: req.user.id,
+        applicationId: application.id,
+        requirementId,
+        originalName: req.file.originalname,
+      });
+
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from(SUPABASE_STORAGE_BUCKET)
+        .upload(newStoragePath, req.file.buffer, {
+          contentType: req.file.mimetype,
+          cacheControl: "0",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error("SUPABASE_UPLOAD_ERROR:", uploadError);
+        throw new Error(uploadError.message || "Could not upload file");
+      }
 
       connection = await pool.getConnection();
       await connection.beginTransaction();
@@ -360,7 +681,8 @@ router.post(
         [application.id, requirementId]
       );
 
-      const previousPath = existingRows[0]?.file_path || null;
+      const previousStoragePath = existingRows[0]?.file_path || null;
+      const storedName = path.posix.basename(newStoragePath);
 
       const [saveResult] = await connection.query(
         `
@@ -398,8 +720,8 @@ router.post(
           requirementId,
           req.user.id,
           req.file.originalname,
-          req.file.filename,
-          relativePath,
+          storedName,
+          newStoragePath,
           req.file.mimetype,
           req.file.size,
         ]
@@ -408,9 +730,13 @@ router.post(
       const documentId = saveResult.insertId;
 
       await connection.commit();
+      databaseCommitted = true;
 
-      if (previousPath && previousPath !== relativePath) {
-        await deleteFileSafely(previousPath);
+      if (
+        previousStoragePath &&
+        previousStoragePath !== newStoragePath
+      ) {
+        await deleteStoredFileSafely(previousStoragePath);
       }
 
       return res.status(201).json({
@@ -418,7 +744,7 @@ router.post(
         documentId,
       });
     } catch (error) {
-      if (connection) {
+      if (connection && !databaseCommitted) {
         try {
           await connection.rollback();
         } catch (rollbackError) {
@@ -426,8 +752,8 @@ router.post(
         }
       }
 
-      if (req.file) {
-        await deleteFileSafely(req.file.path);
+      if (newStoragePath && !databaseCommitted) {
+        await deleteStoredFileSafely(newStoragePath);
       }
 
       console.error("UPLOAD_APPLICATION_DOCUMENT_ERROR:", error);
@@ -435,10 +761,16 @@ router.post(
         message: "Server error while uploading the document",
       });
     } finally {
-      if (connection) connection.release();
+      if (connection) {
+        connection.release();
+      }
     }
   }
 );
+
+/* =========================
+   Download document
+========================= */
 
 router.get("/:documentId/download", requireAuth, async (req, res) => {
   try {
@@ -454,6 +786,8 @@ router.get("/:documentId/download", requireAuth, async (req, res) => {
         ad.id,
         ad.original_name,
         ad.file_path,
+        ad.mime_type,
+        ad.file_size,
         a.user_id
       FROM application_documents ad
       INNER JOIN applications a ON a.id = ad.application_id
@@ -476,13 +810,28 @@ router.get("/:documentId/download", requireAuth, async (req, res) => {
       });
     }
 
-    const absolutePath = absoluteStoredPath(document.file_path);
+    const { data: storedFile, error: downloadError } =
+      await supabaseAdmin.storage
+        .from(SUPABASE_STORAGE_BUCKET)
+        .download(document.file_path);
 
-    if (!absolutePath || !fs.existsSync(absolutePath)) {
+    if (downloadError || !storedFile) {
+      console.error("SUPABASE_DOWNLOAD_ERROR:", downloadError);
       return res.status(404).json({ message: "Stored file not found" });
     }
 
-    return res.download(absolutePath, document.original_name);
+    const fileBuffer = Buffer.from(await storedFile.arrayBuffer());
+
+    res.setHeader("Cache-Control", "private, no-store, max-age=0");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader(
+      "Content-Type",
+      document.mime_type || "application/octet-stream"
+    );
+    res.setHeader("Content-Length", String(fileBuffer.length));
+    res.attachment(document.original_name);
+
+    return res.send(fileBuffer);
   } catch (error) {
     console.error("DOWNLOAD_APPLICATION_DOCUMENT_ERROR:", error);
     return res.status(500).json({
@@ -490,6 +839,10 @@ router.get("/:documentId/download", requireAuth, async (req, res) => {
     });
   }
 });
+
+/* =========================
+   Delete document
+========================= */
 
 router.delete("/:documentId/file", requireAuth, async (req, res) => {
   let connection = null;
@@ -543,12 +896,12 @@ router.delete("/:documentId/file", requireAuth, async (req, res) => {
     }
 
     await connection.query(
-      `DELETE FROM application_documents WHERE id = ?`,
+      "DELETE FROM application_documents WHERE id = ?",
       [documentId]
     );
 
     await connection.commit();
-    await deleteFileSafely(document.file_path);
+    await deleteStoredFileSafely(document.file_path);
 
     return res.json({ message: "Document removed successfully" });
   } catch (error) {
@@ -565,7 +918,9 @@ router.delete("/:documentId/file", requireAuth, async (req, res) => {
       message: "Server error while removing the document",
     });
   } finally {
-    if (connection) connection.release();
+    if (connection) {
+      connection.release();
+    }
   }
 });
 

@@ -1018,10 +1018,28 @@ function Dashboard() {
   }, [applications]);
 
   useEffect(() => {
-    if (activePage !== "documents" || !selectedDocumentApplicationId) return;
+    if (activePage !== "documents" || !selectedDocumentApplicationId) {
+      return;
+    }
 
     setDocumentMessage("");
-    loadDocumentsForApplication(selectedDocumentApplicationId);
+
+    void loadDocumentsForApplication(
+      selectedDocumentApplicationId
+    );
+
+    const intervalId = window.setInterval(() => {
+      void loadDocumentsForApplication(
+        selectedDocumentApplicationId,
+        {
+          silent: true,
+        }
+      );
+    }, 10000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
   }, [activePage, selectedDocumentApplicationId]);
 
   const latestStatusTitle = activeApplication

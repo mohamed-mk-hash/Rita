@@ -468,7 +468,7 @@ function FinalCTA({ t }) {
             <h2>{t.finalCta.title}</h2>
             <p>{t.finalCta.text}</p>
             <div>
-              <a href="#application" className="btn btn-white">
+              <a href="/services" className="btn btn-white">
                 {t.finalCta.primary}
               </a>
               <a href="/contact" className="btn btn-muted">

@@ -77,11 +77,8 @@ export interface AdminApplication {
     id: number;
     phone: string | null;
     country: string | null;
-
     businessActivity: string | null;
-
     desiredCompanyName: string | null;
-
     needsEin: boolean;
     needsStripe: boolean;
     needsPaypal: boolean;
@@ -90,7 +87,6 @@ export interface AdminApplication {
     needsRelay: boolean;
     needsPayoneer: boolean;
     needsShopify: boolean;
-
     extraNotes: string | null;
   } | null;
 
@@ -170,13 +166,10 @@ export async function updateAdminApplication(
     `${API_URL}/admin/applications/${applicationId}`,
     {
       method: "PATCH",
-
       headers: {
         "Content-Type": "application/json",
       },
-
       credentials: "include",
-
       body: JSON.stringify(payload),
     }
   );
