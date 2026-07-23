@@ -17,7 +17,12 @@ import { Applications } from "./pages/Applications";
 import { ApplicationDetails } from "./pages/ApplicationDetails";
 import { Documents } from "./pages/Documents";
 import { ContactMessages } from "./pages/ContactMessages";
+import { HomePageContent } from "./pages/HomePageContent";
 
+import { AboutPageContent } from "./pages/AboutPageContent";
+import { ContactPageContent } from "./pages/ContactPageContent";
+import { PricingPageContent } from "./pages/PricingPageContent";
+import { ServicesPageContent } from "./pages/ServicesPageContent";
 function AdminArea() {
   return (
     <ProtectedRoute>
@@ -44,6 +49,24 @@ function AdminArea() {
             path="messages"
             element={<ContactMessages />}
           />
+
+          <Route
+  path="/content/home"
+  element={<HomePageContent />}
+/>
+
+<Route
+        path="content/about"
+        element={<AboutPageContent />}
+      />
+
+      <Route
+        path="content/contact"
+        element={<ContactPageContent />}
+      />
+
+      <Route path="content/services" element={<ServicesPageContent />} />
+      <Route path="content/pricing" element={<PricingPageContent />} />
 
           <Route
             path="*"

@@ -11,6 +11,10 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquareText,
+  Home,
+  Info,
+  BadgeDollarSign,
+  BriefcaseBusiness,
 } from "lucide-react";
 
 import { useLanguage } from "../i18n/LanguageContext";
@@ -47,6 +51,29 @@ export const Sidebar: React.FC = () => {
       : "Contact Messages",
     icon: MessageSquareText,
   },
+  {
+    path: "/content/home",
+     label: isArabic
+    ? "محتوى الرئيسية"
+    : "Home content",
+    icon: Home,
+  },
+  {
+      label: isArabic
+        ? "محتوى من نحن"
+        : "About content",
+      path: "/content/about",
+      icon: Info,
+    },
+    {
+      label: isArabic
+        ? "محتوى التواصل"
+        : "Contact content",
+      path: "/content/contact",
+      icon: MessageSquareText,
+    },
+    { label: isArabic ? "محتوى الخدمات" : "Services content", path: "/content/services", icon: BriefcaseBusiness },
+    { label: isArabic ? "محتوى الأسعار" : "Pricing content", path: "/content/pricing", icon: BadgeDollarSign },
 ];
 
   async function handleLogout() {

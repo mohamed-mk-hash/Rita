@@ -11,272 +11,22 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  WalletCards,
 } from "lucide-react";
 
 import Navbar from "../../components/Navbar.jsx";
 import Footer from "../../components/Footer.jsx";
 import "./pricing.css";
+import { usePageContent } from "../../hooks/usePageContent.js";
+import { pricingFallbackContent } from "./pricingFallbackContent.js";
+import { siteChromeContent } from "../../content/siteChromeContent.js";
 
-const copy = {
-  en: {
-    nav: {
-      services: "Services",
-      howItWorks: "How it works",
-      pricing: "Pricing",
-      faq: "FAQ",
-      contact: "Contact",
-      signIn: "Sign in",
-      start: "Start my LLC",
-      lang: "العربية",
-      toggleLang: "Change language",
-    },
-    hero: {
-      eyebrow: "Pricing",
-      title: "Transparent Pricing Packages",
-      subtitle:
-        "Choose the right formation package for your business needs. No hidden fees, just straightforward value.",
-      primary: "Compare packages",
-      secondary: "Ask a question",
-    },
-    packages: [
-      {
-        name: "Starter Package",
-        description: "Best for first-time business owners.",
-        price: "$299",
-        period: "one-time",
-        button: "Get Started",
-        tone: "light",
-        icon: FileCheck2,
-        features: [
-          "Wyoming or New Mexico LLC formation assistance",
-          "Name availability check",
-          "Articles of Organization filing",
-          "Operating Agreement template",
-          "Business formation consultation",
-          "Compliance checklist",
-          "Email support",
-        ],
-      },
-      {
-        name: "Growth Package",
-        description: "Best for entrepreneurs ready to start operating.",
-        price: "$399",
-        period: "one-time",
-        button: "Choose Growth",
-        tone: "popular",
-        badge: "Most Popular",
-        icon: BadgeDollarSign,
-        features: [
-          "All Starter features included",
-          "EIN application assistance",
-          "Business banking guidance",
-          "Digital document package",
-          "Business launch checklist",
-          "Priority email support",
-          "One compliance consultation",
-        ],
-      },
-      {
-        name: "Premium Package",
-        description: "Best for business owners wanting complete setup.",
-        price: "$499",
-        period: "one-time",
-        button: "Go Premium",
-        tone: "dark",
-        icon: Star,
-        features: [
-          "All Growth features included",
-          "EIN application assistance with follow-up",
-          "Banking introduction guidance",
-          "Compliance monitoring reminders",
-          "Annual report reminder service",
-          "Priority support",
-          "One-on-one business setup consultation",
-        ],
-      },
-    ],
-    highlights: [
-      {
-        icon: ShieldCheck,
-        title: "No hidden fees",
-        text: "Clear package pricing so you know what you are paying for before you start.",
-      },
-      {
-        icon: Landmark,
-        title: "Banking guidance",
-        text: "Get practical guidance for business banking options after formation.",
-      },
-      {
-        icon: Headphones,
-        title: "Human support",
-        text: "Work with a team that understands non-U.S. resident founders.",
-      },
-    ],
-    comparison: {
-      eyebrow: "What you get",
-      title: "Pick the package that matches your launch stage.",
-      rows: [
-        ["LLC formation assistance", "Starter", "Growth", "Premium"],
-        ["EIN application assistance", "—", "Growth", "Premium"],
-        ["Banking guidance", "—", "Growth", "Premium"],
-        ["Compliance reminders", "Checklist", "Consultation", "Monitoring"],
-      ],
-    },
-    finalCta: {
-      title: "Ready to start your U.S. business?",
-      text: "Choose your package and begin your LLC setup with a clear, guided process.",
-      primary: "Start my LLC",
-      secondary: "Contact us",
-    },
-    footer: {
-      text:
-        "One-stop-shop solution to establish, operate, and grow your US LLC from anywhere in the world.",
-      company: "Company",
-      support: "Support",
-      start: "Start",
-      services: "Services",
-      pricing: "Pricing",
-      howItWorks: "How it works",
-      faq: "FAQ",
-      contact: "Contact",
-      whatsapp: "WhatsApp",
-      startLLC: "Start my LLC",
-      banking: "Banking solutions",
-      compliance: "Compliance support",
-      rights: "© 2026 Rita Digital Services. All rights reserved.",
-      legal: "Privacy Policy · Terms of Use",
-    },
-  },
-  ar: {
-    nav: {
-      services: "الخدمات",
-      howItWorks: "كيف تعمل",
-      pricing: "الأسعار",
-      faq: "الأسئلة",
-      contact: "تواصل",
-      signIn: "تسجيل الدخول",
-      start: "ابدأ LLC",
-      lang: "English",
-      toggleLang: "تغيير اللغة",
-    },
-    hero: {
-      eyebrow: "الأسعار",
-      title: "باقات أسعار واضحة وشفافة",
-      subtitle:
-        "اختر الباقة المناسبة لاحتياجات شركتك. بدون رسوم مخفية، فقط قيمة واضحة وخطوات مفهومة.",
-      primary: "قارن الباقات",
-      secondary: "اسألنا",
-    },
-    packages: [
-      {
-        name: "باقة البداية",
-        description: "الأفضل لأصحاب الأعمال في البداية.",
-        price: "$299",
-        period: "دفعة واحدة",
-        button: "ابدأ الآن",
-        tone: "light",
-        icon: FileCheck2,
-        features: [
-          "مساعدة في تأسيس LLC في وايومنغ أو نيو مكسيكو",
-          "التحقق من توفر اسم الشركة",
-          "تقديم Articles of Organization",
-          "نموذج Operating Agreement",
-          "استشارة تأسيس الشركة",
-          "قائمة تحقق للامتثال",
-          "دعم عبر البريد الإلكتروني",
-        ],
-      },
-      {
-        name: "باقة النمو",
-        description: "الأفضل لرواد الأعمال الجاهزين للتشغيل.",
-        price: "$399",
-        period: "دفعة واحدة",
-        button: "اختر النمو",
-        tone: "popular",
-        badge: "الأكثر اختياراً",
-        icon: BadgeDollarSign,
-        features: [
-          "كل مزايا باقة البداية مشمولة",
-          "مساعدة في طلب EIN",
-          "إرشاد للحسابات البنكية التجارية",
-          "حزمة وثائق رقمية",
-          "قائمة إطلاق العمل",
-          "دعم أولوية عبر البريد الإلكتروني",
-          "استشارة امتثال واحدة",
-        ],
-      },
-      {
-        name: "الباقة المميزة",
-        description: "الأفضل لمن يريد إعداداً كاملاً للشركة.",
-        price: "$499",
-        period: "دفعة واحدة",
-        button: "اختر المميزة",
-        tone: "dark",
-        icon: Star,
-        features: [
-          "كل مزايا باقة النمو مشمولة",
-          "مساعدة في EIN مع متابعة",
-          "إرشاد للتعريف بالحلول البنكية",
-          "تذكيرات لمراقبة الامتثال",
-          "خدمة تذكير التقرير السنوي",
-          "دعم أولوية",
-          "استشارة فردية لإعداد الشركة",
-        ],
-      },
-    ],
-    highlights: [
-      {
-        icon: ShieldCheck,
-        title: "بدون رسوم مخفية",
-        text: "أسعار واضحة للباقات حتى تعرف ما الذي تدفع مقابله قبل أن تبدأ.",
-      },
-      {
-        icon: Landmark,
-        title: "إرشاد بنكي",
-        text: "تحصل على توجيه عملي لاختيار حلول الحسابات البنكية بعد التأسيس.",
-      },
-      {
-        icon: Headphones,
-        title: "دعم بشري",
-        text: "تتعامل مع فريق يفهم احتياجات المؤسسين غير المقيمين في أمريكا.",
-      },
-    ],
-    comparison: {
-      eyebrow: "ماذا تحصل عليه",
-      title: "اختر الباقة المناسبة لمرحلة إطلاق مشروعك.",
-      rows: [
-        ["مساعدة تأسيس LLC", "البداية", "النمو", "المميزة"],
-        ["مساعدة طلب EIN", "—", "النمو", "المميزة"],
-        ["إرشاد بنكي", "—", "النمو", "المميزة"],
-        ["تذكيرات الامتثال", "قائمة تحقق", "استشارة", "متابعة"],
-      ],
-    },
-    finalCta: {
-      title: "جاهز لتأسيس شركتك الأمريكية؟",
-      text: "اختر باقتك وابدأ إعداد LLC عبر مسار واضح وموجّه خطوة بخطوة.",
-      primary: "ابدأ LLC",
-      secondary: "تواصل معنا",
-    },
-    footer: {
-      text:
-        "حل متكامل لتأسيس وتشغيل وتنمية شركتك الأمريكية من أي مكان في العالم.",
-      company: "الشركة",
-      support: "الدعم",
-      start: "ابدأ",
-      services: "الخدمات",
-      pricing: "الأسعار",
-      howItWorks: "كيف تعمل",
-      faq: "الأسئلة",
-      contact: "تواصل",
-      whatsapp: "واتساب",
-      startLLC: "ابدأ LLC",
-      banking: "الحلول البنكية",
-      compliance: "دعم الامتثال",
-      rights: "© 2026 Rita Digital Services. جميع الحقوق محفوظة.",
-      legal: "سياسة الخصوصية · شروط الاستخدام",
-    },
-  },
+const pricingIconMap = {
+  fileCheck: FileCheck2,
+  badgeDollar: BadgeDollarSign,
+  star: Star,
+  shield: ShieldCheck,
+  landmark: Landmark,
+  headphones: Headphones,
 };
 
 const fadeUp = {
@@ -290,9 +40,7 @@ const fadeUp = {
 
 const stagger = {
   hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.1 },
-  },
+  visible: { transition: { staggerChildren: 0.1 } },
 };
 
 function Reveal({ children, delay = 0, className = "" }) {
@@ -309,18 +57,30 @@ function Reveal({ children, delay = 0, className = "" }) {
   );
 }
 
+function formatPrice(plan) {
+  const value = String(plan?.price ?? "");
+  if (/^[^0-9]*\d/.test(value) && value.startsWith(plan?.currency || "$")) {
+    return value;
+  }
+  return `${plan?.currency || "$"}${value}`;
+}
+
 function PricingCard({ plan, index }) {
-  const Icon = plan.icon;
-  const isPopular = plan.tone === "popular";
+  const Icon = pricingIconMap[plan.icon] || FileCheck2;
+  const tone =
+    plan.tone ||
+    (plan.recommended ? "popular" : index === 2 ? "dark" : "light");
 
   return (
     <motion.article
-      className={`pricing-card pricing-card-${plan.tone}`}
+      className={`pricing-card pricing-card-${tone}`}
       variants={fadeUp}
       whileHover={{ y: -8, scale: 1.01 }}
       transition={{ type: "spring", stiffness: 240, damping: 20 }}
     >
-      {isPopular && <div className="pricing-popular-ribbon">{plan.badge}</div>}
+      {plan.recommended && plan.badge && (
+        <div className="pricing-popular-ribbon">{plan.badge}</div>
+      )}
 
       <div className="pricing-card-glow" />
 
@@ -328,23 +88,28 @@ function PricingCard({ plan, index }) {
         <Icon size={24} />
       </div>
 
-      <span className="pricing-card-number">0{index + 1}</span>
+      <span className="pricing-card-number">
+        {plan.number || String(index + 1).padStart(2, "0")}
+      </span>
 
       <h2>{plan.name}</h2>
       <p className="pricing-description">{plan.description}</p>
 
       <div className="pricing-price-row">
-        <strong>{plan.price}</strong>
+        <strong>{formatPrice(plan)}</strong>
         <span>/ {plan.period}</span>
       </div>
 
       <ul className="pricing-feature-list">
-        {plan.features.map((feature, featureIndex) => (
+        {(plan.features || []).map((feature, featureIndex) => (
           <motion.li
-            key={feature}
+            key={`${feature}-${featureIndex}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.28 + index * 0.08 + featureIndex * 0.035, duration: 0.34 }}
+            transition={{
+              delay: 0.28 + index * 0.08 + featureIndex * 0.035,
+              duration: 0.34,
+            }}
           >
             <CheckCircle2 size={17} />
             <span>{feature}</span>
@@ -352,7 +117,10 @@ function PricingCard({ plan, index }) {
         ))}
       </ul>
 
-      <a href="#start" className="pricing-card-btn">
+      <a
+        href={`/contact?plan=${encodeURIComponent(plan.slug || "package")}`}
+        className="pricing-card-btn"
+      >
         {plan.button}
         <ArrowRight size={17} />
       </a>
@@ -361,14 +129,49 @@ function PricingCard({ plan, index }) {
 }
 
 function Pricing() {
-  const { lang, isArabic, changeLanguage } = useLanguage();
-  const t = copy[lang];
+  const languageContext = useLanguage();
 
-  const directionClass = useMemo(() => (isArabic ? "rtl" : "ltr"), [isArabic]);
+  const contextLanguage =
+    languageContext?.lang ??
+    languageContext?.language ??
+    languageContext?.currentLanguage ??
+    (languageContext?.isArabic ? "ar" : "en");
+
+  const normalizedLanguage = String(contextLanguage).trim().toLowerCase();
+  const lang = normalizedLanguage.startsWith("ar") ? "ar" : "en";
+  const isArabic = languageContext?.isArabic ?? lang === "ar";
+  const selectedLanguage = isArabic ? "ar" : lang;
+
+  const changeLanguage =
+    languageContext?.changeLanguage ??
+    languageContext?.setLanguage ??
+    languageContext?.toggleLanguage ??
+    (() => {});
+
+  const { content: pageContent } = usePageContent(
+    "pricing",
+    pricingFallbackContent
+  );
+
+  const apiLanguageContent = pageContent?.[selectedLanguage];
+  const t =
+    apiLanguageContent &&
+    typeof apiLanguageContent === "object" &&
+    Object.keys(apiLanguageContent).length > 0
+      ? apiLanguageContent
+      : pricingFallbackContent[selectedLanguage] || pricingFallbackContent.en;
+
+  const chrome =
+    siteChromeContent[selectedLanguage] || siteChromeContent.en;
+
+  const directionClass = useMemo(
+    () => (isArabic ? "rtl" : "ltr"),
+    [isArabic]
+  );
 
   return (
     <div className={`pricing-shell ${directionClass}`}>
-      <Navbar t={t.nav} lang={lang} onChangeLang={changeLanguage} />
+      <Navbar t={chrome.nav} lang={lang} onChangeLang={changeLanguage} />
 
       <main>
         <section className="pricing-hero">
@@ -388,14 +191,13 @@ function Pricing() {
 
             <motion.h1 variants={fadeUp}>{t.hero.title}</motion.h1>
             <motion.div className="pricing-title-line" variants={fadeUp} />
-
             <motion.p variants={fadeUp}>{t.hero.subtitle}</motion.p>
 
             <motion.div className="pricing-hero-actions" variants={fadeUp}>
               <a href="#packages" className="pricing-btn pricing-btn-primary">
                 {t.hero.primary}
               </a>
-              <a href="#start" className="pricing-btn pricing-btn-outline">
+              <a href="/contact" className="pricing-btn pricing-btn-outline">
                 {t.hero.secondary}
               </a>
             </motion.div>
@@ -409,18 +211,23 @@ function Pricing() {
             animate="visible"
             variants={stagger}
           >
-            {t.packages.map((plan, index) => (
-              <PricingCard key={plan.name} plan={plan} index={index} />
+            {(t.packages || []).map((plan, index) => (
+              <PricingCard
+                key={plan.slug || `${plan.name}-${index}`}
+                plan={plan}
+                index={index}
+              />
             ))}
           </motion.div>
         </section>
 
         <section className="pricing-highlights-section">
           <div className="pricing-container pricing-highlights-grid">
-            {t.highlights.map((item, index) => {
-              const Icon = item.icon;
+            {(t.highlights || []).map((item, index) => {
+              const Icon = pricingIconMap[item.icon] || ShieldCheck;
+
               return (
-                <Reveal key={item.title} delay={index * 0.08}>
+                <Reveal key={`${item.title}-${index}`} delay={index * 0.08}>
                   <motion.article
                     className="pricing-highlight-card"
                     whileHover={{ y: -8 }}
@@ -449,10 +256,10 @@ function Pricing() {
 
             <Reveal delay={0.08}>
               <div className="pricing-comparison-card">
-                {t.comparison.rows.map((row, index) => (
+                {(t.comparison.rows || []).map((row, index) => (
                   <motion.div
                     className="pricing-comparison-row"
-                    key={row.join("-")}
+                    key={`${row.join("-")}-${index}`}
                     initial={{ opacity: 0, y: 18 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.7 }}
@@ -469,35 +276,27 @@ function Pricing() {
           </div>
         </section>
 
-       <section className="final-cta" id="start">
-  <div className="container">
-    <div className="final-cta-card">
-      <div className="cta-orbit one" />
-      <div className="cta-orbit two" />
-
-      <h2>{isArabic ? "ابدأ مشروعك الأمريكي مع Rita." : "Start your dream business with Rita."}</h2>
-
-      <p>
-        {isArabic
-          ? "أطلق، أدر، وانمُ بشركتك الأمريكية من خلال منصة رقمية واضحة."
-          : "Launch, manage, and grow your US business with one clean digital platform."}
-      </p>
-
-      <div>
-        <a href="#packages" className="btn btn-white">
-          {isArabic ? "ابدأ شركتي" : "Start my company"}
-        </a>
-
-        <a href="/contact" className="btn btn-muted">
-          {isArabic ? "تواصل معنا" : "Talk to Rita"}
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
+        <section className="final-cta" id="start">
+          <div className="container">
+            <div className="final-cta-card">
+              <div className="cta-orbit one" />
+              <div className="cta-orbit two" />
+              <h2>{t.finalCta.title}</h2>
+              <p>{t.finalCta.text}</p>
+              <div>
+                <a href="#packages" className="btn btn-white">
+                  {t.finalCta.primary}
+                </a>
+                <a href="/contact" className="btn btn-muted">
+                  {t.finalCta.secondary}
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
-      <Footer t={t.footer} />
+      <Footer t={chrome.footer} />
     </div>
   );
 }

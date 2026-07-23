@@ -3887,3 +3887,65 @@ a.nav-social-icon:hover {
     padding: 22px 28px;
   }
 }
+
+/* =========================================================
+   Card icon alignment fix
+   Keeps the service, benefit, and partner icons centered above
+   their card content in both LTR and RTL layouts.
+========================================================= */
+
+.service-tile,
+.benefit-card,
+.partner-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.service-visual,
+.benefit-icon {
+  flex: 0 0 auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.partner-visual {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: center;
+}
+
+.service-tile h3,
+.service-tile p,
+.benefit-card h3,
+.benefit-card p,
+.partner-card h3,
+.partner-card p {
+  width: 100%;
+  text-align: center;
+}
+
+.service-tile a {
+  align-self: center;
+  justify-content: center;
+}
+
+/* The earlier RTL rules align card content to the right.
+   These more specific rules preserve the requested centered layout. */
+.rtl .service-tile,
+.rtl .benefit-card,
+.rtl .partner-card,
+.rtl .service-tile h3,
+.rtl .service-tile p,
+.rtl .benefit-card h3,
+.rtl .benefit-card p,
+.rtl .partner-card h3,
+.rtl .partner-card p {
+  text-align: center;
+}
+
+.rtl .partner-visual {
+  justify-content: center;
+}

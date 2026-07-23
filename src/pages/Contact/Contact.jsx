@@ -19,253 +19,9 @@ import Navbar from "../../components/Navbar.jsx";
 import Footer from "../../components/Footer.jsx";
 import { sendContactMessageRequest } from "../../api/contactApi.js";
 import "./Contact.css";
-
-const copy = {
-  en: {
-    nav: {
-      services: "Services",
-      howItWorks: "How it works",
-      pricing: "Pricing",
-      faq: "FAQ",
-      contact: "Contact",
-      signIn: "Sign in",
-      start: "Start my LLC",
-      lang: "العربية",
-      toggleLang: "Change language",
-    },
-
-    hero: {
-      label: "Contact",
-      title: "Get in touch with RITA DIGITAL SERVICES",
-      text:
-        "Have questions about starting your U.S. business? Our experts are ready to guide you with clear answers and practical next steps.",
-      primary: "Send a message",
-      secondary: "Contact details",
-    },
-
-    section: {
-      label: "Contact us",
-      title: "Let’s talk about your U.S. business setup.",
-      text:
-        "Tell us what you need and our team will help you choose the right path for LLC formation, EIN assistance, banking guidance, or compliance support.",
-    },
-
-    info: {
-      title: "Contact Information",
-      emailLabel: "Email",
-      email: "info@ritadigitalservices.com",
-      phoneLabel: "Phone",
-      phone: "+1 (773) 640-4849",
-      addressLabel: "Address",
-      address:
-        "6500 W Irving Park Rd, Chicago, Illinois 60634",
-      hoursLabel: "Business Hours",
-      hours:
-        "Monday – Friday: 9:00 AM – 6:00 PM (EST)",
-    },
-
-    form: {
-      title: "Send us a message",
-      subtitle:
-        "We usually reply within one business day.",
-
-      fullName: "Full Name",
-      fullNamePlaceholder: "Full Name",
-
-      email: "Email Address",
-      emailPlaceholder: "john@example.com",
-
-      phone: "Phone Number",
-      phonePlaceholder: "+1 234 567 8900",
-
-      subject: "Subject",
-      subjectPlaceholder: "Subject",
-
-      message: "Your Message",
-      messagePlaceholder:
-        "Tell us about your business goals...",
-
-      button: "Send Message",
-      loading: "Sending...",
-
-      success:
-        "Your message has been sent successfully. We will contact you as soon as possible.",
-
-      error:
-        "We could not send your message. Please try again.",
-    },
-
-    cards: [
-      {
-        icon: "shield",
-        title: "Clear guidance",
-        text:
-          "Get straightforward answers about formation, EIN, banking, and compliance.",
-      },
-      {
-        icon: "globe",
-        title: "Global founders",
-        text:
-          "Built for non-U.S. residents who want to operate with confidence.",
-      },
-      {
-        icon: "clock",
-        title: "Fast response",
-        text:
-          "Send your question and our team will respond with the next step.",
-      },
-    ],
-
-    cta: {
-      title: "Ready to start your U.S. business?",
-      text:
-        "Reach out today and we’ll help you understand the right package and process for your goals.",
-      button: "Start my LLC",
-    },
-
-    footer: {
-      text:
-        "One-stop-shop solution to establish, operate, and grow your US LLC from anywhere in the world.",
-      company: "Company",
-      support: "Support",
-      start: "Start",
-      services: "Services",
-      pricing: "Pricing",
-      howItWorks: "How it works",
-      faq: "FAQ",
-      contact: "Contact",
-      whatsapp: "WhatsApp",
-      startLLC: "Start my LLC",
-      banking: "Banking solutions",
-      compliance: "Compliance support",
-      rights:
-        "© 2026 Rita Digital Services. All rights reserved.",
-      legal: "Privacy Policy · Terms of Use",
-    },
-  },
-
-  ar: {
-    nav: {
-      services: "الخدمات",
-      howItWorks: "كيف تعمل",
-      pricing: "الأسعار",
-      faq: "الأسئلة",
-      contact: "تواصل",
-      signIn: "تسجيل الدخول",
-      start: "ابدأ LLC",
-      lang: "English",
-      toggleLang: "تغيير اللغة",
-    },
-
-    hero: {
-      label: "تواصل معنا",
-      title: "تواصل مع RITA DIGITAL SERVICES",
-      text:
-        "لديك أسئلة حول بدء عملك التجاري في الولايات المتحدة؟ فريقنا جاهز لمساعدتك بإجابات واضحة وخطوات عملية.",
-      primary: "أرسل رسالة",
-      secondary: "معلومات التواصل",
-    },
-
-    section: {
-      label: "تواصل معنا",
-      title: "دعنا نتحدث عن إعداد شركتك الأمريكية.",
-      text:
-        "أخبرنا بما تحتاجه، وسنساعدك في اختيار المسار المناسب لتأسيس LLC، أو المساعدة في EIN، أو الإرشاد البنكي، أو دعم الامتثال.",
-    },
-
-    info: {
-      title: "معلومات التواصل",
-      emailLabel: "البريد الإلكتروني",
-      email: "info@ritadigitalservices.com",
-      phoneLabel: "الهاتف",
-      phone: "+1 (773) 640-4849",
-      addressLabel: "العنوان",
-      address:
-        "6500 W Irving Park Rd, Chicago, Illinois 60634",
-      hoursLabel: "ساعات العمل",
-      hours:
-        "من الإثنين إلى الجمعة: 9:00 صباحًا – 6:00 مساءً (EST)",
-    },
-
-    form: {
-      title: "أرسل لنا رسالة",
-      subtitle: "عادةً نرد خلال يوم عمل واحد.",
-
-      fullName: "الاسم الكامل",
-      fullNamePlaceholder: "الاسم الكامل",
-
-      email: "البريد الإلكتروني",
-      emailPlaceholder: "john@example.com",
-
-      phone: "رقم الهاتف",
-      phonePlaceholder: "+1 234 567 8900",
-
-      subject: "الموضوع",
-      subjectPlaceholder: "الموضوع",
-
-      message: "رسالتك",
-      messagePlaceholder:
-        "اكتب لنا أهدافك التجارية...",
-
-      button: "إرسال الرسالة",
-      loading: "جاري الإرسال...",
-
-      success:
-        "تم إرسال رسالتك بنجاح. سنتواصل معك في أقرب وقت ممكن.",
-
-      error:
-        "تعذر إرسال رسالتك. يرجى المحاولة مرة أخرى.",
-    },
-
-    cards: [
-      {
-        icon: "shield",
-        title: "إرشاد واضح",
-        text:
-          "احصل على إجابات مباشرة حول التأسيس، EIN، الحسابات البنكية، والامتثال.",
-      },
-      {
-        icon: "globe",
-        title: "للمؤسسين حول العالم",
-        text:
-          "مصمم لغير المقيمين في أمريكا لتشغيل أعمالهم بثقة ووضوح.",
-      },
-      {
-        icon: "clock",
-        title: "رد سريع",
-        text:
-          "أرسل سؤالك، وسنرجع لك بخطوة واضحة تساعدك على التقدم.",
-      },
-    ],
-
-    cta: {
-      title: "جاهز لبدء شركتك الأمريكية؟",
-      text:
-        "تواصل معنا اليوم وسنساعدك على فهم الباقة والمسار المناسبين لأهدافك.",
-      button: "ابدأ LLC",
-    },
-
-    footer: {
-      text:
-        "حل متكامل لتأسيس وتشغيل وتنمية شركتك الأمريكية من أي مكان في العالم.",
-      company: "الشركة",
-      support: "الدعم",
-      start: "ابدأ",
-      services: "الخدمات",
-      pricing: "الأسعار",
-      howItWorks: "كيف تعمل",
-      faq: "الأسئلة",
-      contact: "تواصل",
-      whatsapp: "واتساب",
-      startLLC: "ابدأ LLC",
-      banking: "الحلول البنكية",
-      compliance: "دعم الامتثال",
-      rights:
-        "© 2026 Rita Digital Services. جميع الحقوق محفوظة.",
-      legal: "سياسة الخصوصية · شروط الاستخدام",
-    },
-  },
-};
+import { usePageContent } from "../../hooks/usePageContent.js";
+import { contactFallbackContent } from "./contactFallbackContent.js";
+import { siteChromeContent } from "../../content/siteChromeContent.js";
 
 const initialForm = {
   fullName: "",
@@ -340,13 +96,46 @@ function ContactInfoItem({
 }
 
 function Contact() {
-  const {
-    lang,
-    isArabic,
-    changeLanguage,
-  } = useLanguage();
+  const languageContext = useLanguage();
 
-  const t = copy[lang];
+  const contextLanguage =
+    languageContext?.lang ??
+    languageContext?.language ??
+    languageContext?.currentLanguage ??
+    (languageContext?.isArabic ? "ar" : "en");
+
+  const normalizedLanguage = String(contextLanguage)
+    .trim()
+    .toLowerCase();
+
+  const lang = normalizedLanguage.startsWith("ar") ? "ar" : "en";
+  const isArabic = languageContext?.isArabic ?? lang === "ar";
+  const selectedLanguage = isArabic ? "ar" : lang;
+
+  const changeLanguage =
+    languageContext?.changeLanguage ??
+    languageContext?.setLanguage ??
+    languageContext?.toggleLanguage ??
+    (() => {});
+
+  const { content: pageContent } = usePageContent(
+    "contact",
+    contactFallbackContent
+  );
+
+  const apiLanguageContent = pageContent?.[selectedLanguage];
+  const hasApiLanguageContent =
+    apiLanguageContent &&
+    typeof apiLanguageContent === "object" &&
+    Object.keys(apiLanguageContent).length > 0;
+
+  const t = hasApiLanguageContent
+    ? apiLanguageContent
+    : contactFallbackContent[selectedLanguage] || contactFallbackContent.en;
+
+  const chrome =
+    siteChromeContent[selectedLanguage] ||
+    siteChromeContent.en;
 
   const [form, setForm] = useState(initialForm);
   const [sent, setSent] = useState(false);
@@ -406,7 +195,7 @@ function Contact() {
       dir={isArabic ? "rtl" : "ltr"}
     >
       <Navbar
-        t={t.nav}
+        t={chrome.nav}
         lang={lang}
         onChangeLang={changeLanguage}
       />
@@ -740,7 +529,7 @@ function Contact() {
           <div className="contact-container">
             <div className="contact-support-grid">
               {t.cards.map((card, index) => {
-                const Icon = iconMap[card.icon];
+                const Icon = iconMap[card.icon] || ShieldCheck;
 
                 return (
                   <motion.article
@@ -789,26 +578,16 @@ function Contact() {
               <div className="cta-orbit one" />
               <div className="cta-orbit two" />
 
-              <h2>
-                {isArabic
-                  ? "ابدأ مشروعك الأمريكي مع Rita."
-                  : "Start your dream business with Rita."}
-              </h2>
+              <h2>{t.cta.title}</h2>
 
-              <p>
-                {isArabic
-                  ? "أطلق، أدر، وانمُ بشركتك الأمريكية من خلال منصة رقمية واضحة."
-                  : "Launch, manage, and grow your US business with one clean digital platform."}
-              </p>
+              <p>{t.cta.text}</p>
 
               <div>
                 <a
                   href="#contact-form"
                   className="btn btn-white"
                 >
-                  {isArabic
-                    ? "ابدأ شركتي"
-                    : "Start my company"}
+                  {t.cta.button}
                 </a>
               </div>
             </div>
@@ -816,7 +595,7 @@ function Contact() {
         </section>
       </main>
 
-      <Footer t={t.footer} />
+      <Footer t={chrome.footer} />
     </div>
   );
 }
