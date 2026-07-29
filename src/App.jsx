@@ -1,4 +1,8 @@
-import { Routes, Route } from "react-router";
+import {
+  Routes,
+  Route,
+  Outlet,
+} from "react-router";
 
 import Home from "./pages/Home/Home.jsx";
 import Services from "./pages/Services/Services.jsx";
@@ -27,29 +31,68 @@ function Placeholder({ title }) {
   );
 }
 
-function App() {
+/*
+ * هذا Layout خاص بصفحات الزوار فقط.
+ * زر واتساب سيظهر في الصفحات الموجودة داخله.
+ */
+function VisitorLayout() {
   return (
     <>
-      <Routes>
+      <Outlet />
+      <FloatingWhatsApp />
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      {/* صفحات الزوار التي يظهر فيها زر واتساب */}
+      <Route element={<VisitorLayout />}>
         <Route index element={<Home />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/pricing" element={<Pricing />} />
+
+        <Route
+          path="/services"
+          element={<Services />}
+        />
+
+        <Route
+          path="/pricing"
+          element={<Pricing />}
+        />
+
         <Route
           path="/how-it-works"
           element={<HowItWorks />}
         />
+
         <Route
           path="/faq"
           element={<Placeholder title="FAQ" />}
         />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Routes>
 
-      <FloatingWhatsApp />
-    </>
+        <Route
+          path="/contact"
+          element={<Contact />}
+        />
+      </Route>
+
+      {/* صفحات الحساب بدون زر واتساب */}
+      <Route
+        path="/login"
+        element={<Login />}
+      />
+
+      <Route
+        path="/sign-up"
+        element={<SignUp />}
+      />
+
+      <Route
+        path="/dashboard"
+        element={<Dashboard />}
+      />
+    </Routes>
   );
 }
 

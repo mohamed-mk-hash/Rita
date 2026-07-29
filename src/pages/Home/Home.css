@@ -3640,6 +3640,7 @@ a.nav-social-icon:hover {
   display: grid;
   gap: 17px;
   list-style: none;
+  margin-bottom: 30px;
 }
 
 .pricing-features li {
