@@ -25,6 +25,8 @@ const languages = [
 
 const socialLinks = {
   whatsapp: "https://wa.me/13124599528",
+  instagram:
+    "https://www.instagram.com/ritadigitalservices?igsh=MXE5djZ5cnI2emtnMw%3D%3D&utm_source=qr",
   facebook:
     "https://www.facebook.com/people/Rita-Digital-Services/61590008895440/",
 };
@@ -100,7 +102,12 @@ function Navbar({ t = {}, lang = "en", onChangeLang }) {
             type="button"
             onClick={() => chooseLanguage(language.code)}
           >
-            <img className="language-flag" src={language.flag} alt="" />
+            <img
+              className="language-flag"
+              src={language.flag}
+              alt=""
+            />
+
             <span>{language.label}</span>
           </button>
         ))}
@@ -109,6 +116,10 @@ function Navbar({ t = {}, lang = "en", onChangeLang }) {
   }
 
   function SocialIcons({ mobile = false }) {
+    function closeMobileMenu() {
+      setOpen(false);
+    }
+
     return (
       <div
         className={`nav-socials ${mobile ? "mobile-nav-socials" : ""}`}
@@ -121,19 +132,22 @@ function Navbar({ t = {}, lang = "en", onChangeLang }) {
           aria-label="Contact Rita Digital Services on WhatsApp"
           title="WhatsApp"
           className="nav-social-icon whatsapp"
-          onClick={() => setOpen(false)}
+          onClick={closeMobileMenu}
         >
           <FaWhatsapp aria-hidden="true" />
         </a>
 
-        <span
-          aria-label="Instagram — coming soon"
-          aria-disabled="true"
-          title="Instagram — coming soon"
-          className="nav-social-icon instagram social-icon-disabled"
+        <a
+          href={socialLinks.instagram}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Visit Rita Digital Services on Instagram"
+          title="Instagram"
+          className="nav-social-icon instagram"
+          onClick={closeMobileMenu}
         >
           <FaInstagram aria-hidden="true" />
-        </span>
+        </a>
 
         <a
           href={socialLinks.facebook}
@@ -142,7 +156,7 @@ function Navbar({ t = {}, lang = "en", onChangeLang }) {
           aria-label="Visit Rita Digital Services on Facebook"
           title="Facebook"
           className="nav-social-icon facebook"
-          onClick={() => setOpen(false)}
+          onClick={closeMobileMenu}
         >
           <FaFacebookF aria-hidden="true" />
         </a>
@@ -153,8 +167,16 @@ function Navbar({ t = {}, lang = "en", onChangeLang }) {
   return (
     <header className="site-header">
       <nav className="navbar container">
-        <Link className="brand" to="/" onClick={() => setOpen(false)}>
-          <img src="/rita-logo.png" alt="Rita Digital Services" />
+        <Link
+          className="brand"
+          to="/"
+          onClick={() => setOpen(false)}
+        >
+          <img
+            src="/rita-logo.png"
+            alt="Rita Digital Services"
+          />
+
           <span>Rita Digital Services</span>
         </Link>
 
@@ -175,15 +197,24 @@ function Navbar({ t = {}, lang = "en", onChangeLang }) {
         <div className="nav-actions">
           <SocialIcons />
 
-          <Link className="signin-link" to="/login">
+          <Link
+            className="signin-link"
+            to="/login"
+          >
             {t.signIn || (isArabic ? "تسجيل الدخول" : "Sign in")}
           </Link>
 
-          <Link className="btn btn-white nav-signup-btn" to="/sign-up">
+          <Link
+            className="btn btn-white nav-signup-btn"
+            to="/sign-up"
+          >
             {t.signUp || (isArabic ? "إنشاء حساب" : "Sign up")}
           </Link>
 
-          <div className="language-dropdown" ref={desktopLangRef}>
+          <div
+            className="language-dropdown"
+            ref={desktopLangRef}
+          >
             <button
               className="language-current"
               type="button"
@@ -201,6 +232,7 @@ function Navbar({ t = {}, lang = "en", onChangeLang }) {
               />
 
               <span>{currentLanguage.label}</span>
+
               <ChevronDown size={15} />
             </button>
 
@@ -270,11 +302,17 @@ function Navbar({ t = {}, lang = "en", onChangeLang }) {
               </NavLink>
             ))}
 
-            <Link to="/login" onClick={() => setOpen(false)}>
+            <Link
+              to="/login"
+              onClick={() => setOpen(false)}
+            >
               {t.signIn || (isArabic ? "تسجيل الدخول" : "Sign in")}
             </Link>
 
-            <Link to="/sign-up" onClick={() => setOpen(false)}>
+            <Link
+              to="/sign-up"
+              onClick={() => setOpen(false)}
+            >
               {t.signUp || (isArabic ? "إنشاء حساب" : "Sign up")}
             </Link>
 
@@ -287,3 +325,4 @@ function Navbar({ t = {}, lang = "en", onChangeLang }) {
 }
 
 export default Navbar;
+

@@ -7,6 +7,8 @@ import {
 
 const socialLinks = {
   whatsapp: "https://wa.me/13124599528",
+  instagram:
+    "https://www.instagram.com/ritadigitalservices?igsh=MXE5djZ5cnI2emtnMw%3D%3D&utm_source=qr",
   facebook:
     "https://www.facebook.com/people/Rita-Digital-Services/61590008895440/",
 };
@@ -39,14 +41,16 @@ function Footer({ t }) {
               <FaWhatsapp aria-hidden="true" />
             </a>
 
-            <span
-              aria-label="Instagram — coming soon"
-              aria-disabled="true"
-              title="Instagram — coming soon"
-              className="footer-social-icon instagram social-icon-disabled"
+            <a
+              href={socialLinks.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Visit Rita Digital Services on Instagram"
+              title="Instagram"
+              className="footer-social-icon instagram"
             >
               <FaInstagram aria-hidden="true" />
-            </span>
+            </a>
 
             <a
               href={socialLinks.facebook}
@@ -102,3 +106,4 @@ function Footer({ t }) {
 }
 
 export default Footer;
+
