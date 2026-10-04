@@ -32,6 +32,7 @@ import { siteChromeContent } from "../../content/siteChromeContent.js";
 import { usePageContent } from "../../hooks/usePageContent.js";
 import { pricingFallbackContent } from "../Pricing/pricingFallbackContent.js";
 import { servicesFallbackContent } from "../Services/servicesFallbackContent.js";
+import { initializeFirebaseContent } from "../../api/firebaseSetupApi.js";
 
 const paymentPlatforms = [
   {
@@ -160,8 +161,9 @@ function StartGrowSection({ t }) {
   }, [isInView, hasStarted]);
 
   useEffect(() => {
-    if (reduceMotion || !hasStarted || !isInView || tabs.length < 2)
+    if (reduceMotion || !hasStarted || !isInView || tabs.length < 2) {
       return undefined;
+    }
 
     const timer = setTimeout(() => {
       setActive((currentIndex) => (currentIndex + 1) % tabs.length);
@@ -560,7 +562,8 @@ function PricingSection({ pricingContent }) {
         <div className="pricing-grid">
           {packages.map((plan, index) => {
             const PlanIcon = planIconMap[plan.icon] || BadgeCheck;
-            const slug = plan.slug || ["starter", "growth", "premium"][index] || "plan";
+            const slug =
+              plan.slug || ["starter", "growth", "premium"][index] || "plan";
 
             return (
               <Reveal
@@ -685,19 +688,17 @@ function FinalCTA({ t }) {
 function Home() {
   const languageContext = useLanguage();
 
-  /*
-    بعض إصدارات LanguageContext تستعمل lang، وأخرى تستعمل language.
-    نعتمد isArabic أيضاً حتى لا تبقى الصفحة بالإنجليزية عند تفعيل RTL.
-  */
+  const [setupLoading, setSetupLoading] = useState(false);
+  const [setupMessage, setSetupMessage] = useState("");
+  const [setupError, setSetupError] = useState("");
+
   const contextLanguage =
     languageContext?.lang ??
     languageContext?.language ??
     languageContext?.currentLanguage ??
     (languageContext?.isArabic ? "ar" : "en");
 
-  const normalizedLanguage = String(contextLanguage)
-    .trim()
-    .toLowerCase();
+  const normalizedLanguage = String(contextLanguage).trim().toLowerCase();
 
   const lang = normalizedLanguage.startsWith("ar") ? "ar" : "en";
   const isArabic = languageContext?.isArabic ?? lang === "ar";
@@ -710,10 +711,12 @@ function Home() {
     (() => {});
 
   const { content: pageContent } = useHomePageContent(homeFallbackContent);
+
   const { content: pricingPageContent } = usePageContent(
     "pricing",
     pricingFallbackContent
   );
+
   const { content: servicesPageContent } = usePageContent(
     "services",
     servicesFallbackContent
@@ -734,10 +737,12 @@ function Home() {
   }
 
   const t = selectLanguageContent(pageContent, homeFallbackContent);
+
   const pricingContent = selectLanguageContent(
     pricingPageContent,
     pricingFallbackContent
   );
+
   const servicesContent = selectLanguageContent(
     servicesPageContent,
     servicesFallbackContent
@@ -746,6 +751,42 @@ function Home() {
   const chrome =
     siteChromeContent[selectedLanguage] ||
     siteChromeContent.en;
+
+  async function handleFirebaseSetup() {
+    if (setupLoading) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Create/refresh the website content and document requirements in Firestore?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setSetupLoading(true);
+    setSetupMessage("");
+    setSetupError("");
+
+    try {
+      const result = await initializeFirebaseContent();
+
+      setSetupMessage(
+        `Firebase ready: ${result.pages} website pages and ${result.requirements} document requirements saved.`
+      );
+    } catch (error) {
+      console.error("FIREBASE_SETUP_ERROR:", error);
+
+      setSetupError(
+        error instanceof Error
+          ? error.message
+          : "Could not initialize Firebase content."
+      );
+    } finally {
+      setSetupLoading(false);
+    }
+  }
 
   return (
     <div className={`site-shell dark ${isArabic ? "rtl" : "ltr"}`}>
@@ -791,13 +832,40 @@ function Home() {
                 <a href="#start" className="btn btn-white">
                   {t.hero.primary}
                 </a>
+
                 <a href="#services" className="btn btn-muted">
                   {t.hero.secondary}
                 </a>
+
+                {import.meta.env.DEV && (
+                  <button
+                    type="button"
+                    className="btn btn-muted"
+                    onClick={handleFirebaseSetup}
+                    disabled={setupLoading}
+                  >
+                    {setupLoading
+                      ? "Saving to Firebase..."
+                      : "Setup Firebase Data"}
+                  </button>
+                )}
               </motion.div>
+
+              {import.meta.env.DEV && setupMessage && (
+                <motion.p className="hero-subtitle" variants={fadeUp}>
+                  {setupMessage}
+                </motion.p>
+              )}
+
+              {import.meta.env.DEV && setupError && (
+                <motion.p className="auth-error" variants={fadeUp}>
+                  {setupError}
+                </motion.p>
+              )}
             </div>
           </motion.div>
         </section>
+
         <PaymentPlatformsSection />
         <StartGrowSection t={t} />
         <ExploreSection servicesContent={servicesContent} />

@@ -11,14 +11,23 @@ import {
   ArrowUp,
   Check,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
+  DollarSign,
   Eye,
+  FileText,
+  Languages,
+  ListFilter,
   Plus,
   RefreshCw,
   RotateCcw,
   Save,
+  Search,
   Send,
+  Tag,
   Trash2,
+  Type,
+  X,
 } from "lucide-react";
 
 import {
@@ -37,6 +46,36 @@ import type {
 
 import { useLanguage } from "../../i18n/LanguageContext";
 
+/* =========================================================
+   TYPES
+========================================================= */
+
+type ContentLanguage = "en" | "ar";
+
+type SearchFilter =
+  | "all"
+  | "price"
+  | "button"
+  | "title";
+
+interface SearchResult {
+  sectionKey: string;
+  path: string;
+  fieldKey: string;
+  label: string;
+  value: string;
+  itemTitle?: string;
+  category:
+    | "price"
+    | "button"
+    | "title"
+    | "text";
+}
+
+/* =========================================================
+   FIELD LABELS
+========================================================= */
+
 const FIELD_LABELS: Record<
   string,
   { ar: string; en: string }
@@ -46,6 +85,10 @@ const FIELD_LABELS: Record<
     en: "SEO settings",
   },
 
+  homeSection: {
+    ar: "قسم الصفحة الرئيسية",
+    en: "Home section",
+  },
 
   hero: {
     ar: "القسم الرئيسي",
@@ -62,9 +105,34 @@ const FIELD_LABELS: Record<
     en: "Services",
   },
 
+  process: {
+    ar: "طريقة العمل",
+    en: "Process",
+  },
+
+  advantages: {
+    ar: "المميزات",
+    en: "Advantages",
+  },
+
   pricing: {
     ar: "الأسعار",
     en: "Pricing",
+  },
+
+  packages: {
+    ar: "الباقات",
+    en: "Packages",
+  },
+
+  highlights: {
+    ar: "المميزات",
+    en: "Highlights",
+  },
+
+  comparison: {
+    ar: "مقارنة الباقات",
+    en: "Package comparison",
   },
 
   suiteBanner: {
@@ -75,6 +143,16 @@ const FIELD_LABELS: Record<
   benefits: {
     ar: "المميزات",
     en: "Benefits",
+  },
+
+  partners: {
+    ar: "الشركاء",
+    en: "Partners",
+  },
+
+  trust: {
+    ar: "الثقة والإحصائيات",
+    en: "Trust & metrics",
   },
 
   tools: {
@@ -92,7 +170,6 @@ const FIELD_LABELS: Record<
     en: "Final call to action",
   },
 
-
   title: {
     ar: "العنوان",
     en: "Title",
@@ -108,9 +185,349 @@ const FIELD_LABELS: Record<
     en: "Label",
   },
 
-  links: {
-    ar: "الروابط",
-    en: "Links",
+  text: {
+    ar: "النص",
+    en: "Text",
+  },
+
+  subtitle: {
+    ar: "العنوان الفرعي",
+    en: "Subtitle",
+  },
+
+  eyebrow: {
+    ar: "النص العلوي",
+    en: "Eyebrow",
+  },
+
+  primary: {
+    ar: "نص الزر الرئيسي",
+    en: "Primary button text",
+  },
+
+  secondary: {
+    ar: "نص الزر الثانوي",
+    en: "Secondary button text",
+  },
+
+  primaryButton: {
+    ar: "الزر الرئيسي",
+    en: "Primary button",
+  },
+
+  secondaryButton: {
+    ar: "الزر الثانوي",
+    en: "Secondary button",
+  },
+
+  button: {
+    ar: "نص الزر",
+    en: "Button text",
+  },
+
+  learnMore: {
+    ar: "نص اعرف أكثر",
+    en: "Learn more text",
+  },
+
+  name: {
+    ar: "الاسم",
+    en: "Name",
+  },
+
+  slug: {
+    ar: "المعرّف",
+    en: "Slug",
+  },
+
+  number: {
+    ar: "الرقم",
+    en: "Number",
+  },
+
+  price: {
+    ar: "السعر",
+    en: "Price",
+  },
+
+  currency: {
+    ar: "العملة",
+    en: "Currency",
+  },
+
+  period: {
+    ar: "فترة الدفع",
+    en: "Payment period",
+  },
+
+  recommended: {
+    ar: "الباقة الموصى بها",
+    en: "Recommended",
+  },
+
+  badge: {
+    ar: "الشارة",
+    en: "Badge",
+  },
+
+  features: {
+    ar: "المميزات",
+    en: "Features",
+  },
+
+  summary: {
+    ar: "الوصف المختصر",
+    en: "Summary",
+  },
+
+  icon: {
+    ar: "رمز الأيقونة",
+    en: "Icon key",
+  },
+
+  items: {
+    ar: "العناصر",
+    en: "Items",
+  },
+
+  rows: {
+    ar: "صفوف المقارنة",
+    en: "Comparison rows",
+  },
+
+  cards: {
+    ar: "البطاقات",
+    en: "Cards",
+  },
+
+  steps: {
+    ar: "الخطوات",
+    en: "Steps",
+  },
+
+  tabs: {
+    ar: "التبويبات",
+    en: "Tabs",
+  },
+
+  visual: {
+    ar: "المحتوى المرئي",
+    en: "Visual content",
+  },
+
+  bundle: {
+    ar: "باقة Rita One",
+    en: "Rita One bundle",
+  },
+
+  contact: {
+    ar: "التواصل",
+    en: "Contact",
+  },
+
+  section: {
+    ar: "مقدمة القسم",
+    en: "Section introduction",
+  },
+
+  info: {
+    ar: "معلومات التواصل",
+    en: "Contact information",
+  },
+
+  form: {
+    ar: "نموذج التواصل",
+    en: "Contact form",
+  },
+
+  cta: {
+    ar: "الدعوة لاتخاذ إجراء",
+    en: "Call to action",
+  },
+
+  emailLabel: {
+    ar: "تسمية البريد",
+    en: "Email label",
+  },
+
+  email: {
+    ar: "البريد الإلكتروني",
+    en: "Email",
+  },
+
+  phoneLabel: {
+    ar: "تسمية الهاتف",
+    en: "Phone label",
+  },
+
+  phone: {
+    ar: "رقم الهاتف",
+    en: "Phone",
+  },
+
+  addressLabel: {
+    ar: "تسمية العنوان",
+    en: "Address label",
+  },
+
+  address: {
+    ar: "العنوان",
+    en: "Address",
+  },
+
+  hoursLabel: {
+    ar: "تسمية ساعات العمل",
+    en: "Hours label",
+  },
+
+  hours: {
+    ar: "ساعات العمل",
+    en: "Business hours",
+  },
+
+  fullName: {
+    ar: "الاسم الكامل",
+    en: "Full name",
+  },
+
+  fullNamePlaceholder: {
+    ar: "مثال الاسم",
+    en: "Full-name placeholder",
+  },
+
+  emailPlaceholder: {
+    ar: "مثال البريد",
+    en: "Email placeholder",
+  },
+
+  phonePlaceholder: {
+    ar: "مثال الهاتف",
+    en: "Phone placeholder",
+  },
+
+  subject: {
+    ar: "الموضوع",
+    en: "Subject",
+  },
+
+  subjectPlaceholder: {
+    ar: "مثال الموضوع",
+    en: "Subject placeholder",
+  },
+
+  message: {
+    ar: "الرسالة",
+    en: "Message",
+  },
+
+  messagePlaceholder: {
+    ar: "مثال الرسالة",
+    en: "Message placeholder",
+  },
+
+  loading: {
+    ar: "نص التحميل",
+    en: "Loading text",
+  },
+
+  success: {
+    ar: "رسالة النجاح",
+    en: "Success message",
+  },
+
+  error: {
+    ar: "رسالة الخطأ",
+    en: "Error message",
+  },
+
+  visuals: {
+    ar: "النصوص التوضيحية",
+    en: "Visual labels",
+  },
+
+  introStats: {
+    ar: "الإحصائيات",
+    en: "Intro statistics",
+  },
+
+  mission: {
+    ar: "المهمة",
+    en: "Mission",
+  },
+
+  vision: {
+    ar: "الرؤية",
+    en: "Vision",
+  },
+
+  story: {
+    ar: "القصة",
+    en: "Story",
+  },
+
+  expertise: {
+    ar: "الخبرات",
+    en: "Expertise",
+  },
+
+  members: {
+    ar: "أعضاء الفريق",
+    en: "Team members",
+  },
+
+  testimonials: {
+    ar: "آراء العملاء",
+    en: "Testimonials",
+  },
+
+  faq: {
+    ar: "الأسئلة الشائعة",
+    en: "FAQ",
+  },
+
+  groups: {
+    ar: "مجموعات الأسئلة",
+    en: "Question groups",
+  },
+
+  q: {
+    ar: "السؤال",
+    en: "Question",
+  },
+
+  a: {
+    ar: "الإجابة",
+    en: "Answer",
+  },
+
+  question: {
+    ar: "السؤال",
+    en: "Question",
+  },
+
+  answer: {
+    ar: "الإجابة",
+    en: "Answer",
+  },
+
+  initials: {
+    ar: "الأحرف المختصرة",
+    en: "Initials",
+  },
+
+  role: {
+    ar: "المنصب",
+    en: "Role",
+  },
+
+  company: {
+    ar: "الشركة",
+    en: "Company",
+  },
+
+  value: {
+    ar: "القيمة",
+    en: "Value",
   },
 
   href: {
@@ -128,125 +545,104 @@ const FIELD_LABELS: Record<
     en: "Image URL",
   },
 
-  primaryButton: {
-    ar: "الزر الرئيسي",
-    en: "Primary button",
-  },
-
-  secondaryButton: {
-    ar: "الزر الثانوي",
-    en: "Secondary button",
-  },
-
-  button: {
-    ar: "الزر",
-    en: "Button",
-  },
-
-  items: {
-    ar: "العناصر",
-    en: "Items",
-  },
-
-  plans: {
-    ar: "الباقات",
-    en: "Plans",
-  },
-
-  features: {
-    ar: "المميزات",
-    en: "Features",
-  },
-
-  partnerLogos: {
-    ar: "شعارات الشركاء",
-    en: "Partner logos",
-  },
-
-  statistics: {
-    ar: "الإحصائيات",
-    en: "Statistics",
-  },
-
-  columns: {
-    ar: "أعمدة التذييل",
-    en: "Footer columns",
-  },
-
-  price: {
-    ar: "السعر",
-    en: "Price",
-  },
-
-  currency: {
-    ar: "العملة",
-    en: "Currency",
-  },
-
-  featured: {
-    ar: "الباقة الأكثر اختيارًا",
-    en: "Featured plan",
-  },
-
-  visuals: { ar: "النصوص التوضيحية", en: "Visual labels" },
-  companySetup: { ar: "إعداد الشركة", en: "Company setup" },
-  einRequest: { ar: "طلب EIN", en: "EIN request" },
-  bankingGuide: { ar: "الإرشاد البنكي", en: "Banking guide" },
-  borderless: { ar: "بلا حدود", en: "Borderless" },
-  businessAccess: { ar: "الوصول للأعمال الأمريكية", en: "U.S. business access" },
-  introStats: { ar: "الإحصائيات الافتتاحية", en: "Intro statistics" },
-  mission: { ar: "المهمة", en: "Mission" },
-  vision: { ar: "الرؤية", en: "Vision" },
-  story: { ar: "القصة", en: "Story" },
-  expertise: { ar: "الخبرات", en: "Expertise" },
-  members: { ar: "أعضاء الفريق", en: "Team members" },
-  testimonials: { ar: "آراء العملاء", en: "Testimonials" },
-  faq: { ar: "الأسئلة الشائعة", en: "FAQ" },
-  groups: { ar: "مجموعات الأسئلة", en: "Question groups" },
-  q: { ar: "السؤال", en: "Question" },
-  a: { ar: "الإجابة", en: "Answer" },
-  initials: { ar: "الأحرف المختصرة", en: "Initials" },
-  role: { ar: "المنصب", en: "Role" },
-  text: { ar: "النص", en: "Text" },
-  name: { ar: "الاسم", en: "Name" },
-  company: { ar: "الشركة", en: "Company" },
-  subtitle: { ar: "العنوان الفرعي", en: "Subtitle" },
-  eyebrow: { ar: "النص العلوي", en: "Eyebrow" },
-  primary: { ar: "نص الزر الرئيسي", en: "Primary button text" },
-  secondary: { ar: "نص الزر الثانوي", en: "Secondary button text" },
-  value: { ar: "القيمة", en: "Value" },
-  section: { ar: "مقدمة قسم التواصل", en: "Contact introduction" },
-  info: { ar: "معلومات التواصل", en: "Contact information" },
-  form: { ar: "نموذج التواصل", en: "Contact form" },
-  cards: { ar: "بطاقات الدعم", en: "Support cards" },
-  cta: { ar: "الدعوة لاتخاذ إجراء", en: "Call to action" },
-  emailLabel: { ar: "تسمية البريد", en: "Email label" },
-  email: { ar: "البريد الإلكتروني", en: "Email" },
-  phoneLabel: { ar: "تسمية الهاتف", en: "Phone label" },
-  phone: { ar: "رقم الهاتف", en: "Phone" },
-  addressLabel: { ar: "تسمية العنوان", en: "Address label" },
-  address: { ar: "العنوان", en: "Address" },
-  hoursLabel: { ar: "تسمية ساعات العمل", en: "Hours label" },
-  hours: { ar: "ساعات العمل", en: "Business hours" },
-  fullName: { ar: "الاسم الكامل", en: "Full name" },
-  fullNamePlaceholder: { ar: "مثال الاسم الكامل", en: "Full-name placeholder" },
-  emailPlaceholder: { ar: "مثال البريد", en: "Email placeholder" },
-  phonePlaceholder: { ar: "مثال الهاتف", en: "Phone placeholder" },
-  subject: { ar: "الموضوع", en: "Subject" },
-  subjectPlaceholder: { ar: "مثال الموضوع", en: "Subject placeholder" },
-  message: { ar: "الرسالة", en: "Message" },
-  messagePlaceholder: { ar: "مثال الرسالة", en: "Message placeholder" },
-  loading: { ar: "نص التحميل", en: "Loading text" },
-  success: { ar: "رسالة النجاح", en: "Success message" },
-  error: { ar: "رسالة الخطأ", en: "Error message" },
-  icon: { ar: "رمز الأيقونة", en: "Icon key" },
-  nav: { ar: "شريط التنقل", en: "Navigation" },
-
   id: {
     ar: "المعرّف",
     en: "Identifier",
   },
 };
+
+/* =========================================================
+   DEFAULT SECTION DESCRIPTIONS
+========================================================= */
+
+const DEFAULT_SECTION_DESCRIPTIONS: Record<
+  string,
+  { ar: string; en: string }
+> = {
+  homeSection: {
+    ar: "المحتوى الذي يظهر في الصفحة الرئيسية لهذا القسم.",
+    en: "Content from this section that also appears on the home page.",
+  },
+
+  hero: {
+    ar: "تحكّم في أول قسم يراه الزائر.",
+    en: "Control the first section visitors see on the page.",
+  },
+
+  packages: {
+    ar: "عدّل أسماء الباقات والأسعار والمميزات.",
+    en: "Edit package names, prices, buttons, and included features.",
+  },
+
+  services: {
+    ar: "عدّل الخدمات والوصف والمميزات.",
+    en: "Edit services, summaries, descriptions, and features.",
+  },
+
+  process: {
+    ar: "عدّل خطوات العمل.",
+    en: "Edit the workflow and process steps.",
+  },
+
+  advantages: {
+    ar: "عدّل مميزات Rita.",
+    en: "Edit the Why Rita advantages.",
+  },
+
+  highlights: {
+    ar: "عدّل بطاقات المميزات.",
+    en: "Edit the highlight cards.",
+  },
+
+  comparison: {
+    ar: "عدّل جدول مقارنة الباقات.",
+    en: "Edit the package comparison table.",
+  },
+
+  finalCta: {
+    ar: "عدّل الدعوة الأخيرة لاتخاذ إجراء.",
+    en: "Edit the final call-to-action.",
+  },
+
+  contact: {
+    ar: "عدّل بيانات التواصل.",
+    en: "Edit contact information.",
+  },
+
+  form: {
+    ar: "عدّل نصوص نموذج التواصل.",
+    en: "Edit contact-form labels and messages.",
+  },
+
+  mission: {
+    ar: "عدّل رسالة الشركة.",
+    en: "Edit the company mission.",
+  },
+
+  vision: {
+    ar: "عدّل رؤية الشركة.",
+    en: "Edit the company vision.",
+  },
+
+  story: {
+    ar: "عدّل قصة الشركة.",
+    en: "Edit the company story.",
+  },
+
+  testimonials: {
+    ar: "عدّل آراء العملاء.",
+    en: "Edit client testimonials.",
+  },
+
+  faq: {
+    ar: "عدّل الأسئلة الشائعة.",
+    en: "Edit frequently asked questions.",
+  },
+};
+
+/* =========================================================
+   HELPERS
+========================================================= */
 
 function cloneJson<T>(value: T): T {
   return JSON.parse(
@@ -263,7 +659,8 @@ function stripGlobalLayoutContent(
   delete content.footer;
 
   for (const language of ["en", "ar"]) {
-    const languageContent = content[language];
+    const languageContent =
+      content[language];
 
     if (
       languageContent &&
@@ -334,6 +731,29 @@ function getFieldLabel(
     );
 }
 
+function getSectionDescription(
+  key: string,
+  isArabic: boolean,
+  sectionDescriptions: Record<
+    string,
+    { ar: string; en: string }
+  >
+) {
+  const description =
+    sectionDescriptions[key] ||
+    DEFAULT_SECTION_DESCRIPTIONS[key];
+
+  if (description) {
+    return isArabic
+      ? description.ar
+      : description.en;
+  }
+
+  return isArabic
+    ? "عدّل محتوى هذا القسم."
+    : "Edit the content in this section.";
+}
+
 function createEmptyLike(
   value: JsonValue,
   key?: string
@@ -383,84 +803,91 @@ function shouldUseTextarea(
 ) {
   const multilineKeys = [
     "description",
+    "text",
     "quote",
     "copyright",
+    "subtitle",
+    "message",
+    "answer",
+    "a",
   ];
 
   return (
     multilineKeys.includes(key) ||
-    value.length > 90
+    value.length > 100
   );
 }
 
+function isImageField(key: string) {
+  const normalized =
+    key.toLowerCase();
 
-const DEFAULT_SECTION_DESCRIPTIONS: Record<
-  string,
-  { ar: string; en: string }
-> = {
-  meta: {
-    ar: "إعدادات عنوان الصفحة ووصفها لمحركات البحث والمشاركة.",
-    en: "Manage the page title and description used by search engines and social sharing.",
-  },
-  hero: {
-    ar: "تحكّم في أول قسم يراه الزائر في الصفحة الرئيسية.",
-    en: "Control the first section visitors see on the home page.",
-  },
-  journey: {
-    ar: "عدّل خطوات الرحلة والمحتوى التوضيحي المرتبط بها.",
-    en: "Edit the journey steps and their supporting content.",
-  },
-  services: {
-    ar: "أدر عناوين الخدمات وبطاقاتها وروابطها.",
-    en: "Manage service headings, cards, descriptions, and links.",
-  },
-  pricing: {
-    ar: "حدّث الباقات والأسعار والمميزات المرتبطة بها.",
-    en: "Update plans, prices, and their included features.",
-  },
-  suiteBanner: {
-    ar: "عدّل محتوى البانر التعريفي بباقة Rita One.",
-    en: "Edit the promotional banner for the Rita One suite.",
-  },
-  benefits: {
-    ar: "أدر المميزات والفوائد التي تظهر للزوار.",
-    en: "Manage the benefits and value points shown to visitors.",
-  },
-  tools: {
-    ar: "عدّل أدوات الأعمال والروابط المرتبطة بها.",
-    en: "Edit business tools and their related links.",
-  },
-  about: {
-    ar: "حدّث محتوى التعريف بالشركة والإحصائيات.",
-    en: "Update company information and supporting statistics.",
-  },
-  finalCta: {
-    ar: "عدّل الدعوة الأخيرة لاتخاذ إجراء في نهاية الصفحة.",
-    en: "Edit the final call-to-action shown near the end of the page.",
-  },
-};
+  return (
+    normalized.includes("image") ||
+    normalized.includes("logo") ||
+    normalized.includes("thumbnail") ||
+    normalized.includes("photo")
+  );
+}
 
-function getSectionDescription(
-  key: string,
-  isArabic: boolean,
-  sectionDescriptions: Record<
-    string,
-    { ar: string; en: string }
-  >
+function canPreviewImage(value: string) {
+  const normalized =
+    value.trim();
+
+  return (
+    normalized.startsWith("http://") ||
+    normalized.startsWith("https://") ||
+    normalized.startsWith("/") ||
+    normalized.startsWith("data:image/")
+  );
+}
+
+function hasLanguageRoot(
+  content: JsonObject
 ) {
-  const description =
-    sectionDescriptions[key] ||
-    DEFAULT_SECTION_DESCRIPTIONS[key];
+  return (
+    isJsonObject(
+      content.en as JsonValue
+    ) ||
+    isJsonObject(
+      content.ar as JsonValue
+    )
+  );
+}
 
-  if (description) {
-    return isArabic
-      ? description.ar
-      : description.en;
+function getLanguageContent(
+  content: JsonObject,
+  language: ContentLanguage
+): JsonObject {
+  if (
+    hasLanguageRoot(content) &&
+    isJsonObject(
+      content[language] as JsonValue
+    )
+  ) {
+    return content[
+      language
+    ] as JsonObject;
   }
 
-  return isArabic
-    ? "عدّل الحقول العربية والإنجليزية الخاصة بهذا القسم."
-    : "Edit the Arabic and English fields for this section.";
+  return content;
+}
+
+function sanitizePath(
+  value: string
+) {
+  return value.replace(
+    /[^a-zA-Z0-9_-]/g,
+    "-"
+  );
+}
+
+function fieldElementId(
+  path: string
+) {
+  return `content-field-${sanitizePath(
+    path
+  )}`;
 }
 
 function getItemTitle(
@@ -468,21 +895,45 @@ function getItemTitle(
   index: number,
   isArabic: boolean
 ) {
+  if (
+    typeof item === "string" &&
+    item.trim()
+  ) {
+    return item;
+  }
+
   if (isJsonObject(item)) {
     const candidate =
+      item.name ??
       item.title ??
       item.label ??
-      item.name ??
-      item.question;
+      item.question ??
+      item.slug;
 
-    if (typeof candidate === "string" && candidate.trim()) {
+    if (
+      typeof candidate === "string" &&
+      candidate.trim()
+    ) {
       return candidate;
     }
 
-    if (candidate && isLocalizedText(candidate)) {
-      const localized = isArabic
-        ? candidate.ar
-        : candidate.en;
+    if (
+      candidate !== undefined &&
+      candidate !== null &&
+      isLocalizedText(
+        candidate as JsonValue
+      )
+    ) {
+      const localizedCandidate =
+        candidate as JsonObject & {
+          ar: string;
+          en: string;
+        };
+
+      const localized =
+        isArabic
+          ? localizedCandidate.ar
+          : localizedCandidate.en;
 
       if (localized.trim()) {
         return localized;
@@ -495,36 +946,199 @@ function getItemTitle(
     : `Item ${index + 1}`;
 }
 
-function isImageField(key: string) {
-  const normalized = key.toLowerCase();
+function getItemSubtitle(
+  item: JsonValue
+) {
+  if (!isJsonObject(item)) {
+    return "";
+  }
 
-  return (
-    normalized.includes("image") ||
-    normalized.includes("logo") ||
-    normalized.includes("thumbnail") ||
-    normalized.includes("photo")
+  if (
+    item.price !== undefined
+  ) {
+    const currency =
+      typeof item.currency ===
+      "string"
+        ? item.currency
+        : "$";
+
+    return `${currency}${String(
+      item.price
+    )}`;
+  }
+
+  if (
+    typeof item.summary ===
+    "string"
+  ) {
+    return item.summary;
+  }
+
+  if (
+    typeof item.description ===
+    "string"
+  ) {
+    return item.description;
+  }
+
+  return "";
+}
+
+function classifyField(
+  key: string,
+  path: string
+): SearchResult["category"] {
+  const normalized =
+    `${key} ${path}`.toLowerCase();
+
+  if (
+    normalized.includes("price") ||
+    normalized.includes("currency") ||
+    normalized.includes("period")
+  ) {
+    return "price";
+  }
+
+  if (
+    normalized.includes("button") ||
+    normalized.includes("primary") ||
+    normalized.includes("secondary") ||
+    normalized.includes("cta") ||
+    normalized.includes("learnmore")
+  ) {
+    return "button";
+  }
+
+  if (
+    normalized.includes("title") ||
+    normalized.includes("heading") ||
+    normalized.includes("eyebrow") ||
+    normalized.includes("label") ||
+    normalized.includes("name")
+  ) {
+    return "title";
+  }
+
+  return "text";
+}
+
+function flattenSearchResults(
+  value: JsonValue,
+  sectionKey: string,
+  path: string,
+  isArabic: boolean,
+  results: SearchResult[],
+  parentTitle?: string
+) {
+  if (
+    typeof value ===
+      "string" ||
+    typeof value ===
+      "number" ||
+    typeof value ===
+      "boolean"
+  ) {
+    const parts =
+      path.split(".");
+
+    const fieldKey =
+      parts[
+        parts.length - 1
+      ] || "";
+
+    results.push({
+      sectionKey,
+      path,
+      fieldKey,
+      label:
+        getFieldLabel(
+          fieldKey,
+          isArabic
+        ),
+      value:
+        String(value),
+      itemTitle:
+        parentTitle,
+      category:
+        classifyField(
+          fieldKey,
+          path
+        ),
+    });
+
+    return;
+  }
+
+  if (value === null) {
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach(
+      (item, index) => {
+        const title =
+          getItemTitle(
+            item,
+            index,
+            isArabic
+          );
+
+        flattenSearchResults(
+          item,
+          sectionKey,
+          `${path}.${index}`,
+          isArabic,
+          results,
+          title
+        );
+      }
+    );
+
+    return;
+  }
+
+  Object.entries(value).forEach(
+    ([key, childValue]) => {
+      flattenSearchResults(
+        childValue,
+        sectionKey,
+        `${path}.${key}`,
+        isArabic,
+        results,
+        parentTitle
+      );
+    }
   );
 }
 
-function canPreviewImage(value: string) {
-  const normalized = value.trim();
-
-  return (
-    normalized.startsWith("http://") ||
-    normalized.startsWith("https://") ||
-    normalized.startsWith("/") ||
-    normalized.startsWith("data:image/")
-  );
-}
+/* =========================================================
+   MAIN COMPONENT
+========================================================= */
 
 interface WebsitePageContentEditorProps {
   pageKey: WebsitePageKey;
-  badge: { ar: string; en: string };
-  title: { ar: string; en: string };
-  description: { ar: string; en: string };
+
+  badge: {
+    ar: string;
+    en: string;
+  };
+
+  title: {
+    ar: string;
+    en: string;
+  };
+
+  description: {
+    ar: string;
+    en: string;
+  };
+
   sectionDescriptions?: Record<
     string,
-    { ar: string; en: string }
+    {
+      ar: string;
+      en: string;
+    }
   >;
 }
 
@@ -537,19 +1151,50 @@ export const WebsitePageContentEditor: React.FC<
   description,
   sectionDescriptions = {},
 }) => {
-  const { isArabic } = useLanguage();
+  const { isArabic } =
+    useLanguage();
 
   const [page, setPage] =
-    useState<AdminWebsitePage | null>(null);
+    useState<AdminWebsitePage | null>(
+      null
+    );
 
   const [content, setContent] =
     useState<JsonObject>({});
 
-  const [savedDraft, setSavedDraft] =
+  const [
+    savedDraft,
+    setSavedDraft,
+  ] =
     useState<JsonObject>({});
 
-  const [activeSection, setActiveSection] =
+  const [
+    editingLanguage,
+    setEditingLanguage,
+  ] =
+    useState<ContentLanguage>(
+      "en"
+    );
+
+  const [
+    activeSection,
+    setActiveSection,
+  ] =
     useState("");
+
+  const [
+    searchTerm,
+    setSearchTerm,
+  ] =
+    useState("");
+
+  const [
+    searchFilter,
+    setSearchFilter,
+  ] =
+    useState<SearchFilter>(
+      "all"
+    );
 
   const [loading, setLoading] =
     useState(true);
@@ -557,10 +1202,16 @@ export const WebsitePageContentEditor: React.FC<
   const [saving, setSaving] =
     useState(false);
 
-  const [publishing, setPublishing] =
+  const [
+    publishing,
+    setPublishing,
+  ] =
     useState(false);
 
-  const [restoring, setRestoring] =
+  const [
+    restoring,
+    setRestoring,
+  ] =
     useState(false);
 
   const [error, setError] =
@@ -569,82 +1220,243 @@ export const WebsitePageContentEditor: React.FC<
   const [success, setSuccess] =
     useState("");
 
-  const loadPage = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    setSuccess("");
+  /* -----------------------------
+     LOAD PAGE
+  ----------------------------- */
 
-    try {
-      const data = await getAdminPage(pageKey);
-      const draft = stripGlobalLayoutContent(
-        data.page.draftContent
-      );
-      const keys = Object.keys(draft);
+  const loadPage =
+    useCallback(async () => {
+      setLoading(true);
+      setError("");
+      setSuccess("");
 
-      setPage(data.page);
-      setContent(draft);
-      setSavedDraft(cloneJson(draft));
-      setActiveSection((current) =>
-        current && keys.includes(current)
-          ? current
-          : keys[0] || ""
-      );
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : isArabic
-            ? "تعذر تحميل محتوى الصفحة."
-            : "Could not load page content."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [isArabic, pageKey]);
+      try {
+        const data =
+          await getAdminPage(
+            pageKey
+          );
+
+        const draft =
+          stripGlobalLayoutContent(
+            data.page
+              .draftContent
+          );
+
+        setPage(data.page);
+
+        setContent(draft);
+
+        setSavedDraft(
+          cloneJson(draft)
+        );
+
+        const initialLanguage =
+          isJsonObject(
+            draft.en as JsonValue
+          )
+            ? "en"
+            : isJsonObject(
+                  draft.ar as JsonValue
+                )
+              ? "ar"
+              : "en";
+
+        setEditingLanguage(
+          initialLanguage
+        );
+
+        const languageContent =
+          getLanguageContent(
+            draft,
+            initialLanguage
+          );
+
+        const keys =
+          Object.keys(
+            languageContent
+          );
+
+        setActiveSection(
+          keys[0] || ""
+        );
+      } catch (
+        requestError
+      ) {
+        setError(
+          requestError instanceof
+            Error
+            ? requestError.message
+            : isArabic
+              ? "تعذر تحميل محتوى الصفحة."
+              : "Could not load page content."
+        );
+      } finally {
+        setLoading(false);
+      }
+    }, [
+      isArabic,
+      pageKey,
+    ]);
 
   useEffect(() => {
     void loadPage();
   }, [loadPage]);
 
-  const sectionKeys = useMemo(
-    () => Object.keys(content),
-    [content]
-  );
+  /* -----------------------------
+     LANGUAGE CONTENT
+  ----------------------------- */
+
+  const localizedRoot =
+    useMemo(
+      () =>
+        hasLanguageRoot(
+          content
+        ),
+      [content]
+    );
+
+  const languageContent =
+    useMemo(
+      () =>
+        getLanguageContent(
+          content,
+          editingLanguage
+        ),
+      [
+        content,
+        editingLanguage,
+      ]
+    );
+
+  const sectionKeys =
+    useMemo(
+      () =>
+        Object.keys(
+          languageContent
+        ),
+      [languageContent]
+    );
 
   useEffect(() => {
     if (
-      activeSection &&
-      !sectionKeys.includes(activeSection)
+      !sectionKeys.length
     ) {
-      setActiveSection(sectionKeys[0] || "");
+      setActiveSection("");
+      return;
     }
-  }, [activeSection, sectionKeys]);
 
-  const isDirty = useMemo(
-    () =>
-      JSON.stringify(content) !==
-      JSON.stringify(savedDraft),
-    [content, savedDraft]
-  );
+    if (
+      !sectionKeys.includes(
+        activeSection
+      )
+    ) {
+      setActiveSection(
+        sectionKeys[0]
+      );
+    }
+  }, [
+    activeSection,
+    sectionKeys,
+  ]);
+
+  /* -----------------------------
+     DIRTY
+  ----------------------------- */
+
+  const isDirty =
+    useMemo(
+      () =>
+        JSON.stringify(
+          content
+        ) !==
+        JSON.stringify(
+          savedDraft
+        ),
+      [
+        content,
+        savedDraft,
+      ]
+    );
 
   const busy =
-    saving || publishing || restoring;
+    saving ||
+    publishing ||
+    restoring;
 
-  function updateSection(value: JsonValue) {
+  /* -----------------------------
+     UPDATE SECTION
+  ----------------------------- */
+
+  function updateSection(
+    value: JsonValue
+  ) {
     if (!activeSection) {
       return;
     }
 
-    setContent((current) => ({
-      ...current,
-      [activeSection]: value,
-    }));
+    setContent(
+      (current) => {
+        /*
+          Most Rita pages have:
+          {
+            en: {...},
+            ar: {...}
+          }
+
+          So update the selected language
+          without touching the other one.
+        */
+        if (
+          hasLanguageRoot(
+            current
+          )
+        ) {
+          const currentLanguage =
+            isJsonObject(
+              current[
+                editingLanguage
+              ] as JsonValue
+            )
+              ? (current[
+                  editingLanguage
+                ] as JsonObject)
+              : {};
+
+          return {
+            ...current,
+
+            [editingLanguage]:
+              {
+                ...currentLanguage,
+
+                [activeSection]:
+                  value,
+              },
+          };
+        }
+
+        return {
+          ...current,
+
+          [activeSection]:
+            value,
+        };
+      }
+    );
 
     setSuccess("");
   }
 
+  /* -----------------------------
+     SAVE
+  ----------------------------- */
+
   async function handleSave() {
-    if (!page || saving || publishing) {
+    if (
+      !page ||
+      saving ||
+      publishing
+    ) {
       return null;
     }
 
@@ -660,13 +1472,25 @@ export const WebsitePageContentEditor: React.FC<
           page.version
         );
 
-      const nextDraft = cloneJson(
-        data.page.draftContent
-      );
+      const nextDraft =
+        stripGlobalLayoutContent(
+          cloneJson(
+            data.page
+              .draftContent
+          )
+        );
 
       setPage(data.page);
-      setContent(nextDraft);
-      setSavedDraft(cloneJson(nextDraft));
+
+      setContent(
+        nextDraft
+      );
+
+      setSavedDraft(
+        cloneJson(
+          nextDraft
+        )
+      );
 
       setSuccess(
         isArabic
@@ -675,9 +1499,12 @@ export const WebsitePageContentEditor: React.FC<
       );
 
       return data.page;
-    } catch (requestError) {
+    } catch (
+      requestError
+    ) {
       setError(
-        requestError instanceof Error
+        requestError instanceof
+          Error
           ? requestError.message
           : isArabic
             ? "تعذر حفظ المسودة."
@@ -690,8 +1517,16 @@ export const WebsitePageContentEditor: React.FC<
     }
   }
 
+  /* -----------------------------
+     PUBLISH
+  ----------------------------- */
+
   async function handlePublish() {
-    if (!page || publishing || saving) {
+    if (
+      !page ||
+      publishing ||
+      saving
+    ) {
       return;
     }
 
@@ -700,7 +1535,8 @@ export const WebsitePageContentEditor: React.FC<
     setSuccess("");
 
     try {
-      let currentPage = page;
+      let currentPage =
+        page;
 
       if (isDirty) {
         const saved =
@@ -710,15 +1546,30 @@ export const WebsitePageContentEditor: React.FC<
             currentPage.version
           );
 
-        currentPage = saved.page;
+        currentPage =
+          saved.page;
 
-        const nextDraft = cloneJson(
-          saved.page.draftContent
+        const nextDraft =
+          stripGlobalLayoutContent(
+            cloneJson(
+              saved.page
+                .draftContent
+            )
+          );
+
+        setPage(
+          saved.page
         );
 
-        setPage(saved.page);
-        setContent(nextDraft);
-        setSavedDraft(cloneJson(nextDraft));
+        setContent(
+          nextDraft
+        );
+
+        setSavedDraft(
+          cloneJson(
+            nextDraft
+          )
+        );
       }
 
       const published =
@@ -727,42 +1578,71 @@ export const WebsitePageContentEditor: React.FC<
           currentPage.version
         );
 
-      const nextDraft = cloneJson(
-        published.page.draftContent
+      const nextDraft =
+        stripGlobalLayoutContent(
+          cloneJson(
+            published.page
+              .draftContent
+          )
+        );
+
+      setPage(
+        published.page
       );
 
-      setPage(published.page);
-      setContent(nextDraft);
-      setSavedDraft(cloneJson(nextDraft));
+      setContent(
+        nextDraft
+      );
+
+      setSavedDraft(
+        cloneJson(
+          nextDraft
+        )
+      );
 
       setSuccess(
         isArabic
           ? "تم نشر التغييرات على الموقع."
           : "Changes published successfully."
       );
-    } catch (requestError) {
+    } catch (
+      requestError
+    ) {
       setError(
-        requestError instanceof Error
+        requestError instanceof
+          Error
           ? requestError.message
           : isArabic
             ? "تعذر نشر التغييرات."
             : "Could not publish the changes."
       );
     } finally {
-      setPublishing(false);
+      setPublishing(
+        false
+      );
     }
   }
 
+  /* -----------------------------
+     RESTORE
+  ----------------------------- */
+
   async function handleRestore() {
-    if (!page || restoring || saving || publishing) {
+    if (
+      !page ||
+      restoring ||
+      saving ||
+      publishing
+    ) {
       return;
     }
 
-    const confirmed = window.confirm(
-      isArabic
-        ? "سيتم حذف تعديلات المسودة الحالية واسترجاع آخر نسخة منشورة. هل تريد المتابعة؟"
-        : "Current draft changes will be removed and replaced with the published version. Continue?"
-    );
+    const confirmed =
+      window.confirm(
+        isArabic
+          ? "سيتم حذف تعديلات المسودة الحالية واسترجاع آخر نسخة منشورة. هل تريد المتابعة؟"
+          : "Current draft changes will be removed and replaced with the published version. Continue?"
+      );
 
     if (!confirmed) {
       return;
@@ -779,78 +1659,234 @@ export const WebsitePageContentEditor: React.FC<
           page.version
         );
 
-      const nextDraft = cloneJson(
-        data.page.draftContent
-      );
+      const nextDraft =
+        stripGlobalLayoutContent(
+          cloneJson(
+            data.page
+              .draftContent
+          )
+        );
 
       setPage(data.page);
-      setContent(nextDraft);
-      setSavedDraft(cloneJson(nextDraft));
+
+      setContent(
+        nextDraft
+      );
+
+      setSavedDraft(
+        cloneJson(
+          nextDraft
+        )
+      );
 
       setSuccess(
         isArabic
           ? "تم استرجاع النسخة المنشورة."
           : "Published content restored."
       );
-    } catch (requestError) {
+    } catch (
+      requestError
+    ) {
       setError(
-        requestError instanceof Error
+        requestError instanceof
+          Error
           ? requestError.message
           : isArabic
             ? "تعذر استرجاع النسخة المنشورة."
             : "Could not restore published content."
       );
     } finally {
-      setRestoring(false);
+      setRestoring(
+        false
+      );
     }
   }
+
+  /* -----------------------------
+     SEARCH
+  ----------------------------- */
+
+  const allSearchResults =
+    useMemo(() => {
+      const results:
+        SearchResult[] = [];
+
+      Object.entries(
+        languageContent
+      ).forEach(
+        ([
+          sectionKey,
+          sectionValue,
+        ]) => {
+          flattenSearchResults(
+            sectionValue,
+            sectionKey,
+            sectionKey,
+            isArabic,
+            results
+          );
+        }
+      );
+
+      return results;
+    }, [
+      languageContent,
+      isArabic,
+    ]);
+
+  const searchResults =
+    useMemo(() => {
+      const search =
+        searchTerm
+          .trim()
+          .toLowerCase();
+
+      if (!search) {
+        return [];
+      }
+
+      return allSearchResults
+        .filter(
+          (result) => {
+            if (
+              searchFilter !==
+                "all" &&
+              result.category !==
+                searchFilter
+            ) {
+              return false;
+            }
+
+            const haystack =
+              [
+                result.label,
+                result.value,
+                result.path,
+                result.itemTitle,
+                getFieldLabel(
+                  result.sectionKey,
+                  isArabic
+                ),
+              ]
+                .filter(
+                  Boolean
+                )
+                .join(" ")
+                .toLowerCase();
+
+            return haystack.includes(
+              search
+            );
+          }
+        )
+        .slice(0, 50);
+    }, [
+      allSearchResults,
+      searchTerm,
+      searchFilter,
+      isArabic,
+    ]);
+
+  function goToSearchResult(
+    result: SearchResult
+  ) {
+    setActiveSection(
+      result.sectionKey
+    );
+
+    setSearchTerm("");
+
+    window.setTimeout(
+      () => {
+        const element =
+          window.document.getElementById(
+            fieldElementId(
+              result.path
+            )
+          );
+
+        if (element) {
+          element.scrollIntoView({
+            behavior:
+              "smooth",
+            block: "center",
+          });
+
+          element.classList.add(
+            "ring-2",
+            "ring-blue-500",
+            "ring-offset-2"
+          );
+
+          window.setTimeout(
+            () => {
+              element.classList.remove(
+                "ring-2",
+                "ring-blue-500",
+                "ring-offset-2"
+              );
+            },
+            1800
+          );
+        }
+      },
+      100
+    );
+  }
+
+  /* -----------------------------
+     LOADING
+  ----------------------------- */
 
   if (loading) {
     return (
       <div
         className="space-y-6"
-        dir={isArabic ? "rtl" : "ltr"}
+        dir={
+          isArabic
+            ? "rtl"
+            : "ltr"
+        }
       >
         <div>
           <div className="h-8 w-64 animate-pulse rounded-lg bg-slate-200" />
+
           <div className="mt-3 h-4 w-96 max-w-full animate-pulse rounded bg-slate-100" />
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 p-5">
-            <div className="flex gap-2 overflow-hidden">
-              {[1, 2, 3, 4, 5].map((item) => (
-                <div
-                  key={item}
-                  className="h-10 w-28 shrink-0 animate-pulse rounded-lg bg-slate-100"
-                />
-              ))}
-            </div>
-          </div>
+        <div className="grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
+          <div className="h-[500px] animate-pulse rounded-2xl bg-slate-100" />
 
-          <div className="space-y-4 bg-slate-50 p-5">
-            {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                className="h-32 animate-pulse rounded-xl border border-slate-200 bg-white"
-              />
-            ))}
-          </div>
+          <div className="h-[600px] animate-pulse rounded-2xl bg-slate-100" />
         </div>
       </div>
     );
   }
 
+  /* =========================================================
+     UI
+  ========================================================= */
+
   return (
     <div
-      className="space-y-6 pb-6"
-      dir={isArabic ? "rtl" : "ltr"}
+      className="space-y-6 pb-8"
+      dir={
+        isArabic
+          ? "rtl"
+          : "ltr"
+      }
     >
+      {/* =====================================================
+          PAGE HEADER
+      ===================================================== */}
+
       <header className="flex flex-wrap items-start justify-between gap-5">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">
-              {isArabic ? badge.ar : badge.en}
+              {isArabic
+                ? badge.ar
+                : badge.en}
             </span>
 
             {page && (
@@ -886,41 +1922,53 @@ export const WebsitePageContentEditor: React.FC<
             </span>
           </div>
 
-          <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-            {isArabic ? title.ar : title.en}
+          <h1 className="mt-4 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+            {isArabic
+              ? title.ar
+              : title.en}
           </h1>
 
-          <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-slate-500">
-            {isArabic ? description.ar : description.en}
+          <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-slate-500">
+            {isArabic
+              ? description.ar
+              : description.en}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => void loadPage()}
+            onClick={() =>
+              void loadPage()
+            }
             disabled={busy}
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
           >
-            <RefreshCw
-              className={`h-4 w-4 ${
-                loading ? "animate-spin" : ""
-              }`}
-            />
-            {isArabic ? "تحديث" : "Refresh"}
+            <RefreshCw className="h-4 w-4" />
+
+            {isArabic
+              ? "تحديث"
+              : "Refresh"}
           </button>
 
           <button
             type="button"
-            onClick={() => void handleRestore()}
-            disabled={!page || busy}
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() =>
+              void handleRestore()
+            }
+            disabled={
+              !page || busy
+            }
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
           >
             <RotateCcw
               className={`h-4 w-4 ${
-                restoring ? "animate-spin" : ""
+                restoring
+                  ? "animate-spin"
+                  : ""
               }`}
             />
+
             {restoring
               ? isArabic
                 ? "جاري الاسترجاع..."
@@ -932,117 +1980,493 @@ export const WebsitePageContentEditor: React.FC<
         </div>
       </header>
 
+      {/* =====================================================
+          HOME SHARED CONTENT NOTE
+      ===================================================== */}
+
+      {pageKey ===
+        "home" && (
+        <div className="rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4">
+          <div className="flex items-start gap-3">
+            <DollarSign className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+
+            <div>
+              <p className="font-black text-blue-950">
+                {isArabic
+                  ? "الأسعار والخدمات ليست داخل محتوى الصفحة الرئيسية"
+                  : "Pricing and services are managed separately"}
+              </p>
+
+              <p className="mt-1 text-sm font-medium leading-6 text-blue-700">
+                {isArabic
+                  ? "لتغيير السعر الظاهر في الصفحة الرئيسية، افتح Pricing content من القائمة الجانبية ثم Packages ثم اختر الباقة."
+                  : "To change a price shown on the home page, open Pricing content from the sidebar → Packages → choose the package."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================
+          STATUS MESSAGES
+      ===================================================== */}
+
       {error && (
         <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
-          <span>{error}</span>
+
+          <span>
+            {error}
+          </span>
         </div>
       )}
 
       {success && (
         <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
           <Check className="mt-0.5 h-5 w-5 shrink-0" />
-          <span>{success}</span>
+
+          <span>
+            {success}
+          </span>
         </div>
       )}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 bg-white px-4 pt-4 sm:px-6 sm:pt-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                {isArabic
-                  ? "أقسام الصفحة"
-                  : "Page sections"}
-              </h2>
-              <p className="mt-1 text-xs font-medium text-slate-500">
-                {isArabic
-                  ? "اختر قسمًا لتعديل محتواه."
-                  : "Choose a section to edit its content."}
-              </p>
+      {/* =====================================================
+          LANGUAGE + SEARCH
+      ===================================================== */}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
+          {/* Language */}
+
+          {localizedRoot && (
+            <div className="flex shrink-0 rounded-xl bg-slate-100 p-1">
+              <button
+                type="button"
+                onClick={() =>
+                  setEditingLanguage(
+                    "en"
+                  )
+                }
+                className={`inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-sm font-black transition ${
+                  editingLanguage ===
+                  "en"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-slate-500"
+                }`}
+              >
+                <Languages className="h-4 w-4" />
+                English
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setEditingLanguage(
+                    "ar"
+                  )
+                }
+                className={`inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-sm font-black transition ${
+                  editingLanguage ===
+                  "ar"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-slate-500"
+                }`}
+              >
+                <Languages className="h-4 w-4" />
+                العربية
+              </button>
             </div>
+          )}
 
-            <span className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600">
-              {isArabic
-                ? `${sectionKeys.length} أقسام`
-                : `${sectionKeys.length} sections`}
-            </span>
+          {/* Search */}
+
+          <div className="relative min-w-0 flex-1">
+            <Search className="absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+
+            <input
+              type="text"
+              value={
+                searchTerm
+              }
+              onChange={(
+                event
+              ) =>
+                setSearchTerm(
+                  event.target
+                    .value
+                )
+              }
+              placeholder={
+                isArabic
+                  ? "ابحث عن أي نص، سعر، زر، عنوان..."
+                  : "Search any text, price, button, title..."
+              }
+              className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-12 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
+            />
+
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() =>
+                  setSearchTerm(
+                    ""
+                  )
+                }
+                className="absolute end-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-slate-400 hover:bg-slate-200"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
-
-          <nav className="-mb-px flex gap-2 overflow-x-auto pb-4 [scrollbar-width:thin]">
-            {sectionKeys.map((sectionKey) => {
-              const selected =
-                sectionKey === activeSection;
-
-              return (
-                <button
-                  key={sectionKey}
-                  type="button"
-                  onClick={() =>
-                    setActiveSection(sectionKey)
-                  }
-                  className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition ${
-                    selected
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
-                  }`}
-                >
-                  <Eye className="h-4 w-4" />
-                  {getFieldLabel(
-                    sectionKey,
-                    isArabic
-                  )}
-                </button>
-              );
-            })}
-          </nav>
         </div>
 
-        <div className="bg-slate-50 p-4 sm:p-6">
-          {activeSection &&
-          content[activeSection] !== undefined ? (
-            <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-              <div className="mb-6 border-b border-slate-200 pb-5">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600">
-                      {isArabic
-                        ? "القسم المحدد"
-                        : "Selected section"}
-                    </p>
+        {/* Quick filters */}
 
-                    <h2 className="mt-2 text-xl font-bold text-slate-950 sm:text-2xl">
-                      {getFieldLabel(
-                        activeSection,
-                        isArabic
-                      )}
-                    </h2>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <SearchFilterButton
+            active={
+              searchFilter ===
+              "all"
+            }
+            onClick={() =>
+              setSearchFilter(
+                "all"
+              )
+            }
+            icon={
+              <ListFilter className="h-4 w-4" />
+            }
+            label={
+              isArabic
+                ? "الكل"
+                : "All"
+            }
+          />
 
-                    <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-slate-500">
-                      {getSectionDescription(
-                        activeSection,
-                        isArabic,
-                        sectionDescriptions
-                      )}
-                    </p>
-                  </div>
-                </div>
+          <SearchFilterButton
+            active={
+              searchFilter ===
+              "price"
+            }
+            onClick={() =>
+              setSearchFilter(
+                "price"
+              )
+            }
+            icon={
+              <DollarSign className="h-4 w-4" />
+            }
+            label={
+              isArabic
+                ? "الأسعار"
+                : "Prices"
+            }
+          />
+
+          <SearchFilterButton
+            active={
+              searchFilter ===
+              "button"
+            }
+            onClick={() =>
+              setSearchFilter(
+                "button"
+              )
+            }
+            icon={
+              <Tag className="h-4 w-4" />
+            }
+            label={
+              isArabic
+                ? "الأزرار"
+                : "Buttons"
+            }
+          />
+
+          <SearchFilterButton
+            active={
+              searchFilter ===
+              "title"
+            }
+            onClick={() =>
+              setSearchFilter(
+                "title"
+              )
+            }
+            icon={
+              <Type className="h-4 w-4" />
+            }
+            label={
+              isArabic
+                ? "العناوين"
+                : "Titles"
+            }
+          />
+        </div>
+
+        {/* Search results */}
+
+        {searchTerm && (
+          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
+              <span className="text-sm font-black text-slate-800">
+                {isArabic
+                  ? "نتائج البحث"
+                  : "Search results"}
+              </span>
+
+              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-slate-500">
+                {
+                  searchResults.length
+                }
+              </span>
+            </div>
+
+            {searchResults.length >
+            0 ? (
+              <div className="max-h-80 overflow-y-auto p-2">
+                {searchResults.map(
+                  (
+                    result,
+                    index
+                  ) => (
+                    <button
+                      key={`${result.path}-${index}`}
+                      type="button"
+                      onClick={() =>
+                        goToSearchResult(
+                          result
+                        )
+                      }
+                      className="flex w-full items-center justify-between gap-4 rounded-lg px-3 py-3 text-start transition hover:bg-blue-50"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-black text-slate-900">
+                            {result.itemTitle ||
+                              result.label}
+                          </span>
+
+                          {result.itemTitle && (
+                            <span className="text-xs font-semibold text-slate-400">
+                              {
+                                result.label
+                              }
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="mt-1 truncate text-xs font-medium text-slate-500">
+                          {getFieldLabel(
+                            result.sectionKey,
+                            isArabic
+                          )}
+                          {" → "}
+                          {
+                            result.value
+                          }
+                        </p>
+                      </div>
+
+                      <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 rtl:rotate-180" />
+                    </button>
+                  )
+                )}
+              </div>
+            ) : (
+              <div className="px-5 py-8 text-center text-sm font-semibold text-slate-400">
+                {isArabic
+                  ? "لا توجد نتائج."
+                  : "No matching content found."}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* =====================================================
+          MAIN EDITOR GRID
+      ===================================================== */}
+
+      <div className="grid items-start gap-5 xl:grid-cols-[260px_minmax(0,1fr)]">
+        {/* ===================================================
+            SIDEBAR
+        =================================================== */}
+
+        <aside className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:sticky xl:top-4">
+          <div className="border-b border-slate-200 p-4">
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-blue-600">
+                <FileText className="h-5 w-5" />
               </div>
 
-              <JsonValueEditor
-                label={getFieldLabel(
-                  activeSection,
-                  isArabic
+              <div>
+                <h2 className="text-sm font-black text-slate-900">
+                  {isArabic
+                    ? "أقسام الصفحة"
+                    : "Page sections"}
+                </h2>
+
+                <p className="mt-0.5 text-xs font-medium text-slate-500">
+                  {
+                    sectionKeys.length
+                  }{" "}
+                  {isArabic
+                    ? "قسم"
+                    : "sections"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <nav className="space-y-1.5 p-3">
+            {sectionKeys.map(
+              (
+                sectionKey
+              ) => {
+                const selected =
+                  sectionKey ===
+                  activeSection;
+
+                return (
+                  <button
+                    key={
+                      sectionKey
+                    }
+                    type="button"
+                    onClick={() =>
+                      setActiveSection(
+                        sectionKey
+                      )
+                    }
+                    className={`flex w-full items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-start transition ${
+                      selected
+                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/15"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                    }`}
+                  >
+                    <span className="min-w-0 truncate text-sm font-bold">
+                      {getFieldLabel(
+                        sectionKey,
+                        isArabic
+                      )}
+                    </span>
+
+                    <ChevronRight
+                      className={`h-4 w-4 shrink-0 rtl:rotate-180 ${
+                        selected
+                          ? "text-white"
+                          : "text-slate-400"
+                      }`}
+                    />
+                  </button>
+                );
+              }
+            )}
+          </nav>
+        </aside>
+
+        {/* ===================================================
+            CONTENT
+        =================================================== */}
+
+        <main className="min-w-0 space-y-4">
+          {activeSection &&
+          languageContent[
+            activeSection
+          ] !== undefined ? (
+            <>
+              {/* Breadcrumb */}
+
+              <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-400">
+                <span>
+                  {isArabic
+                    ? title.ar
+                    : title.en}
+                </span>
+
+                <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
+
+                {localizedRoot && (
+                  <>
+                    <span>
+                      {editingLanguage ===
+                      "ar"
+                        ? "العربية"
+                        : "English"}
+                    </span>
+
+                    <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
+                  </>
                 )}
-                fieldKey={activeSection}
-                value={content[activeSection]}
-                onChange={updateSection}
-                isArabic={isArabic}
-                depth={0}
-              />
-            </section>
+
+                <span className="text-blue-600">
+                  {getFieldLabel(
+                    activeSection,
+                    isArabic
+                  )}
+                </span>
+              </div>
+
+              <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                {/* Section header */}
+
+                <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
+                  <span className="text-xs font-black uppercase tracking-[0.16em] text-blue-600">
+                    {isArabic
+                      ? "القسم المحدد"
+                      : "Selected section"}
+                  </span>
+
+                  <h2 className="mt-2 text-2xl font-black text-slate-950">
+                    {getFieldLabel(
+                      activeSection,
+                      isArabic
+                    )}
+                  </h2>
+
+                  <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-slate-500">
+                    {getSectionDescription(
+                      activeSection,
+                      isArabic,
+                      sectionDescriptions
+                    )}
+                  </p>
+                </div>
+
+                {/* Editor */}
+
+                <div className="bg-slate-50 p-4 sm:p-6">
+                  <JsonValueEditor
+                    label={getFieldLabel(
+                      activeSection,
+                      isArabic
+                    )}
+                    fieldKey={
+                      activeSection
+                    }
+                    value={
+                      languageContent[
+                        activeSection
+                      ]
+                    }
+                    onChange={
+                      updateSection
+                    }
+                    isArabic={
+                      isArabic
+                    }
+                    depth={0}
+                    path={
+                      activeSection
+                    }
+                  />
+                </div>
+              </section>
+            </>
           ) : (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-20 text-center">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-20 text-center">
               <p className="font-semibold text-slate-400">
                 {isArabic
                   ? "لا يوجد قسم محدد."
@@ -1050,17 +2474,21 @@ export const WebsitePageContentEditor: React.FC<
               </p>
             </div>
           )}
-        </div>
-      </section>
+        </main>
+      </div>
 
-      <div className="sticky bottom-4 z-30 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-[0_14px_35px_rgba(15,23,42,0.12)] backdrop-blur sm:px-5">
+      {/* =====================================================
+          SAVE BAR
+      ===================================================== */}
+
+      <div className="sticky bottom-4 z-30 rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 shadow-[0_14px_35px_rgba(15,23,42,0.12)] backdrop-blur sm:px-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-sm font-bold text-slate-800">
+            <p className="text-sm font-black text-slate-800">
               {isDirty
                 ? isArabic
                   ? "لديك تغييرات لم يتم حفظها بعد."
-                  : "You have changes that have not been saved yet."
+                  : "You have unsaved changes."
                 : isArabic
                   ? "كل التغييرات محفوظة في المسودة."
                   : "All changes are saved in the draft."}
@@ -1076,13 +2504,18 @@ export const WebsitePageContentEditor: React.FC<
           <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
             <button
               type="button"
-              onClick={() => void handleSave()}
-              disabled={
-                !page || busy || !isDirty
+              onClick={() =>
+                void handleSave()
               }
-              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+              disabled={
+                !page ||
+                busy ||
+                !isDirty
+              }
+              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
             >
               <Save className="h-4 w-4" />
+
               {saving
                 ? isArabic
                   ? "جاري الحفظ..."
@@ -1094,11 +2527,16 @@ export const WebsitePageContentEditor: React.FC<
 
             <button
               type="button"
-              onClick={() => void handlePublish()}
-              disabled={!page || busy}
-              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+              onClick={() =>
+                void handlePublish()
+              }
+              disabled={
+                !page || busy
+              }
+              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-black text-white shadow-md shadow-blue-600/15 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
             >
               <Send className="h-4 w-4" />
+
               {publishing
                 ? isArabic
                   ? "جاري النشر..."
@@ -1114,13 +2552,57 @@ export const WebsitePageContentEditor: React.FC<
   );
 };
 
+/* =========================================================
+   SEARCH FILTER BUTTON
+========================================================= */
+
+function SearchFilterButton({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex min-h-9 items-center gap-2 rounded-lg px-3.5 text-xs font-black transition ${
+        active
+          ? "bg-blue-600 text-white"
+          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+/* =========================================================
+   RECURSIVE JSON EDITOR
+========================================================= */
+
 interface JsonValueEditorProps {
   label: string;
+
   fieldKey: string;
+
   value: JsonValue;
-  onChange: (value: JsonValue) => void;
+
+  onChange: (
+    value: JsonValue
+  ) => void;
+
   isArabic: boolean;
+
   depth: number;
+
+  path: string;
 }
 
 function JsonValueEditor({
@@ -1130,22 +2612,43 @@ function JsonValueEditor({
   onChange,
   isArabic,
   depth,
+  path,
 }: JsonValueEditorProps) {
-  const [expanded, setExpanded] =
+  const [
+    expanded,
+    setExpanded,
+  ] =
     useState(true);
 
-  if (isLocalizedText(value)) {
+  /* -----------------------------
+     LOCALIZED TEXT
+  ----------------------------- */
+
+  if (
+    isLocalizedText(value)
+  ) {
     const multiline =
-      shouldUseTextarea(fieldKey, value.ar) ||
-      shouldUseTextarea(fieldKey, value.en);
+      shouldUseTextarea(
+        fieldKey,
+        value.ar
+      ) ||
+      shouldUseTextarea(
+        fieldKey,
+        value.en
+      );
 
     return (
       <div
-        className={`rounded-xl border border-slate-200 bg-white p-4 ${
-          multiline ? "lg:col-span-2" : ""
+        id={fieldElementId(
+          path
+        )}
+        className={`rounded-xl border border-slate-200 bg-white p-4 transition ${
+          multiline
+            ? "lg:col-span-2"
+            : ""
         }`}
       >
-        <h3 className="mb-4 text-sm font-bold text-slate-900">
+        <h3 className="mb-4 text-sm font-black text-slate-900">
           {label}
         </h3>
 
@@ -1157,11 +2660,17 @@ function JsonValueEditor({
           }
         >
           <EditorTextField
-            label={isArabic ? "الإنجليزية" : "English"}
-            value={value.en}
-            multiline={multiline}
+            label="English"
+            value={
+              value.en
+            }
+            multiline={
+              multiline
+            }
             direction="ltr"
-            onChange={(nextValue) =>
+            onChange={(
+              nextValue
+            ) =>
               onChange({
                 ...value,
                 en: nextValue,
@@ -1170,11 +2679,17 @@ function JsonValueEditor({
           />
 
           <EditorTextField
-            label={isArabic ? "العربية" : "Arabic"}
-            value={value.ar}
-            multiline={multiline}
+            label="العربية"
+            value={
+              value.ar
+            }
+            multiline={
+              multiline
+            }
             direction="rtl"
-            onChange={(nextValue) =>
+            onChange={(
+              nextValue
+            ) =>
               onChange({
                 ...value,
                 ar: nextValue,
@@ -1186,14 +2701,21 @@ function JsonValueEditor({
     );
   }
 
-  if (Array.isArray(value)) {
+  /* -----------------------------
+     ARRAY
+  ----------------------------- */
+
+  if (
+    Array.isArray(value)
+  ) {
     return (
       <div className="space-y-4 lg:col-span-2">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-base font-bold text-slate-900">
+            <h3 className="text-base font-black text-slate-900">
               {label}
             </h3>
+
             <p className="mt-1 text-xs font-medium text-slate-500">
               {isArabic
                 ? `${value.length} عناصر`
@@ -1205,116 +2727,227 @@ function JsonValueEditor({
             type="button"
             onClick={() => {
               const template =
-                value.length > 0
-                  ? createEmptyLike(value[0])
+                value.length >
+                0
+                  ? createEmptyLike(
+                      value[0]
+                    )
                   : "";
 
-              onChange([...value, template]);
+              onChange([
+                ...value,
+                template,
+              ]);
             }}
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white transition hover:bg-slate-800"
           >
             <Plus className="h-4 w-4" />
+
             {isArabic
               ? "إضافة عنصر"
               : "Add item"}
           </button>
         </div>
 
-        {value.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm font-semibold text-slate-400">
+        {value.length ===
+        0 ? (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-sm font-semibold text-slate-400">
             {isArabic
-              ? "لا توجد عناصر في هذه القائمة."
+              ? "لا توجد عناصر."
               : "There are no items in this list."}
           </div>
         ) : (
-          <div className="space-y-4">
-            {value.map((item, index) => (
-              <ArrayItemEditor
-                key={index}
-                index={index}
-                total={value.length}
-                title={getItemTitle(
-                  item,
-                  index,
-                  isArabic
-                )}
-                item={item}
-                fieldKey={fieldKey}
-                isArabic={isArabic}
-                depth={depth + 1}
-                onChange={(nextItem) => {
-                  const next = [...value];
-                  next[index] = nextItem;
-                  onChange(next);
-                }}
-                onRemove={() => {
-                  onChange(
-                    value.filter(
-                      (_item, itemIndex) =>
-                        itemIndex !== index
-                    )
-                  );
-                }}
-                onMoveUp={() => {
-                  if (index === 0) {
-                    return;
+          <div className="space-y-3">
+            {value.map(
+              (
+                item,
+                index
+              ) => (
+                <ArrayItemEditor
+                  key={
+                    index
                   }
-
-                  const next = [...value];
-
-                  [next[index - 1], next[index]] = [
-                    next[index],
-                    next[index - 1],
-                  ];
-
-                  onChange(next);
-                }}
-                onMoveDown={() => {
-                  if (index === value.length - 1) {
-                    return;
+                  index={
+                    index
                   }
+                  total={
+                    value.length
+                  }
+                  title={getItemTitle(
+                    item,
+                    index,
+                    isArabic
+                  )}
+                  subtitle={getItemSubtitle(
+                    item
+                  )}
+                  item={
+                    item
+                  }
+                  fieldKey={
+                    fieldKey
+                  }
+                  isArabic={
+                    isArabic
+                  }
+                  depth={
+                    depth + 1
+                  }
+                  path={`${path}.${index}`}
+                  onChange={(
+                    nextItem
+                  ) => {
+                    const next =
+                      [
+                        ...value,
+                      ];
 
-                  const next = [...value];
+                    next[index] =
+                      nextItem;
 
-                  [next[index], next[index + 1]] = [
-                    next[index + 1],
-                    next[index],
-                  ];
+                    onChange(
+                      next
+                    );
+                  }}
+                  onRemove={() => {
+                    onChange(
+                      value.filter(
+                        (
+                          _item,
+                          itemIndex
+                        ) =>
+                          itemIndex !==
+                          index
+                      )
+                    );
+                  }}
+                  onMoveUp={() => {
+                    if (
+                      index === 0
+                    ) {
+                      return;
+                    }
 
-                  onChange(next);
-                }}
-              />
-            ))}
+                    const next =
+                      [
+                        ...value,
+                      ];
+
+                    [
+                      next[
+                        index -
+                          1
+                      ],
+                      next[
+                        index
+                      ],
+                    ] = [
+                      next[
+                        index
+                      ],
+                      next[
+                        index -
+                          1
+                      ],
+                    ];
+
+                    onChange(
+                      next
+                    );
+                  }}
+                  onMoveDown={() => {
+                    if (
+                      index ===
+                      value.length -
+                        1
+                    ) {
+                      return;
+                    }
+
+                    const next =
+                      [
+                        ...value,
+                      ];
+
+                    [
+                      next[
+                        index
+                      ],
+                      next[
+                        index +
+                          1
+                      ],
+                    ] = [
+                      next[
+                        index +
+                          1
+                      ],
+                      next[
+                        index
+                      ],
+                    ];
+
+                    onChange(
+                      next
+                    );
+                  }}
+                />
+              )
+            )}
           </div>
         )}
       </div>
     );
   }
 
-  if (isJsonObject(value)) {
-    const entries = Object.entries(value);
+  /* -----------------------------
+     OBJECT
+  ----------------------------- */
+
+  if (
+    isJsonObject(value)
+  ) {
+    const entries =
+      Object.entries(value);
 
     if (depth === 0) {
       return (
         <div className="grid gap-4 lg:grid-cols-2">
           {entries.map(
-            ([childKey, childValue]) => (
+            ([
+              childKey,
+              childValue,
+            ]) => (
               <JsonValueEditor
-                key={childKey}
+                key={
+                  childKey
+                }
                 label={getFieldLabel(
                   childKey,
                   isArabic
                 )}
-                fieldKey={childKey}
-                value={childValue}
-                onChange={(nextValue) =>
+                fieldKey={
+                  childKey
+                }
+                value={
+                  childValue
+                }
+                onChange={(
+                  nextValue
+                ) =>
                   onChange({
                     ...value,
-                    [childKey]: nextValue,
+                    [childKey]:
+                      nextValue,
                   })
                 }
-                isArabic={isArabic}
-                depth={depth + 1}
+                isArabic={
+                  isArabic
+                }
+                depth={
+                  depth + 1
+                }
+                path={`${path}.${childKey}`}
               />
             )
           )}
@@ -1323,18 +2956,22 @@ function JsonValueEditor({
     }
 
     return (
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 lg:col-span-2">
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white lg:col-span-2">
         <button
           type="button"
           onClick={() =>
-            setExpanded((current) => !current)
+            setExpanded(
+              (current) =>
+                !current
+            )
           }
-          className="flex min-h-12 w-full items-center justify-between gap-4 bg-white px-4 text-start"
+          className="flex min-h-14 w-full items-center justify-between gap-4 bg-white px-4 text-start transition hover:bg-slate-50"
         >
           <span>
-            <span className="block text-sm font-bold text-slate-900">
+            <span className="block text-sm font-black text-slate-900">
               {label}
             </span>
+
             <span className="mt-0.5 block text-xs font-medium text-slate-500">
               {isArabic
                 ? `${entries.length} حقول`
@@ -1350,25 +2987,42 @@ function JsonValueEditor({
         </button>
 
         {expanded && (
-          <div className="grid gap-4 border-t border-slate-200 p-4 lg:grid-cols-2">
+          <div className="grid gap-4 border-t border-slate-200 bg-slate-50 p-4 lg:grid-cols-2">
             {entries.map(
-              ([childKey, childValue]) => (
+              ([
+                childKey,
+                childValue,
+              ]) => (
                 <JsonValueEditor
-                  key={childKey}
+                  key={
+                    childKey
+                  }
                   label={getFieldLabel(
                     childKey,
                     isArabic
                   )}
-                  fieldKey={childKey}
-                  value={childValue}
-                  onChange={(nextValue) =>
+                  fieldKey={
+                    childKey
+                  }
+                  value={
+                    childValue
+                  }
+                  onChange={(
+                    nextValue
+                  ) =>
                     onChange({
                       ...value,
-                      [childKey]: nextValue,
+                      [childKey]:
+                        nextValue,
                     })
                   }
-                  isArabic={isArabic}
-                  depth={depth + 1}
+                  isArabic={
+                    isArabic
+                  }
+                  depth={
+                    depth + 1
+                  }
+                  path={`${path}.${childKey}`}
                 />
               )
             )}
@@ -1378,13 +3032,26 @@ function JsonValueEditor({
     );
   }
 
-  if (typeof value === "boolean") {
+  /* -----------------------------
+     BOOLEAN
+  ----------------------------- */
+
+  if (
+    typeof value ===
+    "boolean"
+  ) {
     return (
-      <label className="flex min-h-20 items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
+      <label
+        id={fieldElementId(
+          path
+        )}
+        className="flex min-h-24 items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3 transition"
+      >
         <span>
-          <span className="block text-sm font-bold text-slate-900">
+          <span className="block text-sm font-black text-slate-900">
             {label}
           </span>
+
           <span className="mt-1 block text-xs font-medium text-slate-500">
             {value
               ? isArabic
@@ -1399,76 +3066,170 @@ function JsonValueEditor({
         <span className="relative inline-flex h-6 w-11 shrink-0">
           <input
             type="checkbox"
-            checked={value}
-            onChange={(event) =>
-              onChange(event.target.checked)
+            checked={
+              value
+            }
+            onChange={(
+              event
+            ) =>
+              onChange(
+                event.target
+                  .checked
+              )
             }
             className="peer sr-only"
           />
+
           <span className="absolute inset-0 rounded-full bg-slate-300 transition peer-checked:bg-blue-600" />
+
           <span className="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5" />
         </span>
       </label>
     );
   }
 
-  if (typeof value === "number") {
+  /* -----------------------------
+     NUMBER
+  ----------------------------- */
+
+  if (
+    typeof value ===
+    "number"
+  ) {
     return (
       <EditorPrimitiveField
-        label={label}
+        id={fieldElementId(
+          path
+        )}
+        label={
+          label
+        }
         type="number"
-        value={String(value)}
-        onChange={(nextValue) =>
-          onChange(Number(nextValue))
+        value={String(
+          value
+        )}
+        emphasized={
+          fieldKey ===
+          "price"
+        }
+        onChange={(
+          nextValue
+        ) =>
+          onChange(
+            Number(
+              nextValue
+            )
+          )
         }
       />
     );
   }
+
+  /* -----------------------------
+     NULL
+  ----------------------------- */
 
   if (value === null) {
     return (
       <EditorPrimitiveField
-        label={label}
+        id={fieldElementId(
+          path
+        )}
+        label={
+          label
+        }
         value=""
-        onChange={(nextValue) =>
-          onChange(nextValue)
+        onChange={(
+          nextValue
+        ) =>
+          onChange(
+            nextValue
+          )
         }
       />
     );
   }
 
-  const stringValue = String(value);
-  const multiline = shouldUseTextarea(
-    fieldKey,
-    stringValue
-  );
+  /* -----------------------------
+     STRING
+  ----------------------------- */
+
+  const stringValue =
+    String(value);
+
+  const multiline =
+    shouldUseTextarea(
+      fieldKey,
+      stringValue
+    );
+
   const showImagePreview =
-    isImageField(fieldKey) &&
-    canPreviewImage(stringValue);
+    isImageField(
+      fieldKey
+    ) &&
+    canPreviewImage(
+      stringValue
+    );
 
   return (
     <EditorPrimitiveField
-      label={label}
-      value={stringValue}
-      multiline={multiline}
+      id={fieldElementId(
+        path
+      )}
+      label={
+        label
+      }
+      value={
+        stringValue
+      }
+      multiline={
+        multiline
+      }
+      emphasized={
+        fieldKey ===
+          "price" ||
+        fieldKey ===
+          "currency"
+      }
       direction={
-        fieldKey.toLowerCase().includes("url") ||
-        fieldKey.toLowerCase().includes("href")
+        fieldKey
+          .toLowerCase()
+          .includes(
+            "url"
+          ) ||
+        fieldKey
+          .toLowerCase()
+          .includes(
+            "href"
+          )
           ? "ltr"
           : undefined
       }
-      wide={multiline || showImagePreview}
-      onChange={(nextValue) =>
-        onChange(nextValue)
+      wide={
+        multiline ||
+        showImagePreview
+      }
+      onChange={(
+        nextValue
+      ) =>
+        onChange(
+          nextValue
+        )
       }
       preview={
         showImagePreview ? (
-          <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
             <img
-              src={stringValue}
-              alt={label}
+              src={
+                stringValue
+              }
+              alt={
+                label
+              }
               className="h-48 w-full object-cover"
-              onError={(event) => {
+              onError={(
+                event
+              ) => {
                 event.currentTarget.style.display =
                   "none";
               }}
@@ -1480,13 +3241,28 @@ function JsonValueEditor({
   );
 }
 
+/* =========================================================
+   TEXT FIELD
+========================================================= */
+
 interface EditorTextFieldProps {
   label: string;
+
   value: string;
-  type?: "text" | "number";
+
+  type?:
+    | "text"
+    | "number";
+
   multiline?: boolean;
-  direction?: "ltr" | "rtl";
-  onChange: (value: string) => void;
+
+  direction?:
+    | "ltr"
+    | "rtl";
+
+  onChange: (
+    value: string
+  ) => void;
 }
 
 function EditorTextField({
@@ -1499,88 +3275,170 @@ function EditorTextField({
 }: EditorTextFieldProps) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs font-semibold text-slate-500">
+      <span className="mb-2 block text-xs font-bold text-slate-500">
         {label}
       </span>
 
       {multiline ? (
         <textarea
-          value={value}
-          rows={5}
-          dir={direction}
-          onChange={(event) =>
-            onChange(event.target.value)
+          value={
+            value
           }
-          className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3.5 py-3 text-sm font-medium leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          rows={5}
+          dir={
+            direction
+          }
+          onChange={(
+            event
+          ) =>
+            onChange(
+              event.target
+                .value
+            )
+          }
+          className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
         />
       ) : (
         <input
-          type={type}
-          value={value}
-          dir={direction}
-          onChange={(event) =>
-            onChange(event.target.value)
+          type={
+            type
           }
-          className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          value={
+            value
+          }
+          dir={
+            direction
+          }
+          onChange={(
+            event
+          ) =>
+            onChange(
+              event.target
+                .value
+            )
+          }
+          className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
         />
       )}
     </label>
   );
 }
 
+/* =========================================================
+   PRIMITIVE FIELD CARD
+========================================================= */
+
 interface EditorPrimitiveFieldProps {
+  id?: string;
+
   label: string;
+
   value: string;
-  type?: "text" | "number";
+
+  type?:
+    | "text"
+    | "number";
+
   multiline?: boolean;
-  direction?: "ltr" | "rtl";
+
+  direction?:
+    | "ltr"
+    | "rtl";
+
   wide?: boolean;
-  preview?: React.ReactNode;
-  onChange: (value: string) => void;
+
+  emphasized?: boolean;
+
+  preview?:
+    React.ReactNode;
+
+  onChange: (
+    value: string
+  ) => void;
 }
 
 function EditorPrimitiveField({
+  id,
   label,
   value,
   type = "text",
   multiline = false,
   direction,
   wide = false,
+  emphasized = false,
   preview,
   onChange,
 }: EditorPrimitiveFieldProps) {
   return (
     <div
-      className={`rounded-xl border border-slate-200 bg-white p-4 ${
-        wide ? "lg:col-span-2" : ""
+      id={id}
+      className={`rounded-xl border bg-white p-4 transition ${
+        wide
+          ? "lg:col-span-2"
+          : ""
+      } ${
+        emphasized
+          ? "border-blue-200 bg-blue-50/30"
+          : "border-slate-200"
       }`}
     >
       <EditorTextField
-        label={label}
-        value={value}
-        type={type}
-        multiline={multiline}
-        direction={direction}
-        onChange={onChange}
+        label={
+          label
+        }
+        value={
+          value
+        }
+        type={
+          type
+        }
+        multiline={
+          multiline
+        }
+        direction={
+          direction
+        }
+        onChange={
+          onChange
+        }
       />
-
 
       {preview}
     </div>
   );
 }
 
+/* =========================================================
+   ARRAY ITEM
+========================================================= */
+
 interface ArrayItemEditorProps {
   index: number;
+
   total: number;
+
   title: string;
+
+  subtitle?: string;
+
   item: JsonValue;
+
   fieldKey: string;
+
   isArabic: boolean;
+
   depth: number;
-  onChange: (value: JsonValue) => void;
+
+  path: string;
+
+  onChange: (
+    value: JsonValue
+  ) => void;
+
   onRemove: () => void;
+
   onMoveUp: () => void;
+
   onMoveDown: () => void;
 }
 
@@ -1588,42 +3446,71 @@ function ArrayItemEditor({
   index,
   total,
   title,
+  subtitle,
   item,
   fieldKey,
   isArabic,
   depth,
+  path,
   onChange,
   onRemove,
   onMoveUp,
   onMoveDown,
 }: ArrayItemEditorProps) {
-  const [expanded, setExpanded] =
-    useState(index === 0);
+  const [
+    expanded,
+    setExpanded,
+  ] =
+    useState(
+      index === 0
+    );
 
   return (
     <article className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+      <header className="flex flex-wrap items-center justify-between gap-3 bg-white px-4 py-3">
         <button
           type="button"
           onClick={() =>
-            setExpanded((current) => !current)
+            setExpanded(
+              (current) =>
+                !current
+            )
           }
-          className="flex min-w-0 items-center gap-2 text-start"
+          className="flex min-w-0 flex-1 items-center gap-3 text-start"
         >
-          {expanded ? (
-            <ChevronUp className="h-4 w-4 shrink-0 text-slate-400" />
-          ) : (
-            <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />
-          )}
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500">
+            {expanded ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </span>
 
           <span className="min-w-0">
-            <span className="block truncate text-sm font-bold text-slate-900">
+            <span className="block truncate text-sm font-black text-slate-900">
               {title}
             </span>
-            <span className="mt-0.5 block text-xs font-medium text-slate-500">
-              {isArabic
-                ? `العنصر ${index + 1} من ${total}`
-                : `Item ${index + 1} of ${total}`}
+
+            <span className="mt-0.5 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
+              <span>
+                {isArabic
+                  ? `العنصر ${index + 1} من ${total}`
+                  : `Item ${index + 1} of ${total}`}
+              </span>
+
+              {subtitle && (
+                <>
+                  <span>
+                    •
+                  </span>
+
+                  <span className="font-black text-blue-600">
+                    {
+                      subtitle
+                    }
+                  </span>
+                </>
+              )}
             </span>
           </span>
         </button>
@@ -1631,39 +3518,37 @@ function ArrayItemEditor({
         <div className="flex items-center gap-1.5">
           <button
             type="button"
-            disabled={index === 0}
-            onClick={onMoveUp}
-            className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label={
-              isArabic
-                ? "تحريك للأعلى"
-                : "Move up"
+            disabled={
+              index === 0
             }
+            onClick={
+              onMoveUp
+            }
+            className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"
           >
             <ArrowUp className="h-4 w-4" />
           </button>
 
           <button
             type="button"
-            disabled={index === total - 1}
-            onClick={onMoveDown}
-            className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label={
-              isArabic
-                ? "تحريك للأسفل"
-                : "Move down"
+            disabled={
+              index ===
+              total - 1
             }
+            onClick={
+              onMoveDown
+            }
+            className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"
           >
             <ArrowDown className="h-4 w-4" />
           </button>
 
           <button
             type="button"
-            onClick={onRemove}
-            className="grid h-9 w-9 place-items-center rounded-lg bg-rose-50 text-rose-600 transition hover:bg-rose-100"
-            aria-label={
-              isArabic ? "حذف" : "Delete"
+            onClick={
+              onRemove
             }
+            className="grid h-9 w-9 place-items-center rounded-lg bg-rose-50 text-rose-600 transition hover:bg-rose-100"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -1671,14 +3556,29 @@ function ArrayItemEditor({
       </header>
 
       {expanded && (
-        <div className="p-4">
+        <div className="border-t border-slate-200 bg-slate-50 p-4">
           <JsonValueEditor
-            label={title}
-            fieldKey={fieldKey}
-            value={item}
-            onChange={onChange}
-            isArabic={isArabic}
-            depth={depth}
+            label={
+              title
+            }
+            fieldKey={
+              fieldKey
+            }
+            value={
+              item
+            }
+            onChange={
+              onChange
+            }
+            isArabic={
+              isArabic
+            }
+            depth={
+              depth
+            }
+            path={
+              path
+            }
           />
         </div>
       )}

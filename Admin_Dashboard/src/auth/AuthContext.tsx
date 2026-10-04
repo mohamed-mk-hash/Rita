@@ -1,17 +1,16 @@
 import {
   createContext,
-  useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
+  useEffect,
   type ReactNode,
 } from "react";
 
 import {
   adminLoginRequest,
   adminLogoutRequest,
-  getCurrentAdminRequest,
+  observeAdminAuth,
   type AdminUser,
 } from "../api/adminAuthApi";
 
@@ -29,7 +28,9 @@ interface AuthContextValue {
 }
 
 const AuthContext =
-  createContext<AuthContextValue | null>(null);
+  createContext<AuthContextValue | null>(
+    null
+  );
 
 export function AuthProvider({
   children,
@@ -37,67 +38,99 @@ export function AuthProvider({
   children: ReactNode;
 }) {
   const [admin, setAdmin] =
-    useState<AdminUser | null>(null);
+    useState<AdminUser | null>(
+      null
+    );
 
-  const [loading, setLoading] = useState(true);
-
-  const loadCurrentAdmin = useCallback(async () => {
-    try {
-      const data = await getCurrentAdminRequest();
-      setAdmin(data.admin);
-    } catch {
-      setAdmin(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [loading, setLoading] =
+    useState(true);
 
   useEffect(() => {
-    void loadCurrentAdmin();
-  }, [loadCurrentAdmin]);
+    const unsubscribe =
+      observeAdminAuth(
+        (currentAdmin) => {
+          setAdmin(currentAdmin);
+        },
+
+        () => {
+          setLoading(false);
+        }
+      );
+
+    return unsubscribe;
+  }, []);
 
   async function login(
     email: string,
     password: string
   ) {
-    const data = await adminLoginRequest(
-      email,
-      password
-    );
+    setLoading(true);
 
-    setAdmin(data.admin);
-  }
-
-  async function logout() {
     try {
-      await adminLogoutRequest();
-    } catch (error) {
-      console.error("ADMIN_LOGOUT_ERROR:", error);
+      const data =
+        await adminLoginRequest(
+          email,
+          password
+        );
+
+      setAdmin(data.admin);
     } finally {
-      setAdmin(null);
+      /*
+        Don't wait for another
+        Firestore/auth cycle.
+      */
+      setLoading(false);
     }
   }
 
-  const value = useMemo(
-    () => ({
-      admin,
-      loading,
-      isAuthenticated: Boolean(admin),
-      login,
-      logout,
-    }),
-    [admin, loading]
-  );
+  async function logout() {
+    setLoading(true);
+
+    try {
+      await adminLogoutRequest();
+
+      setAdmin(null);
+    } catch (error) {
+      console.error(
+        "ADMIN_LOGOUT_ERROR:",
+        error
+      );
+
+      setAdmin(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const value =
+    useMemo(
+      () => ({
+        admin,
+
+        loading,
+
+        isAuthenticated:
+          Boolean(admin),
+
+        login,
+
+        logout,
+      }),
+      [admin, loading]
+    );
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={value}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
+  const context =
+    useContext(AuthContext);
 
   if (!context) {
     throw new Error(

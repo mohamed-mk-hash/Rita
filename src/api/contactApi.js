@@ -1,31 +1,52 @@
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:3001/api";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+} from "firebase/firestore";
 
-async function request(path, options = {}) {
-  const response = await fetch(`${API_URL}${path}`, {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
+import { db } from "../firebase.js";
 
-  const data = await response.json().catch(() => ({}));
+export async function sendContactMessageRequest(payload) {
+  const messageData = {
+    full_name:
+      payload.fullName?.trim() || "",
 
-  if (!response.ok) {
-    throw new Error(
-      data.message || "Could not send the contact message"
+    email:
+      payload.email
+        ?.trim()
+        .toLowerCase() || "",
+
+    phone:
+      payload.phone?.trim() || "",
+
+    subject:
+      payload.subject?.trim() || "",
+
+    message:
+      payload.message?.trim() || "",
+
+    status:
+      "new",
+
+    created_at:
+      serverTimestamp(),
+
+    updated_at:
+      serverTimestamp(),
+  };
+
+  const documentReference =
+    await addDoc(
+      collection(
+        db,
+        "contact_messages"
+      ),
+      messageData
     );
-  }
 
-  return data;
-}
-
-export function sendContactMessageRequest(payload) {
-  return request("/contact", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+  return {
+    success: true,
+    id:
+      documentReference.id,
+  };
 }

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Bell, CheckCheck } from "lucide-react";
 import { useNavigate } from "react-router";
 import { getCurrentUserRequest, logoutRequest } from "../../api/authApi.js";
 import {
@@ -12,6 +13,9 @@ import {
   uploadApplicationDocumentRequest,
 } from "../../api/documentApi.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
+import { usePageContent } from "../../hooks/usePageContent.js";
+import { pricingFallbackContent } from "../Pricing/pricingFallbackContent.js";
+import { sendNewRequestEmailRequest } from "../../api/sendNewRequestEmail.js";
 import "./Dashboard.css";
 
 const copy = {
@@ -28,7 +32,13 @@ const copy = {
     },
     topbar: {
       welcome: "Welcome",
-      password: "Password",
+      notifications: "Notifications",
+      noNotifications: "No notifications yet.",
+      markAllRead: "Mark all as read",
+      workflowUpdated: "Workflow updated",
+      phaseChanged: "Workflow phase changed",
+      statusChanged: "Application status changed",
+      viewService: "View service",
     },
     overview: {
       label: "Client Portal",
@@ -51,7 +61,7 @@ const copy = {
       label: "Smart Intake Form",
       title: "Request Service",
       subtitle:
-        "Tell us what you need through a clear four-step process. You can review everything before submitting.",
+        "Choose your service and package, add your details, select payment solutions, upload the required documents, then review everything before submitting.",
       progressLabel: "Request progress",
       step: "Step",
       of: "of",
@@ -59,6 +69,7 @@ const copy = {
       back: "Back",
       submit: "Submit request",
       submitting: "Submitting...",
+      uploadingDocuments: "Creating your request and uploading your documents...",
       success:
         "Your request has been created successfully. The Rita team can now review it.",
       error: "Could not create the request. Please try again.",
@@ -71,21 +82,49 @@ const copy = {
         "Your information is used only to review and process your service request.",
       serviceStep: "Choose your service",
       serviceStepText:
-        "Select the main service you want Rita to help you with. You can add payment solutions later.",
+        "Select the main service you want Rita to help you with.",
+      packageStep: "Choose your package",
+      packageStepText:
+        "Package names, prices, and included features are loaded from the published Pricing page.",
+      packageRequired: "Choose a package before continuing.",
+      packagePrice: "Package price",
+      packageFeatures: "What is included",
       infoStep: "Tell us about your project",
       infoStepText:
-        "These details help the team understand your situation before contacting you.",
+        "These details help the team understand your situation and keep you updated.",
+      email: "Notification email",
+      emailPlaceholder: "name@example.com",
+      emailNotice:
+        "We will use this email for request-status and document-review notifications.",
       paymentStep: "Choose payment solutions",
       paymentStepText:
-        "Select every solution you want to prepare. For banking requests, choose at least one option.",
+        "Choose PayPal, Stripe, Wise, or add another solution you need.",
+      otherSolution: "Choose another solution",
+      otherSolutionTitle: "Other payment solution",
+      otherSolutionPlaceholder: "Example: Mercury, Payoneer, Airwallex...",
+      removeOtherSolution: "Remove other solution",
+      documentsStep: "Upload your documents",
+      documentsStepText:
+        "Add the required documents now so the Rita team receives a complete request.",
+      documentsRequired:
+        "Please upload all required documents before submitting your request.",
+      selectedFile: "Selected file",
+      chooseFile: "Choose file",
+      changeFile: "Change file",
+      removeFile: "Remove",
+      documentsSummary: "Documents",
+      partialUploadError:
+        "Your request was created, but one or more documents could not be uploaded. You can retry from the Documents page.",
       reviewStep: "Review and submit",
       reviewStepText:
         "Check the information below. You can return to any completed step to edit it.",
       steps: {
         1: { title: "Service", short: "What you need" },
-        2: { title: "Information", short: "Your project" },
-        3: { title: "Solutions", short: "Payment needs" },
-        4: { title: "Review", short: "Confirm request" },
+        2: { title: "Package", short: "Choose a plan" },
+        3: { title: "Information", short: "Your project" },
+        4: { title: "Solutions", short: "Payment needs" },
+        5: { title: "Documents", short: "Upload files" },
+        6: { title: "Review", short: "Confirm request" },
       },
       phone: "Phone / WhatsApp",
       phonePlaceholder: "+213 555 00 00 00",
@@ -102,6 +141,7 @@ const copy = {
       extraNotesPlaceholder:
         "Add deadlines, current issues, existing accounts, or anything the Rita team should know...",
       contactSummary: "Contact and company",
+      packageSummary: "Selected package",
       projectSummary: "Project details",
       edit: "Edit",
       characters: "characters",
@@ -162,6 +202,8 @@ const copy = {
         },
       },
       errors: {
+        emailRequired: "Email address is required.",
+        emailInvalid: "Enter a valid email address.",
         phoneRequired: "Phone or WhatsApp number is required.",
         countryRequired: "Country is required.",
         companyNameRequired:
@@ -184,6 +226,9 @@ const copy = {
       createdAt: "Created at",
       businessActivity: "Business activity",
       paymentNeeds: "Payment needs",
+      package: "Package",
+      price: "Price",
+      notificationEmail: "Notification email",
     },
     documentsPage: {
       label: "Secure documents",
@@ -268,7 +313,13 @@ const copy = {
     },
     topbar: {
       welcome: "مرحباً",
-      password: "كلمة المرور",
+      notifications: "الإشعارات",
+      noNotifications: "لا توجد إشعارات حتى الآن.",
+      markAllRead: "تحديد الكل كمقروء",
+      workflowUpdated: "تم تحديث سير العمل",
+      phaseChanged: "تم تغيير مرحلة الطلب",
+      statusChanged: "تم تغيير حالة الطلب",
+      viewService: "عرض الخدمة",
     },
     overview: {
       label: "بوابة العميل",
@@ -289,7 +340,7 @@ const copy = {
       label: "نموذج الطلب الذكي",
       title: "طلب خدمة",
       subtitle:
-        "أخبرنا بما تحتاجه عبر أربع خطوات واضحة، ثم راجع جميع المعلومات قبل الإرسال.",
+        "اختر الخدمة والباقة، أضف معلوماتك، حدد حلول الدفع، ارفع الوثائق المطلوبة، ثم راجع كل شيء قبل الإرسال.",
       progressLabel: "تقدم الطلب",
       step: "الخطوة",
       of: "من",
@@ -297,6 +348,7 @@ const copy = {
       back: "رجوع",
       submit: "إرسال الطلب",
       submitting: "جاري الإرسال...",
+      uploadingDocuments: "جاري إنشاء الطلب ورفع الوثائق...",
       success: "تم إنشاء طلبك بنجاح، ويمكن لفريق Rita الآن مراجعته.",
       error: "تعذر إنشاء الطلب. حاول مرة أخرى.",
       validationError: "صحح الحقول المحددة قبل المتابعة.",
@@ -308,21 +360,49 @@ const copy = {
         "تُستخدم معلوماتك فقط لمراجعة طلب الخدمة ومعالجته من طرف فريق Rita.",
       serviceStep: "اختر الخدمة المناسبة",
       serviceStepText:
-        "حدد الخدمة الأساسية التي تريد مساعدة Rita فيها، ويمكنك إضافة حلول الدفع في الخطوة الثالثة.",
+        "حدد الخدمة الأساسية التي تريد مساعدة Rita فيها.",
+      packageStep: "اختر الباقة",
+      packageStepText:
+        "أسماء الباقات والأسعار والمميزات تُقرأ مباشرة من صفحة الأسعار المنشورة.",
+      packageRequired: "اختر باقة قبل المتابعة.",
+      packagePrice: "سعر الباقة",
+      packageFeatures: "ماذا تتضمن الباقة",
       infoStep: "أخبرنا عن مشروعك",
       infoStepText:
-        "تساعد هذه المعلومات الفريق على فهم وضعك وتجهيز التواصل معك بصورة أفضل.",
+        "تساعد هذه المعلومات الفريق على فهم وضعك والتواصل معك وإبقائك على اطلاع.",
+      email: "بريد الإشعارات",
+      emailPlaceholder: "name@example.com",
+      emailNotice:
+        "سنستخدم هذا البريد لإشعارات حالة الطلب ومراجعة الوثائق.",
       paymentStep: "اختر حلول الدفع",
       paymentStepText:
-        "حدد كل الحلول التي تحتاجها. عند اختيار خدمة الحسابات والمدفوعات يجب تحديد حل واحد على الأقل.",
+        "اختر PayPal أو Stripe أو Wise، وإذا كنت تحتاج حلاً آخر يمكنك كتابته بنفسك.",
+      otherSolution: "اختيار حل آخر",
+      otherSolutionTitle: "حل دفع آخر",
+      otherSolutionPlaceholder: "مثال: Mercury أو Payoneer أو Airwallex...",
+      removeOtherSolution: "إزالة الحل الآخر",
+      documentsStep: "ارفع الوثائق",
+      documentsStepText:
+        "أضف الوثائق المطلوبة الآن حتى يستلم فريق Rita طلباً كاملاً من البداية.",
+      documentsRequired:
+        "يجب رفع جميع الوثائق المطلوبة قبل إرسال الطلب.",
+      selectedFile: "الملف المختار",
+      chooseFile: "اختيار ملف",
+      changeFile: "تغيير الملف",
+      removeFile: "إزالة",
+      documentsSummary: "الوثائق",
+      partialUploadError:
+        "تم إنشاء الطلب، لكن تعذر رفع وثيقة أو أكثر. يمكنك إعادة المحاولة من صفحة الوثائق.",
       reviewStep: "راجع الطلب ثم أرسله",
       reviewStepText:
         "تحقق من المعلومات أدناه، ويمكنك الرجوع إلى أي خطوة مكتملة لتعديلها.",
       steps: {
         1: { title: "الخدمة", short: "ماذا تحتاج؟" },
-        2: { title: "المعلومات", short: "تفاصيل مشروعك" },
-        3: { title: "الحلول", short: "احتياجات الدفع" },
-        4: { title: "المراجعة", short: "تأكيد الطلب" },
+        2: { title: "الباقة", short: "اختر الخطة" },
+        3: { title: "المعلومات", short: "تفاصيل مشروعك" },
+        4: { title: "الحلول", short: "حلول الدفع" },
+        5: { title: "الوثائق", short: "رفع الملفات" },
+        6: { title: "المراجعة", short: "تأكيد الطلب" },
       },
       phone: "الهاتف / واتساب",
       phonePlaceholder: "+213 555 00 00 00",
@@ -339,6 +419,7 @@ const copy = {
       extraNotesPlaceholder:
         "أضف الآجال المهمة، أو المشاكل الحالية، أو الحسابات الموجودة، أو أي معلومة يجب أن يعرفها فريق Rita...",
       contactSummary: "بيانات التواصل والشركة",
+      packageSummary: "الباقة المختارة",
       projectSummary: "تفاصيل المشروع",
       edit: "تعديل",
       characters: "حرفاً",
@@ -399,6 +480,8 @@ const copy = {
         },
       },
       errors: {
+        emailRequired: "البريد الإلكتروني مطلوب.",
+        emailInvalid: "أدخل بريداً إلكترونياً صحيحاً.",
         phoneRequired: "رقم الهاتف أو واتساب مطلوب.",
         countryRequired: "الدولة مطلوبة.",
         companyNameRequired: "أدخل اسماً مقترحاً للشركة المراد تأسيسها.",
@@ -420,6 +503,9 @@ const copy = {
       createdAt: "تاريخ الإنشاء",
       businessActivity: "نشاط العمل",
       paymentNeeds: "احتياجات الدفع",
+      package: "الباقة",
+      price: "السعر",
+      notificationEmail: "بريد الإشعارات",
     },
     documentsPage: {
       label: "وثائق آمنة",
@@ -507,19 +593,48 @@ const serviceIcons = {
 };
 
 const paymentNeedFields = [
-  "needsEin",
-  "needsStripe",
   "needsPaypal",
+  "needsStripe",
   "needsWise",
-  "needsMercury",
-  "needsRelay",
-  "needsPayoneer",
-  "needsShopify",
 ];
 
-function createInitialIntakeForm() {
+const requestDocumentRequirements = {
+  us_llc: [
+    {
+      requirementId: 16,
+      code: "us_llc_passport",
+      titleEn: "Passport copy",
+      titleAr: "نسخة من جواز السفر",
+      descriptionEn:
+        "Upload a clear copy of the passport information page.",
+      descriptionAr:
+        "ارفع نسخة واضحة من صفحة المعلومات في جواز السفر.",
+      required: true,
+      maxSizeMb: 5,
+    },
+    {
+      requirementId: 17,
+      code: "us_llc_proof_of_address",
+      titleEn: "Proof of address",
+      titleAr: "إثبات العنوان",
+      descriptionEn:
+        "Upload a recent utility bill, bank statement, or other proof of address.",
+      descriptionAr:
+        "ارفع فاتورة خدمات حديثة أو كشف حساب بنكي أو وثيقة تثبت العنوان.",
+      required: true,
+      maxSizeMb: 5,
+    },
+  ],
+  ein_assistance: [],
+  banking_payment_setup: [],
+  compliance_support: [],
+};
+
+function createInitialIntakeForm(email = "") {
   return {
     serviceType: "us_llc",
+    packageSlug: "",
+    email,
     phone: "",
     country: "",
     businessActivity: "",
@@ -532,6 +647,7 @@ function createInitialIntakeForm() {
     needsRelay: false,
     needsPayoneer: false,
     needsShopify: false,
+    otherPaymentSolution: "",
     extraNotes: "",
   };
 }
@@ -551,6 +667,67 @@ function createEmptyDocumentSummary() {
   };
 }
 
+
+function getDashboardUserKey(user) {
+  return String(
+    user?.id ||
+      user?.uid ||
+      user?.email ||
+      "anonymous"
+  );
+}
+
+function getNotificationsStorageKey(user) {
+  return `rita-dashboard-notifications:${getDashboardUserKey(user)}`;
+}
+
+function getApplicationsSnapshotStorageKey(user) {
+  return `rita-dashboard-applications-snapshot:${getDashboardUserKey(user)}`;
+}
+
+function readLocalStorageJson(key, fallback) {
+  try {
+    const value = window.localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeLocalStorageJson(key, value) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Ignore storage failures. The dashboard still works without persistence.
+  }
+}
+
+function createApplicationsSnapshot(applications = []) {
+  return applications.reduce((snapshot, application) => {
+    const id = String(application?.id ?? "");
+
+    if (!id) {
+      return snapshot;
+    }
+
+    snapshot[id] = {
+      id,
+      serviceType: application?.serviceType || "",
+      status: application?.status || "",
+      currentStep:
+        application?.currentStep ??
+        application?.current_step ??
+        "",
+      updatedAt:
+        application?.updatedAt ??
+        application?.updated_at ??
+        "",
+    };
+
+    return snapshot;
+  }, {});
+}
+
 function Dashboard() {
   const navigate = useNavigate();
   const languageContext = useLanguage();
@@ -560,9 +737,28 @@ function Dashboard() {
   const changeLanguage = languageContext?.changeLanguage || (() => {});
   const t = copy[lang] || copy.en;
 
+  const { content: pricingPageContent } = usePageContent(
+    "pricing",
+    pricingFallbackContent
+  );
+
+  const pricingContent =
+    pricingPageContent?.[lang] ||
+    pricingFallbackContent?.[lang] ||
+    pricingFallbackContent?.en ||
+    {};
+
+  const pricingPackages = Array.isArray(pricingContent?.packages)
+    ? pricingContent.packages
+    : [];
+
   const [user, setUser] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationsRef = useRef(null);
 
   const [activePage, setActivePage] = useState("overview");
   const [intakeStep, setIntakeStep] = useState(1);
@@ -572,6 +768,8 @@ function Dashboard() {
   const [creating, setCreating] = useState(false);
   const [requestMessage, setRequestMessage] = useState("");
   const [requestError, setRequestError] = useState("");
+  const [requestDocumentFiles, setRequestDocumentFiles] = useState({});
+  const [showOtherSolution, setShowOtherSolution] = useState(false);
 
   const [selectedDocumentApplicationId, setSelectedDocumentApplicationId] =
     useState(null);
@@ -586,6 +784,12 @@ function Dashboard() {
   const [deletingDocumentId, setDeletingDocumentId] = useState(null);
   const [dragRequirementId, setDragRequirementId] = useState(null);
 
+  const currentRequestDocuments =
+    requestDocumentRequirements[intakeForm.serviceType] || [];
+
+  const selectedPackage =
+    pricingPackages.find((plan) => plan.slug === intakeForm.packageSlug) || null;
+
   const activeApplication =
     applications.find((app) => !["completed", "rejected"].includes(app.status)) ||
     applications[0] ||
@@ -597,13 +801,321 @@ function Dashboard() {
         Number(application.id) === Number(selectedDocumentApplicationId)
     ) || null;
 
+
+  function persistNotifications(nextNotifications, targetUser = user) {
+    const normalized = nextNotifications.slice(0, 40);
+    setNotifications(normalized);
+
+    if (targetUser) {
+      writeLocalStorageJson(
+        getNotificationsStorageKey(targetUser),
+        normalized
+      );
+    }
+  }
+
+  function restoreNotifications(targetUser) {
+    const stored = readLocalStorageJson(
+      getNotificationsStorageKey(targetUser),
+      []
+    );
+
+    setNotifications(Array.isArray(stored) ? stored : []);
+  }
+
+  function detectApplicationChanges(nextApplications, targetUser = user) {
+    if (!targetUser) {
+      return;
+    }
+
+    const snapshotKey = getApplicationsSnapshotStorageKey(targetUser);
+    const previousSnapshot = readLocalStorageJson(snapshotKey, null);
+    const nextSnapshot = createApplicationsSnapshot(nextApplications);
+
+    // The first visit establishes a baseline. We do not create fake
+    // notifications for states that already existed before this feature.
+    if (!previousSnapshot || typeof previousSnapshot !== "object") {
+      writeLocalStorageJson(snapshotKey, nextSnapshot);
+      return;
+    }
+
+    const newNotifications = [];
+
+    Object.values(nextSnapshot).forEach((nextApplication) => {
+      const previousApplication = previousSnapshot[nextApplication.id];
+
+      if (!previousApplication) {
+        return;
+      }
+
+      const statusChanged =
+        String(previousApplication.status || "") !==
+        String(nextApplication.status || "");
+
+      const phaseChanged =
+        String(previousApplication.currentStep || "") !==
+        String(nextApplication.currentStep || "");
+
+      if (!statusChanged && !phaseChanged) {
+        return;
+      }
+
+      const createdAt = new Date().toISOString();
+
+      newNotifications.push({
+        id: [
+          nextApplication.id,
+          nextApplication.updatedAt || createdAt,
+          nextApplication.status || "status",
+          nextApplication.currentStep || "phase",
+        ].join(":"),
+        applicationId: nextApplication.id,
+        serviceType: nextApplication.serviceType,
+        statusChanged,
+        phaseChanged,
+        previousStatus: previousApplication.status || "",
+        status: nextApplication.status || "",
+        previousStep: previousApplication.currentStep || "",
+        currentStep: nextApplication.currentStep || "",
+        createdAt,
+        read: false,
+      });
+    });
+
+    writeLocalStorageJson(snapshotKey, nextSnapshot);
+
+    if (newNotifications.length === 0) {
+      return;
+    }
+
+    setNotifications((current) => {
+      const existingIds = new Set(current.map((item) => item.id));
+      const uniqueNew = newNotifications.filter(
+        (item) => !existingIds.has(item.id)
+      );
+      const merged = [...uniqueNew, ...current].slice(0, 40);
+
+      writeLocalStorageJson(
+        getNotificationsStorageKey(targetUser),
+        merged
+      );
+
+      return merged;
+    });
+  }
+
+  async function refreshApplications({ silent = true } = {}) {
+    try {
+      const applicationsData = await getMyApplicationsRequest();
+      const nextApplications = applicationsData.applications || [];
+
+      detectApplicationChanges(nextApplications, user);
+      setApplications(nextApplications);
+    } catch (error) {
+      if (!silent) {
+        console.error("DASHBOARD_APPLICATION_REFRESH_ERROR:", error);
+      }
+    }
+  }
+
+  function markAllNotificationsRead() {
+    setNotifications((current) => {
+      if (!current.some((item) => !item.read)) {
+        return current;
+      }
+
+      const next = current.map((item) => ({
+        ...item,
+        read: true,
+      }));
+
+      if (user) {
+        writeLocalStorageJson(
+          getNotificationsStorageKey(user),
+          next
+        );
+      }
+
+      return next;
+    });
+  }
+
+  function toggleNotifications() {
+    setNotificationsOpen((current) => !current);
+  }
+
+  function markNotificationRead(notificationId) {
+    setNotifications((current) => {
+      const next = current.map((item) =>
+        item.id === notificationId
+          ? { ...item, read: true }
+          : item
+      );
+
+      if (user) {
+        writeLocalStorageJson(
+          getNotificationsStorageKey(user),
+          next
+        );
+      }
+
+      return next;
+    });
+  }
+
+  function formatWorkflowPhase(value) {
+    if (!value) {
+      return isArabic ? "غير محددة" : "Not specified";
+    }
+
+    const normalized = String(value).trim().toLowerCase();
+
+    const phaseLabels = {
+      request_submitted: {
+        en: "Request submitted",
+        ar: "تم إرسال الطلب",
+      },
+      submitted: {
+        en: "Request submitted",
+        ar: "تم إرسال الطلب",
+      },
+      documents_review: {
+        en: "Document review",
+        ar: "مراجعة الوثائق",
+      },
+      document_review: {
+        en: "Document review",
+        ar: "مراجعة الوثائق",
+      },
+      waiting_documents: {
+        en: "Waiting for documents",
+        ar: "بانتظار الوثائق",
+      },
+      company_formation: {
+        en: "Company formation",
+        ar: "تأسيس الشركة",
+      },
+      formation: {
+        en: "Company formation",
+        ar: "تأسيس الشركة",
+      },
+      ein_processing: {
+        en: "EIN processing",
+        ar: "معالجة EIN",
+      },
+      banking_setup: {
+        en: "Banking setup",
+        ar: "إعداد الحساب البنكي",
+      },
+      payment_setup: {
+        en: "Payment setup",
+        ar: "إعداد حلول الدفع",
+      },
+      processing: {
+        en: "Processing",
+        ar: "قيد المعالجة",
+      },
+      completed: {
+        en: "Completed",
+        ar: "مكتمل",
+      },
+    };
+
+    const translated = phaseLabels[normalized];
+
+    if (translated) {
+      return isArabic ? translated.ar : translated.en;
+    }
+
+    return String(value)
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function getNotificationTitle(notification) {
+    if (notification.phaseChanged && notification.statusChanged) {
+      return t.topbar.workflowUpdated;
+    }
+
+    if (notification.phaseChanged) {
+      return t.topbar.phaseChanged;
+    }
+
+    return t.topbar.statusChanged;
+  }
+
+  function getNotificationMessage(notification) {
+    const serviceName =
+      t.request.services[notification.serviceType]?.title ||
+      notification.serviceType ||
+      (isArabic ? "الطلب" : "application");
+
+    const parts = [];
+
+    if (notification.phaseChanged) {
+      parts.push(
+        isArabic
+          ? `المرحلة الجديدة: ${formatWorkflowPhase(notification.currentStep)}`
+          : `New phase: ${formatWorkflowPhase(notification.currentStep)}`
+      );
+    }
+
+    if (notification.statusChanged) {
+      const statusLabel =
+        t.statusLabels[notification.status] ||
+        formatWorkflowPhase(notification.status);
+
+      parts.push(
+        isArabic
+          ? `الحالة الجديدة: ${statusLabel}`
+          : `New status: ${statusLabel}`
+      );
+    }
+
+    return `${serviceName} — ${parts.join(isArabic ? "، " : ", ")}`;
+  }
+
+  function formatNotificationTime(value) {
+    if (!value) {
+      return "";
+    }
+
+    try {
+      return new Intl.DateTimeFormat(isArabic ? "ar-DZ" : "en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(value));
+    } catch {
+      return "";
+    }
+  }
+
+  function openNotification(notification) {
+    markNotificationRead(notification.id);
+    setNotificationsOpen(false);
+    changePage("services");
+  }
+
   async function loadDashboard() {
     try {
       const userData = await getCurrentUserRequest();
       setUser(userData.user);
 
+      setIntakeForm((current) => ({
+        ...current,
+        email: current.email || userData.user?.email || "",
+      }));
+
+      restoreNotifications(userData.user);
+
       const applicationsData = await getMyApplicationsRequest();
-      setApplications(applicationsData.applications || []);
+      const nextApplications = applicationsData.applications || [];
+
+      detectApplicationChanges(nextApplications, userData.user);
+      setApplications(nextApplications);
     } catch (error) {
       console.error(error);
       navigate("/login");
@@ -664,21 +1176,24 @@ function Dashboard() {
   }
 
   function handleServiceSelect(serviceType) {
-    const defaultNeeds = paymentNeedFields.reduce((result, field) => {
-      result[field] = false;
-      return result;
-    }, {});
-
-    if (serviceType === "us_llc" || serviceType === "ein_assistance") {
-      defaultNeeds.needsEin = true;
-    }
-
     setIntakeForm((current) => ({
       ...current,
       serviceType,
-      ...defaultNeeds,
+      packageSlug: "",
+      needsEin:
+        serviceType === "us_llc" || serviceType === "ein_assistance",
+      needsPaypal: false,
+      needsStripe: false,
+      needsWise: false,
+      needsMercury: false,
+      needsRelay: false,
+      needsPayoneer: false,
+      needsShopify: false,
+      otherPaymentSolution: "",
     }));
 
+    setShowOtherSolution(false);
+    setRequestDocumentFiles({});
     setFieldErrors({});
     setRequestError("");
   }
@@ -687,10 +1202,40 @@ function Dashboard() {
     return paymentNeedFields.filter((field) => Boolean(form[field]));
   }
 
+  function hasCustomPaymentSolution(form = intakeForm) {
+    return Boolean(form.otherPaymentSolution?.trim());
+  }
+
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+  }
+
+  function formatPackagePrice(plan) {
+    if (!plan) return "—";
+
+    const currency = plan.currency || "$";
+    const value = String(plan.price ?? "");
+    const formatted = value.startsWith(currency)
+      ? value
+      : `${currency}${value}`;
+
+    return plan.period ? `${formatted} / ${plan.period}` : formatted;
+  }
+
   function getValidationErrors(step, form = intakeForm) {
     const errors = {};
 
-    if (step === 2) {
+    if (step === 2 && !form.packageSlug) {
+      errors.packageSlug = t.request.packageRequired;
+    }
+
+    if (step === 3) {
+      if (!form.email?.trim()) {
+        errors.email = t.request.errors.emailRequired;
+      } else if (!isValidEmail(form.email)) {
+        errors.email = t.request.errors.emailInvalid;
+      }
+
       if (!form.phone.trim()) {
         errors.phone = t.request.errors.phoneRequired;
       }
@@ -714,11 +1259,24 @@ function Dashboard() {
     }
 
     if (
-      step === 3 &&
+      step === 4 &&
       form.serviceType === "banking_payment_setup" &&
-      getSelectedPaymentFields(form).length === 0
+      getSelectedPaymentFields(form).length === 0 &&
+      !hasCustomPaymentSolution(form)
     ) {
       errors.paymentNeeds = t.request.errors.paymentRequired;
+    }
+
+    if (step === 5) {
+      const missingRequiredDocument = currentRequestDocuments.some(
+        (document) =>
+          document.required &&
+          !requestDocumentFiles[document.requirementId]
+      );
+
+      if (missingRequiredDocument) {
+        errors.documents = t.request.documentsRequired;
+      }
     }
 
     return errors;
@@ -740,7 +1298,7 @@ function Dashboard() {
   function goToNextStep() {
     if (!validateStep(intakeStep)) return;
 
-    const nextStep = Math.min(intakeStep + 1, 4);
+    const nextStep = Math.min(intakeStep + 1, 6);
     setIntakeStep(nextStep);
     setMaxStepReached((current) => Math.max(current, nextStep));
   }
@@ -759,21 +1317,66 @@ function Dashboard() {
     setIntakeStep(step);
   }
 
+  function handleRequestDocumentSelect(document, file) {
+    if (!file) return;
+
+    const validationMessage = validateDocumentFile(file, {
+      maxSizeMb: document.maxSizeMb,
+    });
+
+    if (validationMessage) {
+      setRequestError(validationMessage);
+      return;
+    }
+
+    setRequestDocumentFiles((current) => ({
+      ...current,
+      [document.requirementId]: file,
+    }));
+
+    setRequestError("");
+    setFieldErrors((current) => {
+      const next = { ...current };
+      delete next.documents;
+      return next;
+    });
+  }
+
+  function removeRequestDocument(requirementId) {
+    setRequestDocumentFiles((current) => {
+      const next = { ...current };
+      delete next[requirementId];
+      return next;
+    });
+  }
+
   async function handleCreateRequest(event) {
     event.preventDefault();
 
-    const infoErrors = getValidationErrors(2);
-    const paymentErrors = getValidationErrors(3);
-    const allErrors = { ...infoErrors, ...paymentErrors };
+    const packageErrors = getValidationErrors(2);
+    const infoErrors = getValidationErrors(3);
+    const paymentErrors = getValidationErrors(4);
+    const documentErrors = getValidationErrors(5);
+
+    const allErrors = {
+      ...packageErrors,
+      ...infoErrors,
+      ...paymentErrors,
+      ...documentErrors,
+    };
 
     if (Object.keys(allErrors).length > 0) {
       setFieldErrors(allErrors);
       setRequestError(t.request.validationError);
 
-      if (Object.keys(infoErrors).length > 0) {
+      if (Object.keys(packageErrors).length > 0) {
         setIntakeStep(2);
-      } else {
+      } else if (Object.keys(infoErrors).length > 0) {
         setIntakeStep(3);
+      } else if (Object.keys(paymentErrors).length > 0) {
+        setIntakeStep(4);
+      } else {
+        setIntakeStep(5);
       }
 
       return;
@@ -784,15 +1387,130 @@ function Dashboard() {
     setRequestMessage("");
 
     try {
-      const data = await createApplicationRequest(intakeForm);
+      const customSolution = intakeForm.otherPaymentSolution?.trim() || "";
+      const packageSnapshot = selectedPackage
+        ? {
+            slug: selectedPackage.slug,
+            name: selectedPackage.name,
+            price: selectedPackage.price,
+            currency: selectedPackage.currency || "$",
+            period: selectedPackage.period || "",
+          }
+        : null;
 
-      setApplications((current) => [data.application, ...current]);
-      setIntakeForm(createInitialIntakeForm());
+      const originalNotes = intakeForm.extraNotes.trim();
+
+      const packageNote = packageSnapshot
+        ? `${
+            isArabic ? "الباقة المختارة" : "Selected package"
+          }: ${packageSnapshot.name} - ${formatPackagePrice(selectedPackage)}`
+        : "";
+
+      const customSolutionNote = customSolution
+        ? `${
+            isArabic ? "حل دفع إضافي" : "Additional payment solution"
+          }: ${customSolution}`
+        : "";
+
+      const notificationEmailNote = `${
+        isArabic ? "بريد الإشعارات" : "Notification email"
+      }: ${intakeForm.email.trim()}`;
+
+      const payload = {
+        ...intakeForm,
+        email: intakeForm.email.trim(),
+        packageSlug: packageSnapshot?.slug || "",
+        packageName: packageSnapshot?.name || "",
+        packagePrice: packageSnapshot?.price ?? "",
+        packageCurrency: packageSnapshot?.currency || "$",
+        packagePeriod: packageSnapshot?.period || "",
+        extraNotes: [
+          originalNotes,
+          notificationEmailNote,
+          packageNote,
+          customSolutionNote,
+        ]
+          .filter(Boolean)
+          .join("\n"),
+      };
+
+      const data = await createApplicationRequest(payload);
+      const application = data.application;
+
+      const documentsToUpload = currentRequestDocuments.filter((document) =>
+        Boolean(requestDocumentFiles[document.requirementId])
+      );
+
+      let uploadFailed = false;
+
+      for (const document of documentsToUpload) {
+        const file = requestDocumentFiles[document.requirementId];
+
+        try {
+          await uploadApplicationDocumentRequest(
+            application.id,
+            document.requirementId,
+            file
+          );
+        } catch (uploadError) {
+          console.error("REQUEST_DOCUMENT_UPLOAD_ERROR:", uploadError);
+          uploadFailed = true;
+        }
+      }
+
+      setApplications((current) => [application, ...current]);
+      setSelectedDocumentApplicationId(application.id);
+
+      if (uploadFailed) {
+        setRequestDocumentFiles({});
+        setIntakeForm(createInitialIntakeForm(user?.email || ""));
+        setShowOtherSolution(false);
+        setIntakeStep(1);
+        setMaxStepReached(1);
+        setFieldErrors({});
+        setDocumentError(t.request.partialUploadError);
+        setActivePage("documents");
+        window.history.replaceState(null, "", "/dashboard#documents");
+        return;
+      }
+
+      try {
+        await sendNewRequestEmailRequest({
+          userName: user?.fullName || "",
+          userEmail: intakeForm.email.trim(),
+          phone: intakeForm.phone.trim(),
+          country: intakeForm.country.trim(),
+          applicationId: application.id,
+          serviceName:
+            t.request.services[intakeForm.serviceType]?.title ||
+            intakeForm.serviceType,
+          packageName: packageSnapshot?.name || "",
+          packagePrice: selectedPackage
+            ? formatPackagePrice(selectedPackage)
+            : "",
+          desiredCompanyName:
+            intakeForm.desiredCompanyName.trim(),
+          businessActivity:
+            intakeForm.businessActivity.trim(),
+          requestedSolutions:
+            selectedPaymentTitles.join(", "),
+          extraNotes:
+            intakeForm.extraNotes.trim(),
+        });
+      } catch (emailError) {
+        console.error(
+          "NEW_REQUEST_ADMIN_EMAIL_ERROR:",
+          emailError
+        );
+      }
+
+      setIntakeForm(createInitialIntakeForm(user?.email || ""));
+      setRequestDocumentFiles({});
+      setShowOtherSolution(false);
       setIntakeStep(1);
       setMaxStepReached(1);
       setFieldErrors({});
       setRequestMessage(t.request.success);
-      setSelectedDocumentApplicationId(data.application.id);
       setActivePage("services");
       window.history.replaceState(null, "", "/dashboard#services");
     } catch (error) {
@@ -801,6 +1519,183 @@ function Dashboard() {
     } finally {
       setCreating(false);
     }
+  }
+
+  function formatDate(dateValue) {
+    if (!dateValue) return "—";
+
+    try {
+      return new Intl.DateTimeFormat(isArabic ? "ar-DZ" : "en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }).format(new Date(dateValue));
+    } catch {
+      return "—";
+    }
+  }
+
+  function getPaymentNeeds(application) {
+    if (!application?.intake) return [];
+
+    const result = paymentNeedFields
+      .filter((field) => Boolean(application.intake[field]))
+      .map((field) => t.request.needs[field]?.title || field);
+
+    const customSolution =
+      application.intake.otherPaymentSolution ||
+      application.intake.other_payment_solution;
+
+    if (customSolution?.trim()) {
+      result.push(customSolution.trim());
+    }
+
+    return result;
+  }
+
+  function getApplicationExtraNotes(application) {
+    const intake = application?.intake || {};
+
+    return String(
+      intake.extraNotes ||
+        intake.extra_notes ||
+        application?.extraNotes ||
+        application?.extra_notes ||
+        application?.notes ||
+        ""
+    );
+  }
+
+  function getPackageFromExtraNotes(application) {
+    const notes = getApplicationExtraNotes(application);
+
+    if (!notes.trim()) {
+      return null;
+    }
+
+    const packageLine = notes
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .find((line) =>
+        /^(?:Selected package|الباقة المختارة)\s*:/i.test(line)
+      );
+
+    if (!packageLine) {
+      return null;
+    }
+
+    const value = packageLine
+      .replace(/^(?:Selected package|الباقة المختارة)\s*:\s*/i, "")
+      .trim();
+
+    if (!value) {
+      return null;
+    }
+
+    // Example:
+    // باقة البداية - $299 / دفعة واحدة
+    // Starter Package - $299 / one-time
+    const match = value.match(
+      /^(.*?)\s*-\s*([^\d\s]?)([\d.,]+)(?:\s*\/\s*(.*))?$/
+    );
+
+    if (!match) {
+      const livePlanByName = pricingPackages.find(
+        (plan) => String(plan?.name || "").trim() === value
+      );
+
+      return livePlanByName || {
+        slug: "",
+        name: value,
+        price: "",
+        currency: "$",
+        period: "",
+      };
+    }
+
+    const [, parsedName, parsedCurrency, parsedPrice, parsedPeriod] = match;
+    const cleanName = parsedName.trim();
+
+    const livePlanByName = pricingPackages.find(
+      (plan) => String(plan?.name || "").trim() === cleanName
+    );
+
+    if (livePlanByName) {
+      return livePlanByName;
+    }
+
+    return {
+      slug: "",
+      name: cleanName || "—",
+      price: String(parsedPrice || "").replace(/,/g, ""),
+      currency: parsedCurrency || "$",
+      period: String(parsedPeriod || "").trim(),
+    };
+  }
+
+  function getApplicationPackage(application) {
+    const intake = application?.intake || {};
+
+    const slug =
+      intake.packageSlug ||
+      intake.package_slug ||
+      application?.packageSlug ||
+      application?.package_slug ||
+      "";
+
+    const livePlan = pricingPackages.find(
+      (plan) => String(plan?.slug || "") === String(slug)
+    );
+
+    if (livePlan) {
+      return livePlan;
+    }
+
+    const name =
+      intake.packageName ||
+      intake.package_name ||
+      application?.packageName ||
+      application?.package_name ||
+      "";
+
+    const price =
+      intake.packagePrice ??
+      intake.package_price ??
+      application?.packagePrice ??
+      application?.package_price ??
+      "";
+
+    if (name || price !== "") {
+      const livePlanByName = pricingPackages.find(
+        (plan) => String(plan?.name || "").trim() === String(name).trim()
+      );
+
+      if (livePlanByName) {
+        return livePlanByName;
+      }
+
+      return {
+        slug,
+        name: name || "—",
+        price,
+        currency:
+          intake.packageCurrency ||
+          intake.package_currency ||
+          application?.packageCurrency ||
+          application?.package_currency ||
+          "$",
+        period:
+          intake.packagePeriod ||
+          intake.package_period ||
+          application?.packagePeriod ||
+          application?.package_period ||
+          "",
+      };
+    }
+
+    // Compatibility with requests created before package fields
+    // were stored as their own Firestore fields.
+    return getPackageFromExtraNotes(application);
   }
 
   function formatDate(dateValue) {
@@ -993,6 +1888,46 @@ function Dashboard() {
 
 
   useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void refreshApplications();
+    }, 8000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [user?.id, user?.uid, user?.email]);
+
+  useEffect(() => {
+    function handleOutsideClick(event) {
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(event.target)
+      ) {
+        setNotificationsOpen(false);
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setNotificationsOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+
+  useEffect(() => {
     if (applications.length === 0) {
       setSelectedDocumentApplicationId(null);
       setDocumentItems([]);
@@ -1052,11 +1987,18 @@ function Dashboard() {
     : t.cards.noApplicationText;
 
   const progressValue = activeApplication?.progress ?? 0;
-  const requestProgress = ((intakeStep - 1) / 3) * 100;
+  const requestProgress = ((intakeStep - 1) / 5) * 100;
   const selectedPaymentFields = getSelectedPaymentFields();
-  const selectedPaymentTitles = selectedPaymentFields.map(
-    (field) => t.request.needs[field]?.title || field
-  );
+  const selectedPaymentTitles = [
+    ...selectedPaymentFields.map(
+      (field) => t.request.needs[field]?.title || field
+    ),
+    ...(intakeForm.otherPaymentSolution?.trim()
+      ? [intakeForm.otherPaymentSolution.trim()]
+      : []),
+  ];
+
+  const unreadNotifications = notifications.filter((item) => !item.read).length;
 
   if (loading) {
     return (
@@ -1142,20 +2084,99 @@ function Dashboard() {
               {user?.email}
             </div>
 
-            <button className="topbar-icon" type="button" aria-label="Profile">
-              ◎
-            </button>
+            <div className="topbar-notifications" ref={notificationsRef}>
+              <button
+                className={`notification-bell ${notificationsOpen ? "active" : ""}`}
+                type="button"
+                aria-label={t.topbar.notifications}
+                aria-expanded={notificationsOpen}
+                aria-haspopup="dialog"
+                onClick={toggleNotifications}
+              >
+                <Bell size={20} strokeWidth={2.2} aria-hidden="true" />
 
-            <button className="topbar-icon" type="button" aria-label="Notifications">
-              ♡
-            </button>
+                {unreadNotifications > 0 && (
+                  <span className="notification-count" aria-label={`${unreadNotifications}`}>
+                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                  </span>
+                )}
+              </button>
 
-            <button className="topbar-password" type="button">
-              🔑 {t.topbar.password}
-            </button>
+              {notificationsOpen && (
+                <div
+                  className="notification-panel"
+                  role="dialog"
+                  aria-label={t.topbar.notifications}
+                >
+                  <div className="notification-panel-header">
+                    <div>
+                      <strong>{t.topbar.notifications}</strong>
+                      <span>
+                        {unreadNotifications > 0
+                          ? isArabic
+                            ? `${unreadNotifications} غير مقروء`
+                            : `${unreadNotifications} unread`
+                          : isArabic
+                            ? "كل الإشعارات مقروءة"
+                            : "You're all caught up"}
+                      </span>
+                    </div>
 
-            <button className="dashboard-lang-btn" type="button" onClick={handleLanguageToggle}>
-              ↔ {t.langButton}
+                    {notifications.length > 0 && (
+                      <button
+                        type="button"
+                        className="notification-read-all"
+                        onClick={markAllNotificationsRead}
+                      >
+                        <CheckCheck size={16} aria-hidden="true" />
+                        <span>{t.topbar.markAllRead}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="notification-list">
+                    {notifications.length === 0 ? (
+                      <div className="notification-empty">
+                        <span className="notification-empty-icon">
+                          <Bell size={23} aria-hidden="true" />
+                        </span>
+                        <strong>{t.topbar.noNotifications}</strong>
+                      </div>
+                    ) : (
+                      notifications.map((notification) => (
+                        <button
+                          key={notification.id}
+                          type="button"
+                          className={`notification-item ${notification.read ? "" : "unread"}`}
+                          onClick={() => openNotification(notification)}
+                        >
+                          <span className="notification-item-icon">
+                            <Bell size={17} aria-hidden="true" />
+                          </span>
+
+                          <span className="notification-item-copy">
+                            <strong>{getNotificationTitle(notification)}</strong>
+                            <span>{getNotificationMessage(notification)}</span>
+                            <small>{formatNotificationTime(notification.createdAt)}</small>
+                          </span>
+
+                          {!notification.read && (
+                            <span className="notification-unread-dot" aria-hidden="true" />
+                          )}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button
+              className="dashboard-lang-btn"
+              type="button"
+              onClick={handleLanguageToggle}
+            >
+              {isArabic ? "EN" : "AR"}
             </button>
           </div>
         </header>
@@ -1218,7 +2239,7 @@ function Dashboard() {
                   <div>
                     <span>{t.request.progressLabel}</span>
                     <strong>
-                      {t.request.step} {intakeStep} {t.request.of} 4
+                      {t.request.step} {intakeStep} {t.request.of} 6
                     </strong>
                   </div>
 
@@ -1228,7 +2249,7 @@ function Dashboard() {
                 </div>
 
                 <div className="intake-steps" aria-label={t.request.progressLabel}>
-                  {[1, 2, 3, 4].map((step) => {
+                  {[1, 2, 3, 4, 5, 6].map((step) => {
                     const completed = step < intakeStep;
                     const accessible = step <= maxStepReached;
 
@@ -1326,12 +2347,119 @@ function Dashboard() {
                       <div className="intake-step-heading">
                         <span className="intake-step-icon">02</span>
                         <div>
+                          <h2>{t.request.packageStep}</h2>
+                          <p>{t.request.packageStepText}</p>
+                        </div>
+                      </div>
+
+                      <div className="package-options">
+                        {pricingPackages.map((plan) => {
+                          const selected = intakeForm.packageSlug === plan.slug;
+
+                          return (
+                            <label
+                              key={plan.slug}
+                              className={`package-option ${selected ? "selected" : ""}`}
+                            >
+                              <input
+                                className="visually-hidden"
+                                type="radio"
+                                name="packageSlug"
+                                value={plan.slug}
+                                checked={selected}
+                                onChange={() => {
+                                  updateIntakeField("packageSlug", plan.slug);
+                                  clearFieldError("packageSlug");
+                                }}
+                              />
+
+                              {plan.recommended && (
+                                <span className="package-recommended">
+                                  {plan.badge || pricingContent?.homeSection?.recommended || "★"}
+                                </span>
+                              )}
+
+                              <div className="package-option-head">
+                                <div>
+                                  <small>{plan.number}</small>
+                                  <h3>{plan.name}</h3>
+                                </div>
+                                <span className="package-check">{selected ? "✓" : ""}</span>
+                              </div>
+
+                              <p>{plan.description}</p>
+
+                              <div className="package-price">
+                                <strong>
+                                  {(plan.currency || "$")}
+                                  {String(plan.price ?? "").replace(plan.currency || "$", "")}
+                                </strong>
+                                <span>{plan.period ? `/ ${plan.period}` : ""}</span>
+                              </div>
+
+                              <ul>
+                                {(plan.features || []).map((feature) => (
+                                  <li key={feature}>✓ {feature}</li>
+                                ))}
+                              </ul>
+                            </label>
+                          );
+                        })}
+                      </div>
+
+                      {fieldErrors.packageSlug && (
+                        <p className="request-message error package-error" role="alert">
+                          {fieldErrors.packageSlug}
+                        </p>
+                      )}
+
+                      <div className="form-footer">
+                        <p className="form-security-note">🔒 {t.request.secureNote}</p>
+                        <div className="form-actions">
+                          <button type="button" className="secondary-btn" onClick={goToPreviousStep}>
+                            {t.request.back}
+                          </button>
+                          <button type="button" className="request-submit" onClick={goToNextStep}>
+                            {t.request.next}
+                            <span aria-hidden="true">→</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {intakeStep === 3 && (
+                    <div className="intake-step">
+                      <div className="intake-step-heading">
+                        <span className="intake-step-icon">03</span>
+                        <div>
                           <h2>{t.request.infoStep}</h2>
                           <p>{t.request.infoStepText}</p>
                         </div>
                       </div>
 
                       <div className="intake-grid">
+                        <label className={`form-field full ${fieldErrors.email ? "has-error" : ""}`}>
+                          <span className="field-label">
+                            {t.request.email}
+                            <small>{t.request.required}</small>
+                          </span>
+                          <input
+                            type="email"
+                            autoComplete="email"
+                            value={intakeForm.email}
+                            placeholder={t.request.emailPlaceholder}
+                            aria-invalid={Boolean(fieldErrors.email)}
+                            onChange={(event) => updateIntakeField("email", event.target.value)}
+                          />
+                          {fieldErrors.email && (
+                            <span className="field-error">{fieldErrors.email}</span>
+                          )}
+                          <span className="email-notice">
+                            ✉ {t.request.emailNotice}
+                          </span>
+                        </label>
+
                         <label className={`form-field ${fieldErrors.phone ? "has-error" : ""}`}>
                           <span className="field-label">
                             {t.request.phone}
@@ -1444,10 +2572,10 @@ function Dashboard() {
                     </div>
                   )}
 
-                  {intakeStep === 3 && (
+                  {intakeStep === 4 && (
                     <div className="intake-step">
                       <div className="intake-step-heading">
-                        <span className="intake-step-icon">03</span>
+                        <span className="intake-step-icon">04</span>
                         <div>
                           <h2>{t.request.paymentStep}</h2>
                           <p>{t.request.paymentStepText}</p>
@@ -1456,7 +2584,10 @@ function Dashboard() {
 
                       <div className="payment-selection-summary">
                         <span>{t.request.paymentNeeds}</span>
-                        <strong>{selectedPaymentFields.length}</strong>
+                        <strong>
+                          {selectedPaymentFields.length +
+                            (intakeForm.otherPaymentSolution?.trim() ? 1 : 0)}
+                        </strong>
                       </div>
 
                       <div className="needs-grid">
@@ -1477,7 +2608,6 @@ function Dashboard() {
                                   updateIntakeField(field, event.target.checked)
                                 }
                               />
-
                               <span className="need-check" aria-hidden="true">
                                 {selected ? "✓" : ""}
                               </span>
@@ -1490,6 +2620,50 @@ function Dashboard() {
                         })}
                       </div>
 
+                      {!showOtherSolution && !intakeForm.otherPaymentSolution && (
+                        <button
+                          type="button"
+                          className="other-solution-button"
+                          onClick={() => setShowOtherSolution(true)}
+                        >
+                          <span>+</span>
+                          {t.request.otherSolution}
+                        </button>
+                      )}
+
+                      {(showOtherSolution || intakeForm.otherPaymentSolution) && (
+                        <div className="other-solution-box">
+                          <label className="form-field full">
+                            <span className="field-label">
+                              {t.request.otherSolutionTitle}
+                              <small>{t.request.optional}</small>
+                            </span>
+                            <input
+                              type="text"
+                              value={intakeForm.otherPaymentSolution}
+                              placeholder={t.request.otherSolutionPlaceholder}
+                              onChange={(event) =>
+                                updateIntakeField(
+                                  "otherPaymentSolution",
+                                  event.target.value
+                                )
+                              }
+                            />
+                          </label>
+
+                          <button
+                            type="button"
+                            className="remove-other-solution"
+                            onClick={() => {
+                              updateIntakeField("otherPaymentSolution", "");
+                              setShowOtherSolution(false);
+                            }}
+                          >
+                            {t.request.removeOtherSolution}
+                          </button>
+                        </div>
+                      )}
+
                       {fieldErrors.paymentNeeds && (
                         <p className="field-error payment-error" role="alert">
                           {fieldErrors.paymentNeeds}
@@ -1499,10 +2673,18 @@ function Dashboard() {
                       <div className="form-footer">
                         <p className="form-security-note">🔒 {t.request.secureNote}</p>
                         <div className="form-actions">
-                          <button type="button" className="secondary-btn" onClick={goToPreviousStep}>
+                          <button
+                            type="button"
+                            className="secondary-btn"
+                            onClick={goToPreviousStep}
+                          >
                             {t.request.back}
                           </button>
-                          <button type="button" className="request-submit" onClick={goToNextStep}>
+                          <button
+                            type="button"
+                            className="request-submit"
+                            onClick={goToNextStep}
+                          >
                             {t.request.next}
                             <span aria-hidden="true">→</span>
                           </button>
@@ -1511,10 +2693,176 @@ function Dashboard() {
                     </div>
                   )}
 
-                  {intakeStep === 4 && (
+                  {intakeStep === 5 && (
                     <div className="intake-step">
                       <div className="intake-step-heading">
-                        <span className="intake-step-icon">04</span>
+                        <span className="intake-step-icon">05</span>
+                        <div>
+                          <h2>{t.request.documentsStep}</h2>
+                          <p>{t.request.documentsStepText}</p>
+                        </div>
+                      </div>
+
+                      {currentRequestDocuments.length === 0 ? (
+                        <div className="request-no-documents">
+                          <span aria-hidden="true">✓</span>
+                          <div>
+                            <strong>
+                              {isArabic
+                                ? "لا توجد وثائق مطلوبة لهذه الخدمة حالياً"
+                                : "No documents are currently required for this service"}
+                            </strong>
+                            <p>
+                              {isArabic
+                                ? "يمكنك المتابعة إلى مراجعة الطلب."
+                                : "You can continue to review your request."}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="request-documents-list">
+                          {currentRequestDocuments.map((document) => {
+                            const file =
+                              requestDocumentFiles[document.requirementId];
+                            const fileInputId =
+                              `request-document-${document.requirementId}`;
+
+                            return (
+                              <article
+                                key={document.requirementId}
+                                className={`request-document-card ${
+                                  file ? "has-file" : ""
+                                }`}
+                              >
+                                <header>
+                                  <div className="request-document-title">
+                                    <span className="request-document-icon">
+                                      {file ? "✓" : "⇧"}
+                                    </span>
+                                    <div>
+                                      <h3>
+                                        {isArabic
+                                          ? document.titleAr
+                                          : document.titleEn}
+                                      </h3>
+                                      <span className="document-required-pill required">
+                                        {t.request.required}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <p>
+                                    {isArabic
+                                      ? document.descriptionAr
+                                      : document.descriptionEn}
+                                  </p>
+                                </header>
+
+                                {file ? (
+                                  <div className="request-selected-file">
+                                    <span className="request-selected-file-icon">
+                                      {file.type === "application/pdf" ? "PDF" : "IMG"}
+                                    </span>
+                                    <div>
+                                      <small>{t.request.selectedFile}</small>
+                                      <strong dir="auto">{file.name}</strong>
+                                      <span>{formatFileSize(file.size)}</span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <label
+                                    htmlFor={fileInputId}
+                                    className="request-document-drop"
+                                  >
+                                    <span>⇧</span>
+                                    <strong>{t.request.chooseFile}</strong>
+                                    <small>
+                                      PDF, JPG, JPEG, PNG · {document.maxSizeMb} MB
+                                    </small>
+                                  </label>
+                                )}
+
+                                <input
+                                  id={fileInputId}
+                                  type="file"
+                                  className="document-file-input"
+                                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                                  onChange={(event) => {
+                                    const selectedFile = event.target.files?.[0];
+
+                                    if (selectedFile) {
+                                      handleRequestDocumentSelect(
+                                        document,
+                                        selectedFile
+                                      );
+                                    }
+
+                                    event.target.value = "";
+                                  }}
+                                />
+
+                                <div className="request-document-actions">
+                                  <label
+                                    htmlFor={fileInputId}
+                                    className="document-action primary"
+                                  >
+                                    {file
+                                      ? t.request.changeFile
+                                      : t.request.chooseFile}
+                                  </label>
+
+                                  {file && (
+                                    <button
+                                      type="button"
+                                      className="document-action danger"
+                                      onClick={() =>
+                                        removeRequestDocument(
+                                          document.requirementId
+                                        )
+                                      }
+                                    >
+                                      {t.request.removeFile}
+                                    </button>
+                                  )}
+                                </div>
+                              </article>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {fieldErrors.documents && (
+                        <p className="request-message error" role="alert">
+                          {fieldErrors.documents}
+                        </p>
+                      )}
+
+                      <div className="form-footer">
+                        <p className="form-security-note">🔒 {t.request.secureNote}</p>
+                        <div className="form-actions">
+                          <button
+                            type="button"
+                            className="secondary-btn"
+                            onClick={goToPreviousStep}
+                          >
+                            {t.request.back}
+                          </button>
+                          <button
+                            type="button"
+                            className="request-submit"
+                            onClick={goToNextStep}
+                          >
+                            {t.request.next}
+                            <span aria-hidden="true">→</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {intakeStep === 6 && (
+                    <div className="intake-step">
+                      <div className="intake-step-heading">
+                        <span className="intake-step-icon">06</span>
                         <div>
                           <h2>{t.request.reviewStep}</h2>
                           <p>{t.request.reviewStepText}</p>
@@ -1540,14 +2888,39 @@ function Dashboard() {
                           <header>
                             <div>
                               <span>02</span>
-                              <strong>{t.request.contactSummary}</strong>
+                              <strong>{t.request.packageSummary}</strong>
                             </div>
                             <button type="button" onClick={() => goToAccessibleStep(2)}>
                               {t.request.edit}
                             </button>
                           </header>
 
+                          {selectedPackage ? (
+                            <div className="review-package">
+                              <strong>{selectedPackage.name}</strong>
+                              <span>{formatPackagePrice(selectedPackage)}</span>
+                            </div>
+                          ) : (
+                            <p className="review-activity">—</p>
+                          )}
+                        </article>
+
+                        <article className="review-section-card">
+                          <header>
+                            <div>
+                              <span>03</span>
+                              <strong>{t.request.contactSummary}</strong>
+                            </div>
+                            <button type="button" onClick={() => goToAccessibleStep(3)}>
+                              {t.request.edit}
+                            </button>
+                          </header>
+
                           <dl>
+                            <div>
+                              <dt>{t.request.email}</dt>
+                              <dd dir="auto">{intakeForm.email || "—"}</dd>
+                            </div>
                             <div>
                               <dt>{t.request.phone}</dt>
                               <dd dir="auto">{intakeForm.phone || "—"}</dd>
@@ -1561,15 +2934,19 @@ function Dashboard() {
                               <dd dir="auto">{intakeForm.desiredCompanyName || "—"}</dd>
                             </div>
                           </dl>
+
+                          <div className="review-email-note">
+                            ✉ {t.request.emailNotice}
+                          </div>
                         </article>
 
                         <article className="review-section-card">
                           <header>
                             <div>
-                              <span>03</span>
+                              <span>04</span>
                               <strong>{t.request.paymentNeeds}</strong>
                             </div>
-                            <button type="button" onClick={() => goToAccessibleStep(3)}>
+                            <button type="button" onClick={() => goToAccessibleStep(4)}>
                               {t.request.edit}
                             </button>
                           </header>
@@ -1585,13 +2962,57 @@ function Dashboard() {
                           </div>
                         </article>
 
+                        <article className="review-section-card">
+                          <header>
+                            <div>
+                              <span>05</span>
+                              <strong>{t.request.documentsSummary}</strong>
+                            </div>
+                            <button type="button" onClick={() => goToAccessibleStep(5)}>
+                              {t.request.edit}
+                            </button>
+                          </header>
+
+                          {currentRequestDocuments.length === 0 ? (
+                            <p className="review-activity">
+                              {isArabic
+                                ? "لا توجد وثائق مطلوبة لهذه الخدمة."
+                                : "No documents are required for this service."}
+                            </p>
+                          ) : (
+                            <div className="review-documents">
+                              {currentRequestDocuments.map((document) => {
+                                const file =
+                                  requestDocumentFiles[document.requirementId];
+
+                                return (
+                                  <div
+                                    key={document.requirementId}
+                                    className="review-document-row"
+                                  >
+                                    <span>✓</span>
+                                    <div>
+                                      <strong>
+                                        {isArabic
+                                          ? document.titleAr
+                                          : document.titleEn}
+                                      </strong>
+                                      <small dir="auto">{file?.name || "—"}</small>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </article>
+
                         <article className="review-section-card full">
                           <header>
                             <div>
-                              <span>02</span>
+                              <span>03</span>
                               <strong>{t.request.projectSummary}</strong>
                             </div>
-                            <button type="button" onClick={() => goToAccessibleStep(2)}>
+                            <button type="button" onClick={() => goToAccessibleStep(3)}>
                               {t.request.edit}
                             </button>
                           </header>
@@ -1634,7 +3055,11 @@ function Dashboard() {
                             {t.request.back}
                           </button>
                           <button className="request-submit submit-final" type="submit" disabled={creating}>
-                            {creating ? t.request.submitting : t.request.submit}
+                            {creating
+                              ? currentRequestDocuments.length > 0
+                                ? t.request.uploadingDocuments
+                                : t.request.submitting
+                              : t.request.submit}
                           </button>
                         </div>
                       </div>
@@ -1694,6 +3119,29 @@ function Dashboard() {
                         <div>
                           <span>{t.servicesPage.createdAt}</span>
                           <strong>{formatDate(application.createdAt)}</strong>
+                        </div>
+
+                        <div>
+                          <span>{t.servicesPage.package}</span>
+                          <strong>
+                            {getApplicationPackage(application)?.name || "—"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>{t.servicesPage.price}</span>
+                          <strong>
+                            {getApplicationPackage(application)
+                              ? formatPackagePrice(getApplicationPackage(application))
+                              : "—"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>{t.servicesPage.notificationEmail}</span>
+                          <strong dir="auto">
+                            {application.intake?.email || user?.email || "—"}
+                          </strong>
                         </div>
 
                         <div>

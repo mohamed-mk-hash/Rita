@@ -1,11 +1,16 @@
+import {
+  doc,
+  getDoc,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
+
+import { auth, db } from "../../firebase";
+
 import type {
   AdminWebsitePage,
   JsonObject,
 } from "../types/pageContent";
-
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
 
 export type WebsitePageKey =
   | "home"
@@ -19,89 +24,409 @@ interface PageResponse {
   page: AdminWebsitePage;
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const response = await fetch(
-    `${API_URL}${path}`,
-    {
-      ...options,
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-      },
+function parseContent(
+  value: unknown
+): JsonObject {
+  if (!value) {
+    return {};
+  }
+
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value)
+  ) {
+    return value as JsonObject;
+  }
+
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(
+        value
+      ) as JsonObject;
+    } catch (error) {
+      console.error(
+        "PAGE_CONTENT_PARSE_ERROR:",
+        error
+      );
+
+      return {};
     }
+  }
+
+  return {};
+}
+
+function stringifyContent(
+  value: JsonObject
+) {
+  return JSON.stringify(
+    value
   );
+}
 
-  const data = await response
-    .json()
-    .catch(() => ({}));
+function toIsoString(
+  value: unknown
+): string | null {
+  if (!value) {
+    return null;
+  }
 
-  if (!response.ok) {
+  if (
+    typeof value === "string"
+  ) {
+    return value;
+  }
+
+  if (
+    value instanceof Date
+  ) {
+    return value.toISOString();
+  }
+
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "toDate" in value &&
+    typeof (
+      value as {
+        toDate: () => Date;
+      }
+    ).toDate === "function"
+  ) {
+    return (
+      value as {
+        toDate: () => Date;
+      }
+    )
+      .toDate()
+      .toISOString();
+  }
+
+  return null;
+}
+
+function mapPage(
+  pageKey: WebsitePageKey,
+  data: Record<
+    string,
+    unknown
+  >
+): AdminWebsitePage {
+  return {
+    id:
+      Number(
+        data.id || 0
+      ),
+
+    pageKey,
+
+    draftContent:
+      parseContent(
+        data.draft_content
+      ),
+
+    publishedContent:
+      parseContent(
+        data.published_content
+      ),
+
+    version:
+      Number(
+        data.version || 1
+      ),
+
+    updatedBy:
+      data.updated_by
+        ? String(
+            data.updated_by
+          )
+        : null,
+
+    publishedBy:
+      data.published_by
+        ? String(
+            data.published_by
+          )
+        : null,
+
+    publishedAt:
+      toIsoString(
+        data.published_at
+      ),
+
+    createdAt:
+      toIsoString(
+        data.created_at
+      ),
+
+    updatedAt:
+      toIsoString(
+        data.updated_at
+      ),
+  };
+}
+
+export async function getAdminPage(
+  pageKey: WebsitePageKey
+): Promise<PageResponse> {
+  const reference =
+    doc(
+      db,
+      "website_pages",
+      pageKey
+    );
+
+  const snapshot =
+    await getDoc(
+      reference
+    );
+
+  if (!snapshot.exists()) {
     throw new Error(
-      data.message || "Something went wrong"
+      `Page "${pageKey}" was not found.`
     );
   }
 
-  return data as T;
+  return {
+    page:
+      mapPage(
+        pageKey,
+        snapshot.data()
+      ),
+  };
 }
 
-export function getAdminPage(
-  pageKey: WebsitePageKey
-) {
-  return request<PageResponse>(
-    `/admin/pages/${pageKey}`
-  );
-}
-
-export function saveAdminPageDraft(
+export async function saveAdminPageDraft(
   pageKey: WebsitePageKey,
   content: JsonObject,
   version: number
-) {
-  return request<PageResponse>(
-    `/admin/pages/${pageKey}/draft`,
+): Promise<PageResponse> {
+  const reference =
+    doc(
+      db,
+      "website_pages",
+      pageKey
+    );
+
+  const snapshot =
+    await getDoc(
+      reference
+    );
+
+  if (!snapshot.exists()) {
+    throw new Error(
+      `Page "${pageKey}" was not found.`
+    );
+  }
+
+  const userId =
+    auth.currentUser?.uid ||
+    null;
+
+  const nextVersion =
+    Number(
+      version || 1
+    ) + 1;
+
+  await updateDoc(
+    reference,
     {
-      method: "PUT",
-      body: JSON.stringify({
-        content,
-        version,
-      }),
+      draft_content:
+        stringifyContent(
+          content
+        ),
+
+      version:
+        nextVersion,
+
+      updated_by:
+        userId,
+
+      updated_at:
+        serverTimestamp(),
     }
   );
+
+  const updatedSnapshot =
+    await getDoc(
+      reference
+    );
+
+  return {
+    message:
+      "Draft saved successfully.",
+
+    page:
+      mapPage(
+        pageKey,
+        updatedSnapshot.data()!
+      ),
+  };
 }
 
-export function publishAdminPage(
+export async function publishAdminPage(
   pageKey: WebsitePageKey,
   version: number
-) {
-  return request<PageResponse>(
-    `/admin/pages/${pageKey}/publish`,
+): Promise<PageResponse> {
+  const reference =
+    doc(
+      db,
+      "website_pages",
+      pageKey
+    );
+
+  const snapshot =
+    await getDoc(
+      reference
+    );
+
+  if (!snapshot.exists()) {
+    throw new Error(
+      `Page "${pageKey}" was not found.`
+    );
+  }
+
+  const data =
+    snapshot.data();
+
+  const draft =
+    parseContent(
+      data.draft_content
+    );
+
+  const userId =
+    auth.currentUser?.uid ||
+    null;
+
+  await updateDoc(
+    reference,
     {
-      method: "POST",
-      body: JSON.stringify({ version }),
+      published_content:
+        stringifyContent(
+          draft
+        ),
+
+      published_by:
+        userId,
+
+      published_at:
+        serverTimestamp(),
+
+      updated_by:
+        userId,
+
+      updated_at:
+        serverTimestamp(),
+
+      version:
+        Number(
+          version ||
+          data.version ||
+          1
+        ),
     }
   );
+
+  const updatedSnapshot =
+    await getDoc(
+      reference
+    );
+
+  return {
+    message:
+      "Page published successfully.",
+
+    page:
+      mapPage(
+        pageKey,
+        updatedSnapshot.data()!
+      ),
+  };
 }
 
-export function restoreAdminPageDraft(
+export async function restoreAdminPageDraft(
   pageKey: WebsitePageKey,
   version: number
-) {
-  return request<PageResponse>(
-    `/admin/pages/${pageKey}/restore`,
+): Promise<PageResponse> {
+  const reference =
+    doc(
+      db,
+      "website_pages",
+      pageKey
+    );
+
+  const snapshot =
+    await getDoc(
+      reference
+    );
+
+  if (!snapshot.exists()) {
+    throw new Error(
+      `Page "${pageKey}" was not found.`
+    );
+  }
+
+  const data =
+    snapshot.data();
+
+  const published =
+    parseContent(
+      data.published_content
+    );
+
+  const userId =
+    auth.currentUser?.uid ||
+    null;
+
+  await updateDoc(
+    reference,
     {
-      method: "POST",
-      body: JSON.stringify({ version }),
+      draft_content:
+        stringifyContent(
+          published
+        ),
+
+      updated_by:
+        userId,
+
+      updated_at:
+        serverTimestamp(),
+
+      version:
+        Number(
+          version ||
+          data.version ||
+          1
+        ),
     }
   );
+
+  const updatedSnapshot =
+    await getDoc(
+      reference
+    );
+
+  return {
+    message:
+      "Draft restored from published content.",
+
+    page:
+      mapPage(
+        pageKey,
+        updatedSnapshot.data()!
+      ),
+  };
 }
 
-/* Backward-compatible home helpers. */
+/*
+  Backward-compatible helpers
+*/
+
 export function getAdminHomePage() {
-  return getAdminPage("home");
+  return getAdminPage(
+    "home"
+  );
 }
 
 export function saveAdminHomePageDraft(
@@ -118,7 +443,10 @@ export function saveAdminHomePageDraft(
 export function publishAdminHomePage(
   version: number
 ) {
-  return publishAdminPage("home", version);
+  return publishAdminPage(
+    "home",
+    version
+  );
 }
 
 export function restoreAdminHomePageDraft(

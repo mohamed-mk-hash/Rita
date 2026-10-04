@@ -1,9 +1,15 @@
-.floating-whatsapp {
+.floating-whatsapp-wrapper {
   position: fixed;
   left: 24px;
   right: auto;
   bottom: 24px;
   z-index: 9999;
+
+  font-family: inherit;
+}
+
+.floating-whatsapp {
+  position: relative;
 
   display: inline-flex;
   align-items: center;
@@ -26,6 +32,8 @@
   text-decoration: none;
   white-space: nowrap;
 
+  cursor: pointer;
+
   box-shadow:
     0 12px 30px rgba(37, 211, 102, 0.32),
     0 5px 14px rgba(0, 0, 0, 0.22);
@@ -36,7 +44,6 @@
     box-shadow 180ms ease;
 }
 
-/* دائرة خفيفة متحركة على الكمبيوتر فقط */
 .floating-whatsapp::before {
   content: "";
   position: absolute;
@@ -47,6 +54,10 @@
   background: rgba(37, 211, 102, 0.35);
 
   animation: floating-whatsapp-pulse 2.4s infinite;
+}
+
+.floating-whatsapp.is-open::before {
+  display: none;
 }
 
 .floating-whatsapp-icon {
@@ -71,7 +82,242 @@
   display: inline-block;
 }
 
-/* تشغيل Hover فقط على الأجهزة التي تملك فأرة */
+/* =========================================================
+   WHATSAPP PANEL
+========================================================= */
+
+.floating-whatsapp-panel {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 14px);
+
+  width: min(360px, calc(100vw - 32px));
+
+  overflow: hidden;
+
+  background: #ffffff;
+  color: #0e3149;
+
+  border: 1px solid rgba(14, 49, 73, 0.12);
+  border-radius: 22px;
+
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.18),
+    0 8px 22px rgba(0, 0, 0, 0.1);
+
+  transform-origin: bottom left;
+
+  animation: floating-whatsapp-panel-in 180ms ease;
+}
+
+.floating-whatsapp-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+
+  padding: 18px;
+
+  color: #ffffff;
+  background:
+    linear-gradient(
+      135deg,
+      #128c7e 0%,
+      #25d366 100%
+    );
+}
+
+.floating-whatsapp-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.floating-whatsapp-panel-icon {
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  width: 42px;
+  height: 42px;
+
+  border-radius: 13px;
+
+  font-size: 24px;
+
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.floating-whatsapp-panel-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.floating-whatsapp-panel-heading strong {
+  display: block;
+
+  margin-top: 1px;
+
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.floating-whatsapp-panel-heading p {
+  margin: 5px 0 0;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.floating-whatsapp-close {
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  width: 34px;
+  height: 34px;
+
+  padding: 0;
+
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+
+  border: none;
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.floating-whatsapp-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.floating-whatsapp-close:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.floating-whatsapp-close:active {
+  transform: scale(0.94);
+}
+
+.floating-whatsapp-options {
+  display: grid;
+  gap: 8px;
+
+  padding: 12px;
+}
+
+.floating-whatsapp-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+  min-height: 52px;
+
+  padding: 10px 12px;
+
+  color: #12384f;
+  background: #f7fafc;
+
+  border: 1px solid #e4edf3;
+  border-radius: 14px;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.floating-whatsapp-option:hover {
+  background: #edf9f2;
+  border-color: rgba(37, 211, 102, 0.35);
+
+  transform: translateY(-1px);
+}
+
+.floating-whatsapp-option-icon {
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  width: 34px;
+  height: 34px;
+
+  color: #25a75a;
+  background: rgba(37, 211, 102, 0.12);
+
+  border-radius: 10px;
+}
+
+.floating-whatsapp-option-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.floating-whatsapp-option-other {
+  margin-top: 2px;
+
+  color: #ffffff;
+  background: #25d366;
+
+  border-color: #25d366;
+}
+
+.floating-whatsapp-option-other:hover {
+  color: #ffffff;
+  background: #1ebe5d;
+  border-color: #1ebe5d;
+}
+
+.floating-whatsapp-option-other
+  .floating-whatsapp-option-icon {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.17);
+}
+
+/* =========================================================
+   RTL
+========================================================= */
+
+.floating-whatsapp-wrapper.is-arabic
+  .floating-whatsapp-panel {
+  text-align: right;
+}
+
+.floating-whatsapp-wrapper.is-arabic
+  .floating-whatsapp-option {
+  text-align: right;
+}
+
+.floating-whatsapp-wrapper.is-arabic
+  .floating-whatsapp-panel-heading {
+  text-align: right;
+}
+
+/* =========================================================
+   HOVER
+========================================================= */
+
 @media (hover: hover) and (pointer: fine) {
   .floating-whatsapp:hover {
     color: #ffffff;
@@ -89,10 +335,16 @@
   transform: scale(0.94);
 }
 
-.floating-whatsapp:focus-visible {
-  outline: 3px solid rgba(255, 255, 255, 0.95);
-  outline-offset: 4px;
+.floating-whatsapp:focus-visible,
+.floating-whatsapp-option:focus-visible,
+.floating-whatsapp-close:focus-visible {
+  outline: 3px solid rgba(37, 211, 102, 0.35);
+  outline-offset: 3px;
 }
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
 
 @keyframes floating-whatsapp-pulse {
   0% {
@@ -111,20 +363,40 @@
   }
 }
 
-/*
-  تصميم الهاتف:
-  يتحول الزر إلى دائرة واتساب فقط،
-  مثل الصورة الأولى.
-*/
+@keyframes floating-whatsapp-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
 @media (max-width: 768px) {
-  .floating-whatsapp {
+  .floating-whatsapp-wrapper {
     left: 20px;
     right: auto;
 
-    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(
+      18px +
+        env(
+          safe-area-inset-bottom,
+          0px
+        )
+    );
+  }
 
+  .floating-whatsapp {
     width: 58px;
     height: 58px;
+
     min-width: 58px;
     min-height: 58px;
 
@@ -138,10 +410,6 @@
       0 5px 14px rgba(0, 0, 0, 0.24);
   }
 
-  /*
-    إخفاء النص بصرياً مع إبقائه متاحاً
-    لقارئات الشاشة.
-  */
   .floating-whatsapp-label {
     position: absolute;
 
@@ -152,10 +420,18 @@
     margin: -1px;
 
     overflow: hidden;
-    clip: rect(0, 0, 0, 0);
+
+    clip: rect(
+      0,
+      0,
+      0,
+      0
+    );
+
     clip-path: inset(50%);
 
     white-space: nowrap;
+
     border: 0;
   }
 
@@ -166,22 +442,45 @@
     font-size: 28px;
   }
 
-  /*
-    إلغاء الدائرة المتحركة على الهاتف
-    حتى يكون الشكل نظيفاً مثل الصورة.
-  */
   .floating-whatsapp::before {
     display: none;
   }
+
+  .floating-whatsapp-panel {
+    position: absolute;
+
+    left: 0;
+    bottom: calc(100% + 12px);
+
+    width: min(
+      340px,
+      calc(100vw - 32px)
+    );
+
+    max-height: min(
+      520px,
+      calc(100vh - 120px)
+    );
+
+    overflow-y: auto;
+
+    transform-origin: bottom left;
+  }
 }
 
-/* شاشات الهواتف الصغيرة جداً */
-@media (max-width: 360px) {
-  .floating-whatsapp {
-    left: 15px;
+/* =========================================================
+   SMALL PHONES
+========================================================= */
 
+@media (max-width: 360px) {
+  .floating-whatsapp-wrapper {
+    left: 15px;
+  }
+
+  .floating-whatsapp {
     width: 54px;
     height: 54px;
+
     min-width: 54px;
     min-height: 54px;
   }
@@ -192,12 +491,21 @@
 
     font-size: 26px;
   }
+
+  .floating-whatsapp-panel {
+    width: calc(100vw - 30px);
+  }
 }
 
-/* احترام إعداد تقليل الحركة */
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
 @media (prefers-reduced-motion: reduce) {
   .floating-whatsapp,
-  .floating-whatsapp::before {
+  .floating-whatsapp::before,
+  .floating-whatsapp-panel,
+  .floating-whatsapp-option {
     animation: none;
     transition: none;
   }

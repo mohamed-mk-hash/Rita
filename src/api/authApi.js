@@ -1,44 +1,245 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 
-async function request(path, options = {}) {
-  const response = await fetch(`${API_URL}${path}`, {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
+import {
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 
-  const data = await response.json().catch(() => ({}));
+import {
+  auth,
+  db,
+} from "../firebase.js";
 
-  if (!response.ok) {
-    throw new Error(data.message || "Something went wrong");
+function waitForAuth() {
+  return new Promise(
+    (resolve, reject) => {
+      const unsubscribe =
+        onAuthStateChanged(
+          auth,
+
+          (user) => {
+            unsubscribe();
+            resolve(user);
+          },
+
+          (error) => {
+            unsubscribe();
+            reject(error);
+          }
+        );
+    }
+  );
+}
+
+async function getFirebaseUser() {
+  if (auth.currentUser) {
+    return auth.currentUser;
   }
 
-  return data;
+  const user =
+    await waitForAuth();
+
+  if (!user) {
+    throw new Error(
+      "Not logged in"
+    );
+  }
+
+  return user;
 }
 
-export function signUpRequest(payload) {
-  return request("/auth/signup", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+function mapUser(
+  firebaseUser,
+  data
+) {
+  return {
+    id:
+      firebaseUser.uid,
+
+    uid:
+      firebaseUser.uid,
+
+    fullName:
+      data.full_name || "",
+
+    companyName:
+      data.company_name || "",
+
+    email:
+      data.email ||
+      firebaseUser.email ||
+      "",
+
+    role:
+      data.role || "client",
+
+    status:
+      data.status || "active",
+
+    createdAt:
+      data.created_at || null,
+
+    updatedAt:
+      data.updated_at || null,
+  };
 }
 
-export function loginRequest(payload) {
-  return request("/auth/login", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+export async function signUpRequest({
+  fullName,
+  companyName,
+  email,
+  password,
+}) {
+  const credential =
+    await createUserWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    );
+
+  const firebaseUser =
+    credential.user;
+
+  const userData = {
+    id:
+      firebaseUser.uid,
+
+    full_name:
+      fullName.trim(),
+
+    company_name:
+      companyName?.trim() ||
+      "",
+
+    email:
+      email
+        .trim()
+        .toLowerCase(),
+
+    role:
+      "client",
+
+    status:
+      "active",
+
+    created_at:
+      serverTimestamp(),
+
+    updated_at:
+      serverTimestamp(),
+  };
+
+  await setDoc(
+    doc(
+      db,
+      "users",
+      firebaseUser.uid
+    ),
+    userData
+  );
+
+  return {
+    user:
+      mapUser(
+        firebaseUser,
+        userData
+      ),
+  };
 }
 
-export function getCurrentUserRequest() {
-  return request("/auth/me");
+export async function loginRequest({
+  email,
+  password,
+}) {
+  const credential =
+    await signInWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    );
+
+  const firebaseUser =
+    credential.user;
+
+  const snapshot =
+    await getDoc(
+      doc(
+        db,
+        "users",
+        firebaseUser.uid
+      )
+    );
+
+  if (!snapshot.exists()) {
+    await signOut(auth);
+
+    throw new Error(
+      "User profile not found."
+    );
+  }
+
+  const data =
+    snapshot.data();
+
+  if (
+    data.status &&
+    data.status !== "active"
+  ) {
+    await signOut(auth);
+
+    throw new Error(
+      "This account is not active."
+    );
+  }
+
+  return {
+    user:
+      mapUser(
+        firebaseUser,
+        data
+      ),
+  };
 }
 
-export function logoutRequest() {
-  return request("/auth/logout", {
-    method: "POST",
-  });
+export async function getCurrentUserRequest() {
+  const firebaseUser =
+    await getFirebaseUser();
+
+  const snapshot =
+    await getDoc(
+      doc(
+        db,
+        "users",
+        firebaseUser.uid
+      )
+    );
+
+  if (!snapshot.exists()) {
+    throw new Error(
+      "User profile not found."
+    );
+  }
+
+  return {
+    user:
+      mapUser(
+        firebaseUser,
+        snapshot.data()
+      ),
+  };
+}
+
+export async function logoutRequest() {
+  await signOut(auth);
+
+  return {
+    success: true,
+  };
 }

@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import ritaLogo from "../assets/rita-logo.png";
+
 import {
   NavLink,
   useNavigate,
 } from "react-router-dom";
 
 import {
-  FileCheck2,
-  Files,
   LayoutDashboard,
   LogOut,
   MessageSquareText,
@@ -15,6 +14,7 @@ import {
   Info,
   BadgeDollarSign,
   BriefcaseBusiness,
+  Files,
 } from "lucide-react";
 
 import { useLanguage } from "../i18n/LanguageContext";
@@ -29,52 +29,61 @@ export const Sidebar: React.FC = () => {
     useState(false);
 
   const menuItems = [
-  {
-    path: "/",
-    label: t.overview,
-    icon: LayoutDashboard,
-  },
-  {
-    path: "/applications",
-    label: isArabic ? "الطلبات" : "Applications",
-    icon: Files,
-  },
-  {
-    path: "/documents",
-    label: isArabic ? "الوثائق" : "Documents",
-    icon: FileCheck2,
-  },
-  {
-    path: "/messages",
-    label: isArabic
-      ? "رسائل التواصل"
-      : "Contact Messages",
-    icon: MessageSquareText,
-  },
-  {
-    path: "/content/home",
-     label: isArabic
-    ? "محتوى الرئيسية"
-    : "Home content",
-    icon: Home,
-  },
-  {
+    {
+      path: "/",
+      label: t.overview,
+      icon: LayoutDashboard,
+    },
+    {
+      path: "/applications",
+      label: isArabic
+        ? "الطلبات"
+        : "Applications",
+      icon: Files,
+    },
+    {
+      path: "/messages",
+      label: isArabic
+        ? "رسائل التواصل"
+        : "Contact Messages",
+      icon: MessageSquareText,
+    },
+    {
+      path: "/content/home",
+      label: isArabic
+        ? "محتوى الرئيسية"
+        : "Home content",
+      icon: Home,
+    },
+    {
+      path: "/content/about",
       label: isArabic
         ? "محتوى من نحن"
         : "About content",
-      path: "/content/about",
       icon: Info,
     },
     {
+      path: "/content/contact",
       label: isArabic
         ? "محتوى التواصل"
         : "Contact content",
-      path: "/content/contact",
       icon: MessageSquareText,
     },
-    { label: isArabic ? "محتوى الخدمات" : "Services content", path: "/content/services", icon: BriefcaseBusiness },
-    { label: isArabic ? "محتوى الأسعار" : "Pricing content", path: "/content/pricing", icon: BadgeDollarSign },
-];
+    {
+      path: "/content/services",
+      label: isArabic
+        ? "محتوى الخدمات"
+        : "Services content",
+      icon: BriefcaseBusiness,
+    },
+    {
+      path: "/content/pricing",
+      label: isArabic
+        ? "محتوى الأسعار"
+        : "Pricing content",
+      icon: BadgeDollarSign,
+    },
+  ];
 
   async function handleLogout() {
     if (loggingOut) {
@@ -109,8 +118,6 @@ export const Sidebar: React.FC = () => {
         isArabic ? "right-0" : "left-0"
       }`}
     >
-      {/* Logo */}
-
       <div
         className={`flex ${
           isArabic
@@ -119,13 +126,11 @@ export const Sidebar: React.FC = () => {
         }`}
       >
         <img
-  src={ritaLogo}
-  alt="Rita Digital Services"
-  className="h-[68px] w-[105px] rounded-xl bg-white object-contain p-3 shadow-sm"
-/>
+          src={ritaLogo}
+          alt="Rita Digital Services"
+          className="h-[68px] w-[105px] rounded-xl bg-white object-contain p-3 shadow-sm"
+        />
       </div>
-
-      {/* Navigation */}
 
       <nav className="mt-8 grid gap-2">
         {menuItems.map((item) => {
@@ -145,13 +150,12 @@ export const Sidebar: React.FC = () => {
               }
             >
               <Icon className="h-5 w-5 shrink-0" />
+
               <span>{item.label}</span>
             </NavLink>
           );
         })}
       </nav>
-
-      {/* Logout */}
 
       <button
         type="button"

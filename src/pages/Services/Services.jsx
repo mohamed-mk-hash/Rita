@@ -36,13 +36,20 @@ const fadeUp = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.72, ease: [0.16, 1, 0.3, 1] },
+    transition: {
+      duration: 0.72,
+      ease: [0.16, 1, 0.3, 1],
+    },
   },
 };
 
 const stagger = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
 };
 
 function Reveal({ children, delay = 0, className = "" }) {
@@ -51,8 +58,16 @@ function Reveal({ children, delay = 0, className = "" }) {
       className={className}
       initial={{ opacity: 0, y: 44 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.25, margin: "0px 0px -10% 0px" }}
-      transition={{ duration: 0.72, delay, ease: [0.16, 1, 0.3, 1] }}
+      viewport={{
+        once: true,
+        amount: 0.25,
+        margin: "0px 0px -10% 0px",
+      }}
+      transition={{
+        duration: 0.72,
+        delay,
+        ease: [0.16, 1, 0.3, 1],
+      }}
     >
       {children}
     </motion.div>
@@ -67,7 +82,11 @@ function ServiceCard({ service, index }) {
       className="service-page-card"
       variants={fadeUp}
       whileHover={{ y: -8, scale: 1.01 }}
-      transition={{ type: "spring", stiffness: 230, damping: 20 }}
+      transition={{
+        type: "spring",
+        stiffness: 230,
+        damping: 20,
+      }}
     >
       <span className="service-page-number">
         {String(index + 1).padStart(2, "0")}
@@ -78,6 +97,7 @@ function ServiceCard({ service, index }) {
       </div>
 
       <h2>{service.title}</h2>
+
       <p>{service.text}</p>
 
       <ul>
@@ -99,7 +119,9 @@ function ProcessSection({ t }) {
         <Reveal>
           <div className="services-section-heading">
             <span>{t.process.eyebrow}</span>
+
             <h2>{t.process.title}</h2>
+
             <p>{t.process.subtitle}</p>
           </div>
         </Reveal>
@@ -121,10 +143,13 @@ function ProcessSection({ t }) {
                 whileHover={{ y: -6 }}
               >
                 <strong>{String(index + 1).padStart(2, "0")}</strong>
+
                 <div>
                   <Icon size={24} />
                 </div>
+
                 <h3>{step.title}</h3>
+
                 <p>{step.text}</p>
               </motion.article>
             );
@@ -145,6 +170,7 @@ function AdvantagesSection({ t }) {
 
             <div className="services-advantages-copy">
               <span>{t.advantages.eyebrow}</span>
+
               <h2>{t.advantages.title}</h2>
             </div>
 
@@ -154,12 +180,20 @@ function AdvantagesSection({ t }) {
                   key={`${item.title}-${index}`}
                   initial={{ opacity: 0, x: 24 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, amount: 0.5 }}
-                  transition={{ duration: 0.55, delay: index * 0.08 }}
+                  viewport={{
+                    once: true,
+                    amount: 0.5,
+                  }}
+                  transition={{
+                    duration: 0.55,
+                    delay: index * 0.08,
+                  }}
                 >
                   <CheckCircle2 size={18} />
+
                   <div>
                     <h3>{item.title}</h3>
+
                     <p>{item.text}</p>
                   </div>
                 </motion.div>
@@ -180,12 +214,17 @@ function FinalCTA({ t }) {
           <div className="final-cta-card">
             <div className="cta-orbit one" />
             <div className="cta-orbit two" />
+
             <h2>{t.finalCta.title}</h2>
+
             <p>{t.finalCta.text}</p>
+
             <div>
-              <a href="#services-list" className="btn btn-white">
+              {/* زر بدء LLC -> صفحة تسجيل الدخول */}
+              <a href="/login" className="btn btn-white">
                 {t.finalCta.primary}
               </a>
+
               <a href="/contact" className="btn btn-muted">
                 {t.finalCta.secondary}
               </a>
@@ -206,10 +245,21 @@ function Services() {
     languageContext?.currentLanguage ??
     (languageContext?.isArabic ? "ar" : "en");
 
-  const normalizedLanguage = String(contextLanguage).trim().toLowerCase();
-  const lang = normalizedLanguage.startsWith("ar") ? "ar" : "en";
-  const isArabic = languageContext?.isArabic ?? lang === "ar";
-  const selectedLanguage = isArabic ? "ar" : lang;
+  const normalizedLanguage = String(contextLanguage)
+    .trim()
+    .toLowerCase();
+
+  const lang = normalizedLanguage.startsWith("ar")
+    ? "ar"
+    : "en";
+
+  const isArabic =
+    languageContext?.isArabic ??
+    lang === "ar";
+
+  const selectedLanguage = isArabic
+    ? "ar"
+    : lang;
 
   const changeLanguage =
     languageContext?.changeLanguage ??
@@ -222,22 +272,35 @@ function Services() {
     servicesFallbackContent
   );
 
-  const apiLanguageContent = pageContent?.[selectedLanguage];
+  const apiLanguageContent =
+    pageContent?.[selectedLanguage];
+
   const t =
     apiLanguageContent &&
     typeof apiLanguageContent === "object" &&
     Object.keys(apiLanguageContent).length > 0
       ? apiLanguageContent
-      : servicesFallbackContent[selectedLanguage] || servicesFallbackContent.en;
+      : servicesFallbackContent[selectedLanguage] ||
+        servicesFallbackContent.en;
 
   const chrome =
-    siteChromeContent[selectedLanguage] || siteChromeContent.en;
+    siteChromeContent[selectedLanguage] ||
+    siteChromeContent.en;
 
   return (
-    <div className={`services-page ${isArabic ? "rtl" : "ltr"}`}>
-      <Navbar t={chrome.nav} lang={lang} onChangeLang={changeLanguage} />
+    <div
+      className={`services-page ${
+        isArabic ? "rtl" : "ltr"
+      }`}
+    >
+      <Navbar
+        t={chrome.nav}
+        lang={lang}
+        onChangeLang={changeLanguage}
+      />
 
       <main>
+        {/* HERO */}
         <section className="services-hero">
           <div className="services-hero-orb one" />
           <div className="services-hero-orb two" />
@@ -248,27 +311,53 @@ function Services() {
             animate="visible"
             variants={stagger}
           >
-            <motion.span className="services-hero-pill" variants={fadeUp}>
+            <motion.span
+              className="services-hero-pill"
+              variants={fadeUp}
+            >
               {t.hero.eyebrow}
+
               <Sparkles size={15} />
             </motion.span>
 
-            <motion.h1 variants={fadeUp}>{t.hero.title}</motion.h1>
-            <motion.div className="services-hero-line" variants={fadeUp} />
-            <motion.p variants={fadeUp}>{t.hero.subtitle}</motion.p>
+            <motion.h1 variants={fadeUp}>
+              {t.hero.title}
+            </motion.h1>
 
-            <motion.div className="services-hero-actions" variants={fadeUp}>
-              <a href="#services-list" className="btn btn-white">
+            <motion.div
+              className="services-hero-line"
+              variants={fadeUp}
+            />
+
+            <motion.p variants={fadeUp}>
+              {t.hero.subtitle}
+            </motion.p>
+
+            <motion.div
+              className="services-hero-actions"
+              variants={fadeUp}
+            >
+              {/* زر إبدأ LLC / Start LLC -> تسجيل الدخول */}
+              <a
+                href="/login"
+                className="btn btn-white"
+              >
                 {t.hero.primary}
+
                 <ArrowRight size={17} />
               </a>
-              <a href="/pricing" className="btn btn-muted">
+
+              <a
+                href="/pricing"
+                className="btn btn-muted"
+              >
                 {t.hero.secondary}
               </a>
             </motion.div>
           </motion.div>
         </section>
 
+        {/* SERVICES LIST */}
         <section
           className="services-list-section"
           id="services-list"
@@ -281,19 +370,26 @@ function Services() {
               animate="visible"
               variants={stagger}
             >
-              {(t.services || []).map((service, index) => (
-                <ServiceCard
-                  key={`${service.title}-${index}`}
-                  service={service}
-                  index={index}
-                />
-              ))}
+              {(t.services || []).map(
+                (service, index) => (
+                  <ServiceCard
+                    key={`${service.title}-${index}`}
+                    service={service}
+                    index={index}
+                  />
+                )
+              )}
             </motion.div>
           </div>
         </section>
 
-        <ProcessSection key={`process-${lang}`} t={t} />
+        <ProcessSection
+          key={`process-${lang}`}
+          t={t}
+        />
+
         <AdvantagesSection t={t} />
+
         <FinalCTA t={t} />
       </main>
 

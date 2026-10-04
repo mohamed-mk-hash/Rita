@@ -38,6 +38,19 @@ export function Login() {
 
   const [error, setError] = useState("");
 
+  /*
+   * public/rita-logo.png
+   *
+   * If Vite base is "/admin/", this becomes:
+   * /admin/rita-logo.png
+   *
+   * If base is "/", this becomes:
+   * /rita-logo.png
+   */
+  const logoUrl = `${
+    import.meta.env.BASE_URL
+  }rita-logo.png`;
+
   useEffect(() => {
     if (admin) {
       navigate("/", {
@@ -75,10 +88,12 @@ export function Login() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#f4f7fb] px-4 py-8">
+      {/* Background decoration */}
       <div className="absolute -left-40 -top-40 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl" />
 
       <div className="absolute -bottom-48 -right-40 h-[28rem] w-[28rem] rounded-full bg-rose-200/40 blur-3xl" />
 
+      {/* Language switch */}
       <button
         type="button"
         onClick={toggleLanguage}
@@ -92,9 +107,10 @@ export function Login() {
       </button>
 
       <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl overflow-hidden rounded-[32px] border border-white bg-white shadow-[0_30px_90px_rgba(18,48,72,0.18)] lg:grid-cols-2">
+        {/* Left panel */}
         <section className="hidden bg-[#173e56] p-12 text-white lg:flex lg:flex-col">
           <img
-            src="/rita-logo.png"
+            src={logoUrl}
             alt="Rita Digital Services"
             className="h-20 w-32 rounded-2xl bg-white object-contain p-3"
           />
@@ -128,13 +144,15 @@ export function Login() {
           </small>
         </section>
 
+        {/* Login panel */}
         <section className="flex items-center justify-center p-6 md:p-12">
           <form
             onSubmit={handleSubmit}
             className="w-full max-w-md"
           >
+            {/* Mobile logo */}
             <img
-              src="/rita-logo.png"
+              src={logoUrl}
               alt="Rita Digital Services"
               className="mb-8 h-16 w-28 rounded-2xl bg-white object-contain p-2 shadow lg:hidden"
             />
@@ -165,6 +183,7 @@ export function Login() {
               </div>
             )}
 
+            {/* Email */}
             <label className="mt-7 block">
               <span className="mb-2 block text-sm font-black text-[#0e3149]">
                 {isArabic
@@ -189,6 +208,7 @@ export function Login() {
               </div>
             </label>
 
+            {/* Password */}
             <label className="mt-5 block">
               <span className="mb-2 block text-sm font-black text-[#0e3149]">
                 {isArabic
@@ -222,7 +242,11 @@ export function Login() {
                     )
                   }
                   className="text-slate-400"
-                  aria-label="Show password"
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -233,6 +257,7 @@ export function Login() {
               </div>
             </label>
 
+            {/* Submit */}
             <button
               type="submit"
               disabled={submitting}
