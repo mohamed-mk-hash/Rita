@@ -260,8 +260,8 @@ export function Documents() {
   const [message, setMessage] =
     useState("");
 
-  const [downloadingId, setDownloadingId] =
-    useState<number | null>(null);
+const [downloadingId, setDownloadingId] =
+  useState<AdminDocument["id"] | null>(null);
 
   const [selectedDocument, setSelectedDocument] =
     useState<AdminDocument | null>(null);

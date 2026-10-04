@@ -118,8 +118,8 @@ export const ContactMessages: React.FC = () => {
 
   const [error, setError] = useState("");
 
-  const [selectedMessageId, setSelectedMessageId] =
-    useState<number | null>(null);
+const [selectedMessageId, setSelectedMessageId] =
+  useState<string | null>(null);
 
   const [selectedMessage, setSelectedMessage] =
     useState<AdminContactMessage | null>(
@@ -206,8 +206,8 @@ export const ContactMessages: React.FC = () => {
   ).length;
 
   async function openMessage(
-    messageId: number
-  ) {
+  messageId: string
+) {
     setSelectedMessageId(messageId);
     setSelectedMessage(null);
     setDetailError("");
