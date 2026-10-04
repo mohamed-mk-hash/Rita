@@ -7,8 +7,7 @@ import {
 import { auth, db } from "../firebase.js";
 
 import { homeFallbackContent } from "../pages/Home/homeFallbackContent.js";
-import { aboutFallbackContent } from "../pages/HowitWorks/aboutFallbackContent.js";
-import { contactFallbackContent } from "../pages/Contact/contactFallbackContent.js";
+import { aboutFallbackContent } from "../pages/HowItWorks/aboutFallbackContent.js";import { contactFallbackContent } from "../pages/Contact/contactFallbackContent.js";
 import { servicesFallbackContent } from "../pages/Services/servicesFallbackContent.js";
 import { pricingFallbackContent } from "../pages/Pricing/pricingFallbackContent.js";
 
