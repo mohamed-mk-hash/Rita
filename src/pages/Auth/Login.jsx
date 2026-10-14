@@ -62,7 +62,7 @@ const copy = {
       faq: "الأسئلة",
       contact: "تواصل",
       signIn: "تسجيل الدخول",
-      signUp: "إنشاء حساب",
+      signUp: "إنشاء شركتك",
       start: "ابدأ LLC",
       lang: "English",
       toggleLang: "تغيير اللغة",
@@ -77,7 +77,7 @@ const copy = {
       button: "تسجيل الدخول",
       loading: "جاري تسجيل الدخول...",
       noAccount: "ليس لديك حساب؟",
-      create: "إنشاء حساب",
+      create: "إنشاء شركتك",
       error: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
     },
     footer: {

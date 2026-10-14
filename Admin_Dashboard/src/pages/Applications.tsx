@@ -1,607 +1,71 @@
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
-import {
-  BriefcaseBusiness,
-  CheckCircle2,
-  Clock3,
-  Eye,
-  Search,
-} from "lucide-react";
-
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-
-import {
-  getAdminApplications,
-  type AdminApplication,
-} from "../api/adminApplicationsApi";
-
+import { ArrowUpRight, CheckCircle2, CircleDollarSign, Clock3, FileText, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
+import { getAdminApplications, type AdminApplication, type AdminApplicationStatus } from "../api/adminApplicationsApi";
 import { useLanguage } from "../i18n/LanguageContext";
 
-function getServiceLabel(
-  serviceType: AdminApplication["serviceType"],
-  isArabic: boolean
-) {
-  const services = {
-    us_llc: {
-      en: "US LLC Formation",
-      ar: "تأسيس شركة LLC أمريكية",
-    },
-
-    ein_assistance: {
-      en: "EIN Assistance",
-      ar: "مساعدة EIN",
-    },
-
-    banking_payment_setup: {
-      en: "Banking & Payment Setup",
-      ar: "إعداد الحسابات والمدفوعات",
-    },
-
-    compliance_support: {
-      en: "Compliance Support",
-      ar: "دعم الامتثال",
-    },
-  };
-
-  return isArabic
-    ? services[serviceType].ar
-    : services[serviceType].en;
-}
-
-function getStatusLabel(
-  status: AdminApplication["status"],
-  isArabic: boolean
-) {
-  const statuses = {
-    draft: {
-      en: "Draft",
-      ar: "مسودة",
-    },
-
-    submitted: {
-      en: "Submitted",
-      ar: "تم الإرسال",
-    },
-
-    in_review: {
-      en: "In review",
-      ar: "قيد المراجعة",
-    },
-
-    waiting_documents: {
-      en: "Waiting documents",
-      ar: "بانتظار الوثائق",
-    },
-
-    processing: {
-      en: "Processing",
-      ar: "قيد المعالجة",
-    },
-
-    completed: {
-      en: "Completed",
-      ar: "مكتمل",
-    },
-
-    rejected: {
-      en: "Rejected",
-      ar: "مرفوض",
-    },
-  };
-
-  return isArabic
-    ? statuses[status].ar
-    : statuses[status].en;
-}
-
-function getStatusClasses(
-  status: AdminApplication["status"]
-) {
-  switch (status) {
-    case "completed":
-      return "bg-emerald-100 text-emerald-700";
-
-    case "processing":
-      return "bg-blue-100 text-blue-700";
-
-    case "in_review":
-      return "bg-amber-100 text-amber-800";
-
-    case "waiting_documents":
-      return "bg-orange-100 text-orange-700";
-
-    case "rejected":
-      return "bg-rose-100 text-rose-700";
-
-    case "submitted":
-      return "bg-indigo-100 text-indigo-700";
-
-    default:
-      return "bg-slate-100 text-slate-700";
-  }
-}
-
-function formatDate(
-  value: string,
-  isArabic: boolean
-) {
-  return new Intl.DateTimeFormat(
-    isArabic ? "ar-DZ" : "en-US",
-    {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }
-  ).format(new Date(value));
-}
-
-export const Applications: React.FC = () => {
-  const { isArabic } = useLanguage();
-
-  const [applications, setApplications] =
-    useState<AdminApplication[]>([]);
-
-  const [search, setSearch] = useState("");
-
-  const [
-    statusFilter,
-    setStatusFilter,
-  ] = useState("");
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] = useState("");
-
-  async function loadApplications() {
-    setLoading(true);
-    setError("");
-
-    try {
-      const data =
-        await getAdminApplications();
-
-      setApplications(
-        data.applications
-      );
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : isArabic
-            ? "تعذر تحميل الطلبات."
-            : "Could not load applications."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void loadApplications();
-  }, []);
-
-  const filteredApplications =
-    useMemo(() => {
-      const normalizedSearch =
-        search.trim().toLowerCase();
-
-      return applications.filter(
-        (application) => {
-          const matchesSearch =
-            !normalizedSearch ||
-            application.client.fullName
-              .toLowerCase()
-              .includes(
-                normalizedSearch
-              ) ||
-            application.client.email
-              .toLowerCase()
-              .includes(
-                normalizedSearch
-              ) ||
-            String(
-              application.id
-            ).includes(
-              normalizedSearch
-            );
-
-          const matchesStatus =
-            !statusFilter ||
-            application.status ===
-              statusFilter;
-
-          return (
-            matchesSearch &&
-            matchesStatus
-          );
-        }
-      );
-    }, [
-      applications,
-      search,
-      statusFilter,
-    ]);
-
-  const activeCount =
-    applications.filter(
-      (application) =>
-        ![
-          "completed",
-          "rejected",
-        ].includes(
-          application.status
-        )
-    ).length;
-
-  const completedCount =
-    applications.filter(
-      (application) =>
-        application.status ===
-        "completed"
-    ).length;
-
-  if (loading) {
-    return (
-      <div className="grid min-h-[60vh] place-items-center">
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-[#df3341]" />
-
-          <p className="mt-4 font-bold text-slate-500">
-            {isArabic
-              ? "جاري تحميل الطلبات..."
-              : "Loading applications..."}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <span className="inline-flex rounded-full bg-blue-50 px-3 py-2 text-xs font-black text-blue-600">
-          {isArabic
-            ? "إدارة طلبات العملاء"
-            : "Client application management"}
-        </span>
-
-        <h1 className="mt-4 text-3xl font-black text-[#061629]">
-          {isArabic
-            ? "طلبات الخدمات"
-            : "Service Applications"}
-        </h1>
-
-        <p className="mt-2 font-semibold text-slate-500">
-          {isArabic
-            ? "عرض ومتابعة جميع الطلبات المسجلة في المنصة."
-            : "View and manage all client applications."}
-        </p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <StatCard
-          title={
-            isArabic
-              ? "إجمالي الطلبات"
-              : "Total applications"
-          }
-          value={applications.length}
-          icon={BriefcaseBusiness}
-          iconClasses="bg-blue-50 text-blue-600"
-        />
-
-        <StatCard
-          title={
-            isArabic
-              ? "الطلبات النشطة"
-              : "Active applications"
-          }
-          value={activeCount}
-          icon={Clock3}
-          iconClasses="bg-amber-50 text-amber-600"
-        />
-
-        <StatCard
-          title={
-            isArabic
-              ? "الطلبات المكتملة"
-              : "Completed applications"
-          }
-          value={completedCount}
-          icon={CheckCircle2}
-          iconClasses="bg-emerald-50 text-emerald-600"
-        />
-      </div>
-
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_18px_45px_rgba(18,48,72,0.07)]">
-        <div className="grid gap-3 md:grid-cols-[1fr_240px]">
-          <label className="flex min-h-12 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 focus-within:border-blue-500 focus-within:bg-white">
-            <Search className="h-5 w-5 text-slate-400" />
-
-            <input
-              type="search"
-              value={search}
-              onChange={(event) =>
-                setSearch(
-                  event.target.value
-                )
-              }
-              placeholder={
-                isArabic
-                  ? "ابحث بالاسم أو البريد أو رقم الطلب..."
-                  : "Search name, email, or application ID..."
-              }
-              className="min-w-0 flex-1 bg-transparent text-sm font-bold text-[#0e3149] outline-none"
-            />
-          </label>
-
-          <select
-            value={statusFilter}
-            onChange={(event) =>
-              setStatusFilter(
-                event.target.value
-              )
-            }
-            className="min-h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-[#0e3149] outline-none focus:border-blue-500"
-          >
-            <option value="">
-              {isArabic
-                ? "كل الحالات"
-                : "All statuses"}
-            </option>
-
-            <option value="submitted">
-              {isArabic
-                ? "تم الإرسال"
-                : "Submitted"}
-            </option>
-
-            <option value="in_review">
-              {isArabic
-                ? "قيد المراجعة"
-                : "In review"}
-            </option>
-
-            <option value="waiting_documents">
-              {isArabic
-                ? "بانتظار الوثائق"
-                : "Waiting documents"}
-            </option>
-
-            <option value="processing">
-              {isArabic
-                ? "قيد المعالجة"
-                : "Processing"}
-            </option>
-
-            <option value="completed">
-              {isArabic
-                ? "مكتمل"
-                : "Completed"}
-            </option>
-
-            <option value="rejected">
-              {isArabic
-                ? "مرفوض"
-                : "Rejected"}
-            </option>
-          </select>
-        </div>
-      </section>
-
-      {error && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-bold text-rose-700">
-          {error}
-
-          <button
-            type="button"
-            onClick={() =>
-              void loadApplications()
-            }
-            className="mx-3 underline"
-          >
-            {isArabic
-              ? "إعادة المحاولة"
-              : "Try again"}
-          </button>
-        </div>
-      )}
-
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_18px_45px_rgba(18,48,72,0.07)]">
-        {filteredApplications.length ===
-        0 ? (
-          <div className="py-16 text-center">
-            <BriefcaseBusiness className="mx-auto h-12 w-12 text-slate-300" />
-
-            <p className="mt-4 font-bold text-slate-500">
-              {isArabic
-                ? "لا توجد طلبات مطابقة."
-                : "No matching applications."}
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px]">
-              <thead>
-                <tr className="border-b border-slate-200 text-sm text-slate-500">
-                  <th className="px-3 py-4 text-start font-black">
-                    {isArabic
-                      ? "الطلب"
-                      : "Application"}
-                  </th>
-
-                  <th className="px-3 py-4 text-start font-black">
-                    {isArabic
-                      ? "العميل"
-                      : "Client"}
-                  </th>
-
-                  <th className="px-3 py-4 text-start font-black">
-                    {isArabic
-                      ? "الخدمة"
-                      : "Service"}
-                  </th>
-
-                  <th className="px-3 py-4 text-start font-black">
-                    {isArabic
-                      ? "الحالة"
-                      : "Status"}
-                  </th>
-
-                  <th className="px-3 py-4 text-start font-black">
-                    {isArabic
-                      ? "التقدم"
-                      : "Progress"}
-                  </th>
-
-                  <th className="px-3 py-4 text-start font-black">
-                    {isArabic
-                      ? "التاريخ"
-                      : "Date"}
-                  </th>
-
-                  <th className="px-3 py-4 text-start font-black">
-                    {isArabic
-                      ? "الإجراء"
-                      : "Action"}
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredApplications.map(
-                  (application) => (
-                    <tr
-                      key={application.id}
-                      className="border-b border-slate-100 last:border-0 hover:bg-slate-50/70"
-                    >
-                      <td className="px-3 py-4 text-sm font-black text-[#0e3149]">
-                        #{application.id}
-                      </td>
-
-                      <td className="px-3 py-4">
-                        <strong className="block text-sm font-black text-[#0e3149]">
-                          {
-                            application
-                              .client
-                              .fullName
-                          }
-                        </strong>
-
-                        <span className="mt-1 block text-xs text-slate-500">
-                          {
-                            application
-                              .client.email
-                          }
-                        </span>
-                      </td>
-
-                      <td className="px-3 py-4 text-sm font-bold text-slate-600">
-                        {getServiceLabel(
-                          application.serviceType,
-                          isArabic
-                        )}
-                      </td>
-
-                      <td className="px-3 py-4">
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${getStatusClasses(
-                            application.status
-                          )}`}
-                        >
-                          {getStatusLabel(
-                            application.status,
-                            isArabic
-                          )}
-                        </span>
-                      </td>
-
-                      <td className="px-3 py-4">
-                        <div className="w-32">
-                          <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                            <div
-                              className="h-full rounded-full bg-blue-600"
-                              style={{
-                                width: `${application.progress}%`,
-                              }}
-                            />
-                          </div>
-
-                          <span className="mt-1 block text-xs font-black text-slate-500">
-                            {
-                              application.progress
-                            }
-                            %
-                          </span>
-                        </div>
-                      </td>
-
-                      <td className="px-3 py-4 text-sm font-semibold text-slate-500">
-                        {formatDate(
-                          application.createdAt,
-                          isArabic
-                        )}
-                      </td>
-
-                      <td className="px-3 py-4">
-                        <Link
-                          to={`/applications/${application.id}`}
-                          className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#173e56] px-4 text-xs font-black text-white transition hover:bg-[#0e3149]"
-                        >
-                          <Eye className="h-4 w-4" />
-
-                          {isArabic
-                            ? "عرض"
-                            : "View"}
-                        </Link>
-                      </td>
-                    </tr>
-                  )
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-    </div>
-  );
+type Filter = "all" | "attention" | AdminApplicationStatus;
+const statuses: { value: AdminApplicationStatus; en: string; ar: string; color: string }[] = [
+  { value: "draft", en: "Draft", ar: "مسودة", color: "bg-slate-100 text-slate-700" },
+  { value: "submitted", en: "Submitted", ar: "تم الإرسال", color: "bg-indigo-50 text-indigo-700" },
+  { value: "in_review", en: "In review", ar: "قيد المراجعة", color: "bg-sky-50 text-sky-700" },
+  { value: "waiting_documents", en: "Waiting for documents", ar: "بانتظار الوثائق", color: "bg-orange-50 text-orange-700" },
+  { value: "waiting_payment", en: "Waiting for payment", ar: "بانتظار الدفع", color: "bg-amber-50 text-amber-800" },
+  { value: "paid", en: "Paid", ar: "تم الدفع", color: "bg-emerald-50 text-emerald-700" },
+  { value: "processing", en: "In progress", ar: "قيد التنفيذ", color: "bg-blue-50 text-blue-700" },
+  { value: "completed", en: "Completed", ar: "مكتمل", color: "bg-green-50 text-green-700" },
+  { value: "rejected", en: "Rejected", ar: "مرفوض", color: "bg-rose-50 text-rose-700" },
+];
+const serviceNames: Record<string, { ar: string; en: string }> = {
+  us_llc: { ar: "تأسيس LLC أمريكية", en: "US LLC Formation" },
+  ein_assistance: { ar: "استخراج EIN", en: "EIN Assistance" },
+  banking_payment_setup: { ar: "الحسابات والمدفوعات", en: "Banking & Payments" },
+  compliance_support: { ar: "دعم الامتثال", en: "Compliance Support" },
 };
-
-function StatCard({
-  title,
-  value,
-  icon: Icon,
-  iconClasses,
-}: {
-  title: string;
-  value: number;
-  icon: React.ElementType;
-  iconClasses: string;
-}) {
-  return (
-    <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_18px_45px_rgba(18,48,72,0.07)]">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-extrabold text-slate-500">
-            {title}
-          </p>
-
-          <strong className="mt-3 block text-3xl font-black text-[#0e3149]">
-            {value}
-          </strong>
-        </div>
-
-        <div
-          className={`grid h-12 w-12 place-items-center rounded-2xl ${iconClasses}`}
-        >
-          <Icon className="h-6 w-6" />
-        </div>
-      </div>
-    </article>
-  );
+function dateLabel(value: string, ar: boolean) {
+  const d = new Date(value);
+  return !value || Number.isNaN(d.getTime()) ? "—" : new Intl.DateTimeFormat(ar ? "ar-DZ" : "en-GB", { day: "numeric", month: "short", year: "numeric" }).format(d);
+}
+function Status({ status, ar }: { status: AdminApplicationStatus; ar: boolean }) {
+  const item = statuses.find(x => x.value === status);
+  return <span className={`inline-flex whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-extrabold ${item?.color || "bg-slate-100"}`}>{ar ? item?.ar : item?.en}</span>;
+}
+function Stat({ label, value, icon: Icon, accent }: { label: string; value: number; icon: typeof FileText; accent: string }) {
+  return <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-start justify-between gap-2"><div><p className="text-xs font-bold text-slate-500">{label}</p><strong className="mt-2 block text-3xl font-black text-slate-900">{value}</strong></div><span className={`rounded-xl p-3 ${accent}`}><Icon size={21}/></span></div></div>;
+}
+export function Applications() {
+  const { isArabic } = useLanguage();
+  const [items, setItems] = useState<AdminApplication[]>([]);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [sort, setSort] = useState<"newest" | "oldest">("newest");
+  const load = useCallback(async () => {
+    setLoading(true); setError("");
+    try { setItems((await getAdminApplications()).applications); }
+    catch (e) { setError(e instanceof Error ? e.message : "Could not load applications"); }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+  const t = (ar: string, en: string) => isArabic ? ar : en;
+  const stats = {
+    all: items.length,
+    attention: items.filter(a => ["submitted", "in_review", "paid"].includes(a.status)).length,
+    waiting: items.filter(a => a.status === "waiting_payment").length,
+    completed: items.filter(a => a.status === "completed").length,
+  };
+  const visible = useMemo(() => items.filter(a => {
+    const q = search.trim().toLowerCase();
+    const matches = !q || [a.id, a.client?.fullName, a.client?.email, a.client?.companyName, a.intake?.desiredCompanyName, a.serviceType].some(v => String(v ?? "").toLowerCase().includes(q));
+    return matches && (filter === "all" || (filter === "attention" ? ["submitted", "in_review", "paid"].includes(a.status) : a.status === filter));
+  }).sort((a,b) => (sort === "newest" ? -1 : 1) * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())), [items, search, filter, sort]);
+  return <div className="space-y-6 pb-10" dir={isArabic ? "rtl" : "ltr"}>
+    <header className="flex flex-wrap items-end justify-between gap-4"><div><span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-black text-blue-700">{t("إدارة العمليات", "Operations hub")}</span><h1 className="mt-3 text-3xl font-black text-[#0e3149]">{t("طلبات الخدمات", "Service applications")}</h1><p className="mt-2 text-sm font-medium text-slate-500">{t("راجع الطلبات، تابع المدفوعات، وابدأ تنفيذ الخدمات من مكان واحد.", "Review requests, track payment, and manage delivery from one place.")}</p></div><button onClick={() => void load()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 hover:bg-slate-50"><RefreshCw size={16}/>{t("تحديث", "Refresh")}</button></header>
+    <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><Stat label={t("جميع الطلبات", "All applications")} value={stats.all} icon={FileText} accent="bg-blue-50 text-blue-600"/><Stat label={t("تحتاج إجراءً", "Needs action")} value={stats.attention} icon={Clock3} accent="bg-violet-50 text-violet-600"/><Stat label={t("بانتظار الدفع", "Awaiting payment")} value={stats.waiting} icon={CircleDollarSign} accent="bg-amber-50 text-amber-600"/><Stat label={t("مكتملة", "Completed")} value={stats.completed} icon={CheckCircle2} accent="bg-emerald-50 text-emerald-600"/></section>
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="flex flex-col gap-4 border-b border-slate-100 p-5"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-black text-slate-900">{t("قائمة الطلبات", "Application queue")}</h2><span className="text-xs font-bold text-slate-500">{visible.length} {t("نتيجة", "results")}</span></div><div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_210px_160px]"><label className="flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3"><Search size={18} className="text-slate-400"/><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder={t("ابحث بالاسم أو رقم الطلب أو البريد...", "Search name, email, or request #...")} className="w-full bg-transparent text-sm outline-none"/></label><label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3"><SlidersHorizontal size={17} className="text-slate-400"/><select className="w-full bg-transparent py-3 text-sm font-semibold outline-none" value={filter} onChange={e=>setFilter(e.target.value as Filter)}><option value="all">{t("كل الحالات", "All statuses")}</option><option value="attention">{t("تحتاج إجراءً", "Needs action")}</option>{statuses.map(s=><option value={s.value} key={s.value}>{isArabic ? s.ar : s.en}</option>)}</select></label><select value={sort} onChange={e=>setSort(e.target.value as "newest"|"oldest")} className="rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold"><option value="newest">{t("الأحدث أولًا", "Newest first")}</option><option value="oldest">{t("الأقدم أولًا", "Oldest first")}</option></select></div></div>
+    {error && <div role="alert" className="m-5 rounded-xl bg-rose-50 p-4 text-sm font-bold text-rose-700">{error}<button onClick={()=>void load()} className="mx-3 underline">{t("إعادة المحاولة", "Retry")}</button></div>}
+    {loading ? <div className="p-14 text-center text-slate-500">{t("جاري تحميل الطلبات...", "Loading applications...")}</div> : visible.length === 0 ? <div className="p-16 text-center"><FileText size={36} className="mx-auto text-slate-300"/><p className="mt-3 font-bold text-slate-500">{t("لا توجد طلبات مطابقة", "No matching applications")}</p></div> : <div className="divide-y divide-slate-100">{visible.map(a=><article key={a.id} className="grid gap-4 px-5 py-5 transition hover:bg-slate-50/80 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_170px_120px] lg:items-center"><div className="min-w-0"><Link to={`/applications/${a.id}`} className="font-black text-[#173e56] hover:text-blue-700">{t("طلب", "Request")} #{a.id}</Link><p className="mt-1 truncate text-base font-bold text-slate-900">{a.client?.fullName || "—"}</p><p className="mt-1 truncate text-xs text-slate-500" dir="auto">{a.client?.email || "—"}</p></div><div><p className="text-sm font-bold text-slate-700">{(serviceNames[a.serviceType]?.[isArabic ? "ar":"en"]) || a.serviceType}</p><p className="mt-1 text-xs text-slate-500">{dateLabel(a.createdAt,isArabic)}</p></div><div className="space-y-2"><Status status={a.status} ar={isArabic}/><div className="flex items-center gap-2"><div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-blue-600" style={{width:`${Math.min(100,Math.max(0,a.progress || 0))}%`}}/></div><span className="text-xs font-bold text-slate-400">{a.progress || 0}%</span></div></div><Link to={`/applications/${a.id}`} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#173e56] px-4 text-xs font-black text-white hover:bg-[#0e3149]">{t("فتح الطلب", "Open") }<ArrowUpRight size={16}/></Link></article>)}</div>}
+    </section>
+  </div>;
 }

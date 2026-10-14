@@ -5452,3 +5452,65 @@
   }
 }
 
+
+
+/* ===== Redesigned client services and company library ===== */
+.portal-pagehead{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:26px;flex-wrap:wrap}
+.portal-pagehead h1{margin:12px 0 7px;color:#102e45;font-size:clamp(29px,3vw,39px);letter-spacing:-.035em;line-height:1.2}
+.portal-pagehead p{margin:0;color:#677c8f;line-height:1.8;max-width:700px}
+.portal-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:99px;background:#e9f1fa;color:#245a77;font-size:12px;font-weight:850}
+.portal-primary,.portal-outline,.portal-download,.portal-link{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-weight:800;cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
+.portal-primary{border:0;border-radius:12px;padding:13px 19px;background:#df3341;color:#fff;min-height:46px}
+.portal-primary:hover{background:#bd2835;transform:translateY(-1px)}
+.portal-outline{border:1px solid #d7e3ed;background:#fff;color:#22475e;border-radius:11px;padding:11px 15px;min-height:42px}
+.portal-outline:hover{background:#f1f6fa;border-color:#a9bece}
+.portal-outline:disabled{opacity:.5;cursor:not-allowed}
+.portal-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-bottom:31px}
+.portal-stat{background:#fff;border:1px solid #e0e8f0;border-radius:17px;padding:19px 22px;display:flex;flex-direction:column;gap:15px;box-shadow:0 8px 25px rgba(19,53,75,.035)}
+.portal-stat>span{display:flex;align-items:center;gap:9px;color:#6b8090;font-size:13px;font-weight:750}.portal-stat>strong{font-size:31px;color:#173e56;line-height:1}
+.portal-section-title{display:flex;justify-content:space-between;align-items:center;margin:0 0 15px}.portal-section-title h2{margin:0;font-size:19px;color:#18394c}.portal-section-title>span{color:#6d7f90;font-size:13px}
+.portal-service-list,.portal-doc-list{display:grid;gap:13px}
+.portal-service{background:#fff;border:1px solid #e1e9f0;border-radius:18px;overflow:hidden;box-shadow:0 8px 30px rgba(19,53,75,.04)}
+.portal-service-main{display:flex;align-items:center;gap:19px;padding:23px}
+.portal-service-avatar{width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;border-radius:15px;background:#eaf2f8;color:#275877}
+.portal-service-info{min-width:0;flex:1}.portal-service-meta{font-size:12px;color:#8593a0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.portal-service-info h3{font-size:18px;margin:7px 0 10px;line-height:1.4;color:#143349}
+.portal-status{display:inline-flex;padding:5px 10px;border-radius:99px;background:#eef3f7;color:#415c70;font-size:11px;font-weight:850}
+.portal-status-completed{background:#e6f6eb;color:#18754a}.portal-status-processing,.portal-status-in_review{background:#e9f1ff;color:#285bc2}.portal-status-rejected{background:#ffeded;color:#bd3344}.portal-status-waiting_documents{background:#fff4df;color:#98601a}
+.portal-progress{width:185px;flex:0 0 185px}.portal-progress>div:first-child{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#7b8c98;margin-bottom:10px}.portal-progress b{color:#173e56}
+.portal-progress-track{height:7px;border-radius:99px;background:#e9eff4;overflow:hidden}.portal-progress-track span{display:block;height:100%;background:#2a779b;border-radius:99px}
+.portal-service-expand{border-top:1px solid #ebeff3;background:#fbfdfe;padding:20px 23px}.portal-service-expand dl{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:19px}.portal-service-expand dt{font-size:12px;color:#81909d;margin-bottom:6px}.portal-service-expand dd{margin:0;font-size:13px;color:#233e51;font-weight:750;overflow-wrap:anywhere;line-height:1.7}.portal-full{grid-column:1/-1}.portal-link{margin-top:20px;border:0;padding:0;background:none;color:#17638b;font-size:13px}
+.portal-empty{display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;min-height:310px;padding:42px 20px;background:#fff;border:1px solid #e0e9f1;border-radius:20px}.portal-empty-art{width:78px;height:78px;border-radius:21px;background:#ebf4fa;display:grid;place-items:center;color:#316480}.portal-empty h2{font-size:22px;margin:18px 0 8px;color:#173e56}.portal-empty p{margin:0 0 22px;max-width:485px;color:#718494;line-height:1.9}.portal-empty-inner{border:0;min-height:300px}
+.portal-library{background:#fff;border:1px solid #e0e9f1;border-radius:20px;overflow:hidden;box-shadow:0 8px 30px rgba(19,53,75,.04)}
+.portal-library-toolbar{padding:23px;display:flex;align-items:center;justify-content:space-between;gap:22px;background:#f9fcfe;border-bottom:1px solid #e7edf3;flex-wrap:wrap}
+.portal-picker{display:grid;gap:8px;flex:0 1 420px;min-width:min(100%,270px)}.portal-picker>span{font-size:12px;color:#667d8f;font-weight:800}.portal-picker select,.portal-type-filter{min-height:45px;background:#fff;border:1px solid #d7e3ed;border-radius:10px;padding:0 12px;color:#24465b;max-width:100%}
+.portal-library-context{display:flex;align-items:center;gap:12px;color:#2b6e67}.portal-library-context>div{display:grid;gap:4px}.portal-library-context strong{font-size:13px}.portal-library-context small{color:#758996;font-size:12px}
+.portal-library-filterbar{display:flex;align-items:center;gap:12px;padding:19px 23px;border-bottom:1px solid #e8edf2;flex-wrap:wrap}
+.portal-search{min-height:45px;display:flex;align-items:center;gap:9px;border:1px solid #d9e3ec;border-radius:10px;padding:0 14px;flex:1 1 230px;min-width:0;color:#7f92a1}.portal-search:focus-within{border-color:#338ac5;box-shadow:0 0 0 3px rgba(51,138,197,.1)}.portal-search input{width:100%;min-width:0;outline:0;border:0;background:transparent;color:#173e56;font-size:13px}
+.portal-file-count{margin-inline-start:auto;font-size:12px;color:#8193a2;white-space:nowrap}.portal-doc-list{gap:0}
+.portal-doc-row{display:flex;align-items:center;gap:16px;padding:20px 23px;border-bottom:1px solid #edf1f4}.portal-doc-row:last-child{border-bottom:0}.portal-doc-row:hover{background:#fbfdff}
+.portal-doc-icon{width:49px;height:51px;flex:0 0 49px;border-radius:13px;display:grid;place-items:center;color:#356f92;background:#edf5fb}.portal-doc-name{min-width:0;flex:1}.portal-doc-name h3{margin:0;color:#1b3b50;font-size:14px;overflow-wrap:anywhere}.portal-doc-name p{margin:5px 0;color:#788b9a;font-size:12px;line-height:1.55}.portal-doc-name small{font-size:11px;color:#97a5af;overflow-wrap:anywhere}
+.portal-download{background:#f0f6fa;color:#205c7d;border:1px solid #e0ebf2;border-radius:10px;min-height:41px;padding:0 14px;font-size:12px}.portal-download:hover{background:#e5f0f7}
+.portal-library-loading{padding:75px 20px;text-align:center;color:#667e90}.dashboard-rtl .portal-service-main,.dashboard-rtl .portal-doc-row,.dashboard-rtl .portal-library-toolbar{direction:rtl}
+@media(max-width:1050px){.portal-progress{width:125px;flex-basis:125px}.portal-service-main{flex-wrap:wrap}.portal-service-main>.portal-outline{margin-inline-start:auto}}
+@media(max-width:700px){.portal-pagehead{align-items:stretch}.portal-pagehead>.portal-primary{width:100%}.portal-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.portal-stat{padding:14px 10px}.portal-stat>span{font-size:11px;align-items:flex-start}.portal-stat>strong{font-size:25px}.portal-service-main{padding:16px;gap:12px}.portal-service-avatar{width:44px;height:44px;flex-basis:44px}.portal-service-info h3{font-size:15px}.portal-progress{width:100%;flex:1 1 100%;order:3}.portal-service-main>.portal-outline{order:4;width:100%}.portal-service-expand dl{grid-template-columns:1fr}.portal-library-toolbar,.portal-library-filterbar{padding:16px}.portal-picker{flex:1 1 100%}.portal-library-context{align-items:flex-start}.portal-doc-row{padding:16px;gap:11px;flex-wrap:wrap}.portal-doc-icon{width:42px;height:44px;flex-basis:42px}.portal-download{margin-inline-start:auto}.portal-file-count{width:100%;margin:0}.portal-type-filter{flex:0 0 auto}}
+
+.portal-status-waiting_payment{background:#fff5db;color:#996315}
+.portal-status-paid{background:#e6f6eb;color:#18754a}
+
+/* Clear payment state / service journey (Sandbox) */
+.rita-service-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.rita-payment-banner{margin:0 24px 16px;padding:18px 20px;border:1px solid #f7d49a;border-radius:16px;background:#fff8ec;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;color:#8b4a12}
+.rita-payment-banner strong{display:block;font-weight:900;font-size:1.05rem}
+.rita-payment-banner p{margin:6px 0 0;line-height:1.6}
+.rita-payment-done{border-color:#9bdfb9;background:#ecfff4;color:#145c3b}
+.rita-journey{border:1px solid #d9e5ef;border-radius:16px;padding:18px;margin-bottom:18px;background:#f7fafc}
+.rita-journey>strong{display:block;font-size:1.07rem;margin-bottom:15px;color:#13384e}
+.rita-journey>p{margin:14px 0 0;color:#516a7d;line-height:1.7}
+.rita-journey-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.rita-journey-step{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;min-width:0;color:#8aa0af}
+.rita-journey-step>span{display:grid;place-items:center;width:32px;height:32px;border:1px solid #cdd9e2;border-radius:50%;background:white;font-weight:800}
+.rita-journey-step>small{font-weight:700;line-height:1.35}
+.rita-journey-step.is-reached{color:#165273}
+.rita-journey-step.is-reached>span{background:#d9edfa;border-color:#79b5db}
+.rita-journey-step.is-current>span{background:#174b69;color:white;border-color:#174b69}
+@media(max-width:650px){.rita-journey{padding:12px}.rita-journey-step>span{width:27px;height:27px;font-size:12px}.rita-journey-step>small{font-size:10px}.rita-payment-banner{margin:0 12px 12px;padding:12px}}

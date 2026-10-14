@@ -1,0 +1,3 @@
+import { getAuth } from 'firebase/auth';
+const BASE=(import.meta.env.VITE_PAYPAL_API_URL||'http://127.0.0.1:5011').replace(/\/+$/,'');
+export async function saveSandboxPaymentQuote(applicationId:number,amount:number){const user=getAuth().currentUser;if(!user)throw new Error('Login required');const token=await user.getIdToken();const response=await fetch(`${BASE}/api/paypal/applications/${applicationId}/quote`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({amount})});const body=await response.json().catch(()=>({}));if(!response.ok)throw new Error(body.message||'Quote failed');return body;}

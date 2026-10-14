@@ -23,6 +23,7 @@ import { AboutPageContent } from "./pages/AboutPageContent";
 import { ContactPageContent } from "./pages/ContactPageContent";
 import { PricingPageContent } from "./pages/PricingPageContent";
 import { ServicesPageContent } from "./pages/ServicesPageContent";
+import { CompanyDocuments } from "./pages/CompanyDocuments";
 function AdminArea() {
   return (
     <ProtectedRoute>
@@ -72,6 +73,7 @@ function AdminArea() {
             path="*"
             element={<Navigate to="/" replace />}
           />
+          <Route path="company-documents" element={<CompanyDocuments />} />
         </Routes>
       </Layout>
     </ProtectedRoute>

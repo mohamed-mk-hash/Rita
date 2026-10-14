@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, FileText, FolderOpen, Search, Download, ArrowUpRight, ChevronDown, ChevronUp, Clock3, ShieldCheck, Plus, BriefcaseBusiness, CheckCircle2, LayoutGrid, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router";
 import { getCurrentUserRequest, logoutRequest } from "../../api/authApi.js";
 import {
@@ -7,12 +7,11 @@ import {
   getMyApplicationsRequest,
 } from "../../api/applicationApi.js";
 import {
-  deleteApplicationDocumentRequest,
-  downloadApplicationDocumentRequest,
-  getApplicationDocumentsRequest,
   uploadApplicationDocumentRequest,
 } from "../../api/documentApi.js";
+import { getCompanyDocumentsRequest, downloadCompanyDocumentRequest } from "../../api/companyDocumentsApi.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
+import PayPalSandboxPayment from "../../components/PayPalSandboxPayment.jsx";
 import { usePageContent } from "../../hooks/usePageContent.js";
 import { pricingFallbackContent } from "../Pricing/pricingFallbackContent.js";
 import { sendNewRequestEmailRequest } from "../../api/sendNewRequestEmail.js";
@@ -294,6 +293,8 @@ const copy = {
       submitted: "Submitted",
       in_review: "In review",
       waiting_documents: "Waiting documents",
+      waiting_payment: "Awaiting payment",
+      paid: "Paid",
       processing: "Processing",
       completed: "Completed",
       rejected: "Rejected",
@@ -571,6 +572,8 @@ const copy = {
       submitted: "تم الإرسال",
       in_review: "قيد المراجعة",
       waiting_documents: "بانتظار الوثائق",
+      waiting_payment: "بانتظار الدفع",
+      paid: "تم الدفع",
       processing: "قيد المعالجة",
       completed: "مكتمل",
       rejected: "مرفوض",
@@ -651,22 +654,6 @@ function createInitialIntakeForm(email = "") {
     extraNotes: "",
   };
 }
-
-function createEmptyDocumentSummary() {
-  return {
-    total: 0,
-    required: 0,
-    uploaded: 0,
-    uploadedRequired: 0,
-    approved: 0,
-    inReview: 0,
-    rejected: 0,
-    missing: 0,
-    progress: 0,
-    approvalProgress: 0,
-  };
-}
-
 
 function getDashboardUserKey(user) {
   return String(
@@ -774,15 +761,11 @@ function Dashboard() {
   const [selectedDocumentApplicationId, setSelectedDocumentApplicationId] =
     useState(null);
   const [documentItems, setDocumentItems] = useState([]);
-  const [documentSummary, setDocumentSummary] = useState(
-    createEmptyDocumentSummary
-  );
+  const [documentSearch, setDocumentSearch] = useState("");
+  const [documentTypeFilter, setDocumentTypeFilter] = useState("all");
+  const [expandedServiceId, setExpandedServiceId] = useState(null);
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [documentError, setDocumentError] = useState("");
-  const [documentMessage, setDocumentMessage] = useState("");
-  const [uploadingRequirementId, setUploadingRequirementId] = useState(null);
-  const [deletingDocumentId, setDeletingDocumentId] = useState(null);
-  const [dragRequirementId, setDragRequirementId] = useState(null);
 
   const currentRequestDocuments =
     requestDocumentRequirements[intakeForm.serviceType] || [];
@@ -794,12 +777,6 @@ function Dashboard() {
     applications.find((app) => !["completed", "rejected"].includes(app.status)) ||
     applications[0] ||
     null;
-
-  const selectedDocumentApplication =
-    applications.find(
-      (application) =>
-        Number(application.id) === Number(selectedDocumentApplicationId)
-    ) || null;
 
 
   function persistNotifications(nextNotifications, targetUser = user) {
@@ -1418,7 +1395,7 @@ function Dashboard() {
 
       const payload = {
         ...intakeForm,
-        email: intakeForm.email.trim(),
+        email: (intakeForm.email.trim() || user?.email || "").trim(),
         packageSlug: packageSnapshot?.slug || "",
         packageName: packageSnapshot?.name || "",
         packagePrice: packageSnapshot?.price ?? "",
@@ -1437,43 +1414,9 @@ function Dashboard() {
       const data = await createApplicationRequest(payload);
       const application = data.application;
 
-      const documentsToUpload = currentRequestDocuments.filter((document) =>
-        Boolean(requestDocumentFiles[document.requirementId])
-      );
-
-      let uploadFailed = false;
-
-      for (const document of documentsToUpload) {
-        const file = requestDocumentFiles[document.requirementId];
-
-        try {
-          await uploadApplicationDocumentRequest(
-            application.id,
-            document.requirementId,
-            file
-          );
-        } catch (uploadError) {
-          console.error("REQUEST_DOCUMENT_UPLOAD_ERROR:", uploadError);
-          uploadFailed = true;
-        }
-      }
-
-      setApplications((current) => [application, ...current]);
-      setSelectedDocumentApplicationId(application.id);
-
-      if (uploadFailed) {
-        setRequestDocumentFiles({});
-        setIntakeForm(createInitialIntakeForm(user?.email || ""));
-        setShowOtherSolution(false);
-        setIntakeStep(1);
-        setMaxStepReached(1);
-        setFieldErrors({});
-        setDocumentError(t.request.partialUploadError);
-        setActivePage("documents");
-        window.history.replaceState(null, "", "/dashboard#documents");
-        return;
-      }
-
+      // Notify Admin as soon as Firestore has created the request.
+      // A failed document upload must not prevent this email.
+      let adminEmailFailed = false;
       try {
         await sendNewRequestEmailRequest({
           userName: user?.fullName || "",
@@ -1502,7 +1445,33 @@ function Dashboard() {
           "NEW_REQUEST_ADMIN_EMAIL_ERROR:",
           emailError
         );
+        adminEmailFailed = true;
       }
+
+
+      const documentsToUpload = currentRequestDocuments.filter((document) =>
+        Boolean(requestDocumentFiles[document.requirementId])
+      );
+
+      let uploadFailed = false;
+
+      for (const document of documentsToUpload) {
+        const file = requestDocumentFiles[document.requirementId];
+
+        try {
+          await uploadApplicationDocumentRequest(
+            application.id,
+            document.requirementId,
+            file
+          );
+        } catch (uploadError) {
+          console.error("REQUEST_DOCUMENT_UPLOAD_ERROR:", uploadError);
+          uploadFailed = true;
+        }
+      }
+
+      setApplications((current) => [application, ...current]);
+      setSelectedDocumentApplicationId(application.id);
 
       setIntakeForm(createInitialIntakeForm(user?.email || ""));
       setRequestDocumentFiles({});
@@ -1510,7 +1479,17 @@ function Dashboard() {
       setIntakeStep(1);
       setMaxStepReached(1);
       setFieldErrors({});
-      setRequestMessage(t.request.success);
+      setRequestMessage(
+        adminEmailFailed
+          ? (isArabic
+              ? "تم حفظ طلبك و إرسال إشعار للإدارة"
+              : "Your request was saved, but the admin email failed. Do not submit again; contact support with your application number.")
+          : uploadFailed
+            ? (isArabic
+                ? "تم حفظ طلبك وإرسال إشعار للإدارة، لكن تعذر رفع بعض الوثائق. تواصل مع الدعم لاستكمالها."
+                : "Your request and admin notification were saved, but some document uploads failed. Contact support to complete them.")
+            : t.request.success
+      );
       setActivePage("services");
       window.history.replaceState(null, "", "/dashboard#services");
     } catch (error) {
@@ -1643,13 +1622,6 @@ function Dashboard() {
       application?.package_slug ||
       "";
 
-    const livePlan = pricingPackages.find(
-      (plan) => String(plan?.slug || "") === String(slug)
-    );
-
-    if (livePlan) {
-      return livePlan;
-    }
 
     const name =
       intake.packageName ||
@@ -1666,14 +1638,6 @@ function Dashboard() {
       "";
 
     if (name || price !== "") {
-      const livePlanByName = pricingPackages.find(
-        (plan) => String(plan?.name || "").trim() === String(name).trim()
-      );
-
-      if (livePlanByName) {
-        return livePlanByName;
-      }
-
       return {
         slug,
         name: name || "—",
@@ -1693,31 +1657,11 @@ function Dashboard() {
       };
     }
 
-    // Compatibility with requests created before package fields
-    // were stored as their own Firestore fields.
-    return getPackageFromExtraNotes(application);
-  }
-
-  function formatDate(dateValue) {
-    if (!dateValue) return "—";
-
-    try {
-      return new Intl.DateTimeFormat(isArabic ? "ar-DZ" : "en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }).format(new Date(dateValue));
-    } catch {
-      return "—";
-    }
-  }
-
-  function getPaymentNeeds(application) {
-    if (!application?.intake) return [];
-
-    return paymentNeedFields
-      .filter((field) => Boolean(application.intake[field]))
-      .map((field) => t.request.needs[field]?.title || field);
+    // Legacy request: display the earlier recorded package if available.
+    const legacy = getPackageFromExtraNotes(application);
+    if (legacy?.price) return legacy;
+    // A live catalog price must never silently replace a historical quote.
+    return pricingPackages.find((p) => String(p.slug) === String(slug)) || legacy;
   }
 
   function formatFileSize(bytes) {
@@ -1729,37 +1673,71 @@ function Dashboard() {
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  function getDocumentTitle(document) {
-    return isArabic ? document.titleAr : document.titleEn;
-  }
-
-  function getDocumentDescription(document) {
-    return isArabic ? document.descriptionAr : document.descriptionEn;
-  }
-
-  function getDocumentStatusLabel(status) {
-    return t.documentsPage.status[status] || status;
-  }
-
+  // This endpoint returns ADMIN-PUBLISHED company deliverables only.
+  // Intake identity documents remain in the original request workflow.
   async function loadDocumentsForApplication(applicationId, options = {}) {
     if (!applicationId) return;
-
     const { silent = false } = options;
-
     if (!silent) setDocumentsLoading(true);
     setDocumentError("");
-
     try {
-      const data = await getApplicationDocumentsRequest(applicationId);
-      setDocumentItems(data.documents || []);
-      setDocumentSummary(data.summary || createEmptyDocumentSummary());
+      const data = await getCompanyDocumentsRequest(applicationId);
+      setDocumentItems(Array.isArray(data.documents) ? data.documents : []);
     } catch (error) {
-      console.error(error);
+      console.error("COMPANY_DOCUMENTS_ERROR:", error);
       setDocumentItems([]);
-      setDocumentSummary(createEmptyDocumentSummary());
-      setDocumentError(error.message || t.documentsPage.loadError);
+      setDocumentError(error.message || (isArabic ? "تعذر تحميل وثائق الشركة." : "Could not load company documents."));
     } finally {
       if (!silent) setDocumentsLoading(false);
+    }
+  }
+
+  async function handleCompanyDocumentDownload(document) {
+    try {
+      setDocumentError("");
+
+      // The existing API may download the file itself and return undefined.
+      // It may alternatively return a Blob or { blob, filename }.
+      const result = await downloadCompanyDocumentRequest(document.id);
+
+      // The API handled the download successfully: nothing else to do.
+      if (result == null) return;
+
+      const blob = result instanceof Blob ? result : result.blob;
+      const filename =
+        result instanceof Blob
+          ? document.fileName
+          : result.filename || result.fileName || document.fileName;
+
+      if (!(blob instanceof Blob)) {
+        throw new Error(
+          isArabic
+            ? "استجاب الخادم دون ملف صالح للتنزيل."
+            : "The document API returned an invalid file."
+        );
+      }
+
+      const url = URL.createObjectURL(blob);
+      try {
+        const anchor = window.document.createElement("a");
+        anchor.href = url;
+        anchor.download = filename || "company-document";
+        window.document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      } finally {
+        // Leave time for the browser to start downloading before revoking.
+        window.setTimeout(() => URL.revokeObjectURL(url), 10000);
+      }
+    } catch (error) {
+      console.error("COMPANY_DOCUMENT_DOWNLOAD_ERROR:", error);
+      setDocumentError(
+        error instanceof Error && error.message
+          ? error.message
+          : isArabic
+            ? "فشل تحميل الوثيقة."
+            : "Document download failed."
+      );
     }
   }
 
@@ -1784,97 +1762,6 @@ function Dashboard() {
     }
 
     return "";
-  }
-
-  async function handleDocumentUpload(document, file) {
-    if (!file || !selectedDocumentApplicationId) return;
-
-    const validationMessage = validateDocumentFile(file, document);
-
-    if (validationMessage) {
-      setDocumentError(validationMessage);
-      setDocumentMessage("");
-      return;
-    }
-
-    setUploadingRequirementId(document.requirementId);
-    setDocumentError("");
-    setDocumentMessage("");
-
-    try {
-      await uploadApplicationDocumentRequest(
-        selectedDocumentApplicationId,
-        document.requirementId,
-        file
-      );
-
-      await loadDocumentsForApplication(selectedDocumentApplicationId, {
-        silent: true,
-      });
-      setDocumentMessage(t.documentsPage.uploadSuccess);
-    } catch (error) {
-      console.error(error);
-      setDocumentError(error.message || t.documentsPage.errors.uploadFailed);
-    } finally {
-      setUploadingRequirementId(null);
-      setDragRequirementId(null);
-    }
-  }
-
-  function handleDocumentDrop(event, document) {
-    event.preventDefault();
-    setDragRequirementId(null);
-
-    if (document.status === "approved") return;
-
-    const file = event.dataTransfer.files?.[0];
-    if (file) handleDocumentUpload(document, file);
-  }
-
-  async function handleDocumentDownload(document) {
-    if (!document.documentId) return;
-
-    setDocumentError("");
-
-    try {
-      const { blob, filename } = await downloadApplicationDocumentRequest(
-        document.documentId
-      );
-      const objectUrl = URL.createObjectURL(blob);
-      const link = window.document.createElement("a");
-
-      link.href = objectUrl;
-      link.download = filename || document.originalName || "document";
-      window.document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(objectUrl);
-    } catch (error) {
-      console.error(error);
-      setDocumentError(error.message || t.documentsPage.errors.downloadFailed);
-    }
-  }
-
-  async function handleDocumentDelete(document) {
-    if (!document.documentId) return;
-    if (!window.confirm(t.documentsPage.confirmDelete)) return;
-
-    setDeletingDocumentId(document.documentId);
-    setDocumentError("");
-    setDocumentMessage("");
-
-    try {
-      await deleteApplicationDocumentRequest(document.documentId);
-      await loadDocumentsForApplication(selectedDocumentApplicationId, {
-        silent: true,
-      });
-      setDocumentMessage(t.documentsPage.deleteSuccess);
-    } catch (error) {
-      console.error(error);
-      setDocumentError(error.message || t.documentsPage.errors.deleteFailed);
-    } finally {
-      setDeletingDocumentId(null);
-    }
   }
 
   useEffect(() => {
@@ -1931,13 +1818,12 @@ function Dashboard() {
     if (applications.length === 0) {
       setSelectedDocumentApplicationId(null);
       setDocumentItems([]);
-      setDocumentSummary(createEmptyDocumentSummary());
       return;
     }
 
     setSelectedDocumentApplicationId((current) => {
       const stillExists = applications.some(
-        (application) => Number(application.id) === Number(current)
+        (application) => String(application.id) === String(current)
       );
 
       if (stillExists) return current;
@@ -1957,7 +1843,6 @@ function Dashboard() {
       return;
     }
 
-    setDocumentMessage("");
 
     void loadDocumentsForApplication(
       selectedDocumentApplicationId
@@ -3072,426 +2957,144 @@ function Dashboard() {
 
           {activePage === "services" && (
             <>
-              <div className="dashboard-kicker">
-                <span>◎</span>
-                <span>{t.servicesPage.label}</span>
+              <div className="portal-pagehead">
+                <div>
+                  <span className="portal-eyebrow"><BriefcaseBusiness size={15} /> {t.servicesPage.label}</span>
+                  <h1>{t.servicesPage.title}</h1>
+                  <p>{isArabic ? "تابع طلبات شركتك، مراحل الإنجاز، والخطوة التالية لكل خدمة." : "Track requests, milestones, and next steps for every service."}</p>
+                </div>
+                <button className="portal-primary" type="button" onClick={() => changePage("request")}>
+                  <Plus size={17} /> {isArabic ? "طلب خدمة جديدة" : "New service request"}
+                </button>
               </div>
-
-              <div className="dashboard-heading">
-                <h1>{t.servicesPage.title}</h1>
-                <p>{t.servicesPage.subtitle}</p>
-              </div>
-
-              {requestMessage && (
-                <p className="request-message success service-success-message" role="status">
-                  {requestMessage}
-                </p>
-              )}
-
+              {requestMessage && <p className="request-message success" role="status">{requestMessage}</p>}
               {applications.length === 0 ? (
-                <section className="empty-panel">
-                  <p>{t.servicesPage.empty}</p>
+                <section className="portal-empty">
+                  <span className="portal-empty-art"><BriefcaseBusiness size={32}/></span>
+                  <h2>{isArabic ? "كل شيء يبدأ بطلبك الأول" : "Your first service starts here"}</h2>
+                  <p>{isArabic ? "اطلب الخدمة المناسبة، وسيمكنك متابعة تقدمها ووثائقها من هذه اللوحة." : "Request a service to follow its progress and access its company documents."}</p>
+                  <button type="button" className="portal-primary" onClick={() => changePage("request")}><Plus size={17}/>{t.documentsPage.startRequest}</button>
                 </section>
               ) : (
-                <section className="services-list">
-                  {applications.map((application) => (
-                    <article key={application.id} className="service-card">
-                      <header>
-                        <div>
-                          <span>{t.servicesPage.service}</span>
-                          <h2>
-                            {t.request.services[application.serviceType]?.title ||
-                              application.serviceType}
-                          </h2>
-                        </div>
-
-                        <strong className="service-status">
-                          {t.statusLabels[application.status] || application.status}
-                        </strong>
-                      </header>
-
-                      <div className="service-details">
-                        <div>
-                          <span>{t.servicesPage.progress}</span>
-                          <strong>{application.progress}%</strong>
-                        </div>
-
-                        <div>
-                          <span>{t.servicesPage.createdAt}</span>
-                          <strong>{formatDate(application.createdAt)}</strong>
-                        </div>
-
-                        <div>
-                          <span>{t.servicesPage.package}</span>
-                          <strong>
-                            {getApplicationPackage(application)?.name || "—"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>{t.servicesPage.price}</span>
-                          <strong>
-                            {getApplicationPackage(application)
-                              ? formatPackagePrice(getApplicationPackage(application))
-                              : "—"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>{t.servicesPage.notificationEmail}</span>
-                          <strong dir="auto">
-                            {application.intake?.email || user?.email || "—"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>{t.servicesPage.businessActivity}</span>
-                          <strong dir="auto">
-                            {application.intake?.businessActivity || "—"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>{t.servicesPage.paymentNeeds}</span>
-                          <strong>{getPaymentNeeds(application).join(", ") || "—"}</strong>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </section>
+                <>
+                  <div className="portal-stats">
+                    <div className="portal-stat"><span><LayoutGrid size={18}/>{isArabic ? "مجموع الطلبات" : "Total requests"}</span><strong>{applications.length}</strong></div>
+                    <div className="portal-stat"><span><Clock3 size={18}/>{isArabic ? "قيد التنفيذ" : "In progress"}</span><strong>{applications.filter(a => !["completed", "rejected"].includes(a.status)).length}</strong></div>
+                    <div className="portal-stat"><span><CheckCircle2 size={18}/>{isArabic ? "طلبات مكتملة" : "Completed"}</span><strong>{applications.filter(a => a.status === "completed").length}</strong></div>
+                  </div>
+                  <div className="portal-section-title"><h2>{isArabic ? "طلباتك" : "Your requests"}</h2><div className="rita-service-actions"><span>{applications.length} {isArabic ? "طلب" : "requests"}</span><button className="portal-outline" type="button" onClick={() => void refreshApplications({silent:false})}><RefreshCw size={16}/>{isArabic ? "تحديث الحالات" : "Refresh statuses"}</button></div></div>
+                  <section className="portal-service-list">
+                    {applications.map(application => {
+                      const open = String(expandedServiceId) === String(application.id);
+                      const pct = Math.max(0, Math.min(100, Number(application.progress) || 0));
+                      const plan = getApplicationPackage(application);
+                      const status = application.status || "submitted";
+                      return (
+                        <article className="portal-service" key={application.id}>
+                          <div className="portal-service-main">
+                            <div className="portal-service-avatar"><BriefcaseBusiness size={23}/></div>
+                            <div className="portal-service-info">
+                              <div className="portal-service-meta">{isArabic ? "طلب" : "Request"} <b dir="ltr">#{application.id}</b> <span>·</span> {formatDate(application.createdAt)}</div>
+                              <h3>{t.request.services[application.serviceType]?.title || application.serviceType}</h3>
+                              <span className={`portal-status portal-status-${status}`}>{t.statusLabels[status] || status}</span>
+                            </div>
+                            <div className="portal-progress"><div><span>{t.servicesPage.progress}</span><b>{pct}%</b></div><div className="portal-progress-track"><span style={{width:`${pct}%`}}/></div></div>
+                            <button className="portal-outline" type="button" aria-expanded={open} onClick={() => setExpandedServiceId(open ? null : application.id)}>
+                              {isArabic ? "التفاصيل" : "Details"}{open ? <ChevronUp size={17}/> : <ChevronDown size={17}/>}
+                            </button>
+                          </div>
+                          {(status === "waiting_payment" || status === "paid" || application.paymentStatus === "paid") && (
+                            <div className={`rita-payment-banner ${status === "paid" || application.paymentStatus === "paid" ? "rita-payment-done" : ""}`}>
+                              <div><strong>{status === "paid" || application.paymentStatus === "paid" ? (isArabic ? "تم تأكيد الدفع" : "Payment confirmed") : (isArabic ? "حان وقت الدفع" : "Payment required")}</strong><p>{status === "paid" || application.paymentStatus === "paid" ? (isArabic ? "تم تأكيد الدفع. لا تدفع مرة أخرى." : "Sandbox payment confirmed. Do not pay again.") : (isArabic ? "وافق الفريق على طلبك. افتح التفاصيل لإتمام الدفع عبر PayPal." : "Your application was accepted. Open details to pay with PayPal Sandbox.")}</p></div>
+                              {status === "waiting_payment" && <button type="button" className="portal-primary" onClick={() => setExpandedServiceId(application.id)}>{isArabic ? "ادفع الآن" : "Pay now"}</button>}
+                            </div>
+                          )}
+                          {open && (
+                            <div className="portal-service-expand">
+                              <div className="rita-journey"><strong>{isArabic ? "مراحل طلبك" : "Your service journey"}</strong><div className="rita-journey-steps">{[
+                                {k:"submitted",ar:"استلام الطلب",en:"Submitted"},
+                                {k:"in_review",ar:"المراجعة",en:"Review"},
+                                {k:"waiting_payment",ar:"الدفع",en:"Payment"},
+                                {k:"processing",ar:"التنفيذ",en:"Processing"},
+                                {k:"completed",ar:"مكتمل",en:"Completed"}
+                              ].map((step,i) => {
+                                const ranks={draft:0,submitted:0,in_review:1,waiting_documents:1,waiting_payment:2,paid:2,processing:3,completed:4,rejected:-1};
+                                const rank=ranks[status] ?? 0;
+                                return <div key={step.k} className={`rita-journey-step ${rank>=i ? "is-reached" : ""} ${rank===i ? "is-current" : ""}`}><span>{rank>i ? "✓" : i+1}</span><small>{isArabic ? step.ar : step.en}</small></div>;
+                              })}</div><p>{status === "rejected" ? (isArabic ? "تم رفض الطلب. تواصل مع فريق Rita للمزيد من التفاصيل." : "Request rejected. Contact Rita for details.") : status === "submitted" ? (isArabic ? "تم استلام طلبك. ينتظر مراجعة الإدارة؛ الدفع غير متاح بعد." : "Request received. Awaiting admin review; payment is not yet available.") : status === "in_review" || status === "waiting_documents" ? (isArabic ? "تجري مراجعة معلوماتك ووثائقك. انتظر الموافقة على الدفع." : "Your information and documents are under review. Payment will become available after approval.") : status === "waiting_payment" ? (isArabic ? "يمكنك الآن إتمام الدفع بأمان عبر PayPal بسعر الباقة المختارة." : "Pay now through PayPal Sandbox using the selected package price.") : status === "paid" ? (isArabic ? "الدفع مؤكد. سيبدأ الفريق التنفيذ قريبًا." : "Payment confirmed. The team will begin processing.") : status === "processing" ? (isArabic ? "الفريق يعمل على خدمتك حاليًا." : "Your service is being processed.") : status === "completed" ? (isArabic ? "اكتملت الخدمة. يمكنك مراجعة وثائق الشركة." : "Service completed. Check your company documents.") : ""}</p></div>
+                              <dl>
+                                <div><dt>{t.servicesPage.package}</dt><dd>{plan?.name || "—"}</dd></div>
+                                <div><dt>{t.servicesPage.price}</dt><dd>{plan ? formatPackagePrice(plan) : "—"}</dd></div>
+                                <div><dt>{t.servicesPage.notificationEmail}</dt><dd dir="auto">{application.notificationEmail || application.intake?.notificationEmail || user?.email || "—"}</dd></div>
+                                <div><dt>{t.servicesPage.paymentNeeds}</dt><dd>{getPaymentNeeds(application).join(", ") || "—"}</dd></div>
+                                <div className="portal-full"><dt>{t.servicesPage.businessActivity}</dt><dd dir="auto">{application.intake?.businessActivity || "—"}</dd></div>
+                              </dl>
+                              {status === "waiting_payment" && application.paymentStatus !== "paid" && <PayPalSandboxPayment applicationId={application.id} isArabic={isArabic} onPaid={() => { void refreshApplications({silent:false}); }} />}
+                              <button className="portal-link" type="button" onClick={() => {setSelectedDocumentApplicationId(application.id); changePage("documents");}}>
+                                <FolderOpen size={17}/>{isArabic ? "عرض وثائق الشركة" : "View company documents"}<ArrowUpRight size={16}/>
+                              </button>
+                            </div>
+                          )}
+                        </article>
+                      );
+                    })}
+                  </section>
+                </>
               )}
             </>
           )}
 
           {activePage === "documents" && (
             <>
-              <div className="dashboard-kicker">
-                <span>▣</span>
-                <span>{t.documentsPage.label}</span>
+              <div className="portal-pagehead">
+                <div>
+                  <span className="portal-eyebrow"><ShieldCheck size={15}/>{isArabic ? "مكتبة الشركة الآمنة" : "Secure company library"}</span>
+                  <h1>{isArabic ? "وثائق شركتك" : "Your company documents"}</h1>
+                  <p>{isArabic ? "الملفات الرسمية والمخرجات التي ينشرها فريق Rita لشركتك بعد معالجة الخدمة." : "Official company files and deliverables published by the Rita team after processing your service."}</p>
+                </div>
+                {applications.length > 0 && <button className="portal-outline" type="button" disabled={documentsLoading} onClick={() => loadDocumentsForApplication(selectedDocumentApplicationId)}><RefreshCw size={16}/>{isArabic ? "تحديث" : "Refresh"}</button>}
               </div>
-
-              <div className="dashboard-heading documents-heading">
-                <h1>{t.documentsPage.title}</h1>
-                <p>{t.documentsPage.subtitle}</p>
-              </div>
-
               {applications.length === 0 ? (
-                <section className="documents-empty-state">
-                  <div className="documents-empty-icon" aria-hidden="true">
-                    ⇧
-                  </div>
-                  <h2>{t.documentsPage.noApplications}</h2>
-                  <button
-                    type="button"
-                    className="request-submit"
-                    onClick={() => changePage("request")}
-                  >
-                    {t.documentsPage.startRequest}
-                  </button>
+                <section className="portal-empty">
+                  <span className="portal-empty-art"><FolderOpen size={34}/></span>
+                  <h2>{isArabic ? "وثائق شركتك ستجدها هنا" : "Your company documents will live here"}</h2>
+                  <p>{isArabic ? "بعد إنشاء طلب خدمة والموافقة عليه، سيضيف الفريق وثائق شركتك هنا فور توفرها." : "Once a service is accepted, the team will publish company documents here when available."}</p>
+                  <button type="button" className="portal-primary" onClick={() => changePage("request")}><Plus size={17}/>{isArabic ? "إنشاء طلب خدمة" : "Request a service"}</button>
                 </section>
               ) : (
-                <section className="documents-workspace">
-                  <div className="documents-toolbar">
-                    <div className="documents-toolbar-copy">
-                      <span className="documents-lock" aria-hidden="true">
-                        🔒
-                      </span>
-                      <div>
-                        <strong>{t.documentsPage.secureTitle}</strong>
-                        <p>{t.documentsPage.secureText}</p>
-                      </div>
-                    </div>
-
-                    <label className="document-application-picker">
-                      <span>{t.documentsPage.chooseApplication}</span>
-                      <select
-                        value={selectedDocumentApplicationId || ""}
-                        onChange={(event) => {
-                          setSelectedDocumentApplicationId(
-                            Number(event.target.value)
-                          );
-                          setDocumentError("");
-                          setDocumentMessage("");
-                        }}
-                      >
-                        {applications.map((application) => (
-                          <option key={application.id} value={application.id}>
-                            {t.request.services[application.serviceType]?.title ||
-                              application.serviceType}{" "}
-                            — {t.documentsPage.requestNumber} #{application.id}
-                          </option>
-                        ))}
+                <section className="portal-library">
+                  <div className="portal-library-toolbar">
+                    <label className="portal-picker"><span>{isArabic ? "الخدمة / الشركة" : "Service / company"}</span>
+                      <select value={selectedDocumentApplicationId || ""} onChange={e => {setSelectedDocumentApplicationId(e.target.value); setDocumentSearch(""); setDocumentTypeFilter("all");}}>
+                        {applications.map(a => <option key={a.id} value={a.id}>{a.intake?.desiredCompanyName || t.request.services[a.serviceType]?.title || a.serviceType} — #{a.id}</option>)}
                       </select>
                     </label>
+                    <div className="portal-library-context"><ShieldCheck size={19}/><div><strong>{isArabic ? "ملفات منشورة من الإدارة" : "Admin-published files"}</strong><small>{isArabic ? "عرض وتنزيل فقط، دون تعديل أو حذف" : "View and download only — no editing or deleting"}</small></div></div>
                   </div>
-
-                  {selectedDocumentApplication && (
-                    <div className="document-application-banner">
-                      <div>
-                        <span>{t.servicesPage.service}</span>
-                        <strong>
-                          {t.request.services[
-                            selectedDocumentApplication.serviceType
-                          ]?.title || selectedDocumentApplication.serviceType}
-                        </strong>
-                      </div>
-                      <div>
-                        <span>{t.documentsPage.serviceStatus}</span>
-                        <strong>
-                          {t.statusLabels[selectedDocumentApplication.status] ||
-                            selectedDocumentApplication.status}
-                        </strong>
-                      </div>
-                    </div>
-                  )}
-
-                  {documentError && (
-                    <p className="request-message error document-feedback" role="alert">
-                      {documentError}
-                    </p>
-                  )}
-
-                  {documentMessage && (
-                    <p className="request-message success document-feedback" role="status">
-                      {documentMessage}
-                    </p>
-                  )}
-
-                  <div className="document-summary-grid">
-                    <article className="document-summary-card">
-                      <span className="document-summary-icon required">▤</span>
-                      <div>
-                        <small>{t.documentsPage.requiredCount}</small>
-                        <strong>{documentSummary.required}</strong>
-                      </div>
-                    </article>
-
-                    <article className="document-summary-card">
-                      <span className="document-summary-icon uploaded">⇧</span>
-                      <div>
-                        <small>{t.documentsPage.uploadedCount}</small>
-                        <strong>{documentSummary.uploaded}</strong>
-                      </div>
-                    </article>
-
-                    <article className="document-summary-card">
-                      <span className="document-summary-icon approved">✓</span>
-                      <div>
-                        <small>{t.documentsPage.approvedCount}</small>
-                        <strong>{documentSummary.approved}</strong>
-                      </div>
-                    </article>
-
-                    <article className="document-summary-card">
-                      <span className="document-summary-icon attention">!</span>
-                      <div>
-                        <small>{t.documentsPage.attentionCount}</small>
-                        <strong>{documentSummary.rejected}</strong>
-                      </div>
-                    </article>
+                  {documentError && <p className="request-message error" role="alert">{documentError}</p>}
+                  <div className="portal-library-filterbar">
+                    <label className="portal-search"><Search size={18}/><input type="search" value={documentSearch} onChange={e => setDocumentSearch(e.target.value)} placeholder={isArabic ? "ابحث باسم الوثيقة..." : "Search documents..."} aria-label={isArabic ? "البحث عن وثيقة" : "Search documents"}/></label>
+                    <select className="portal-type-filter" value={documentTypeFilter} onChange={e => setDocumentTypeFilter(e.target.value)} aria-label={isArabic ? "نوع الملفات" : "File type"}>
+                      <option value="all">{isArabic ? "كل الملفات" : "All files"}</option><option value="pdf">PDF</option><option value="image">{isArabic ? "الصور" : "Images"}</option><option value="other">{isArabic ? "ملفات أخرى" : "Other files"}</option>
+                    </select>
+                    <span className="portal-file-count">{documentItems.length} {isArabic ? "وثيقة متاحة" : "available files"}</span>
                   </div>
-
-                  <div className="documents-progress-card">
-                    <div className="documents-progress-head">
-                      <div>
-                        <strong>{t.documentsPage.completion}</strong>
-                        <span>
-                          {documentSummary.uploadedRequired || 0}/
-                          {documentSummary.required || 0}
-                        </span>
-                      </div>
-                      <b>{documentSummary.progress}%</b>
-                    </div>
-                    <div className="documents-progress-track">
-                      <span
-                        style={{
-                          width: `${Math.min(documentSummary.progress, 100)}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {documentsLoading ? (
-                    <div className="documents-loading-panel">
-                      <span className="documents-loader" aria-hidden="true" />
-                      <p>{t.documentsPage.loading}</p>
-                    </div>
-                  ) : documentItems.length === 0 ? (
-                    <div className="documents-empty-requirements">
-                      <span aria-hidden="true">▱</span>
-                      <p>{t.documentsPage.noRequirements}</p>
-                    </div>
-                  ) : (
-                    <div className="documents-list">
-                      {documentItems.map((document) => {
-                        const isUploading =
-                          Number(uploadingRequirementId) ===
-                          Number(document.requirementId);
-                        const isDeleting =
-                          Number(deletingDocumentId) ===
-                          Number(document.documentId);
-                        const isApproved = document.status === "approved";
-                        const hasFile = Boolean(document.documentId);
-                        const isDragActive =
-                          Number(dragRequirementId) ===
-                          Number(document.requirementId);
-                        const fileInputId = `document-file-${document.requirementId}`;
-
-                        return (
-                          <article
-                            key={document.requirementId}
-                            className={`document-card status-${document.status} ${
-                              isDragActive ? "drag-active" : ""
-                            }`}
-                            onDragOver={(event) => {
-                              if (isApproved) return;
-                              event.preventDefault();
-                              setDragRequirementId(document.requirementId);
-                            }}
-                            onDragLeave={(event) => {
-                              if (!event.currentTarget.contains(event.relatedTarget)) {
-                                setDragRequirementId(null);
-                              }
-                            }}
-                            onDrop={(event) => handleDocumentDrop(event, document)}
-                          >
-                            <header className="document-card-header">
-                              <div className="document-title-wrap">
-                                <span
-                                  className={`document-status-icon status-${document.status}`}
-                                  aria-hidden="true"
-                                >
-                                  {document.status === "approved"
-                                    ? "✓"
-                                    : document.status === "rejected"
-                                      ? "!"
-                                      : document.status === "missing"
-                                        ? "⇧"
-                                        : "◷"}
-                                </span>
-                                <div>
-                                  <div className="document-title-line">
-                                    <h2>{getDocumentTitle(document)}</h2>
-                                    <span
-                                      className={`document-required-pill ${
-                                        document.required ? "required" : "optional"
-                                      }`}
-                                    >
-                                      {document.required
-                                        ? t.documentsPage.required
-                                        : t.documentsPage.optional}
-                                    </span>
-                                  </div>
-                                  <p>{getDocumentDescription(document)}</p>
-                                </div>
-                              </div>
-
-                              <span className={`document-status-badge status-${document.status}`}>
-                                {getDocumentStatusLabel(document.status)}
-                              </span>
-                            </header>
-
-                            {document.status === "rejected" && document.reviewNote && (
-                              <div className="document-review-note">
-                                <strong>{t.documentsPage.reviewNote}</strong>
-                                <p dir="auto">{document.reviewNote}</p>
-                              </div>
-                            )}
-
-                            {hasFile ? (
-                              <div className="document-file-row">
-                                <span className="document-file-icon" aria-hidden="true">
-                                  {document.mimeType === "application/pdf" ? "PDF" : "IMG"}
-                                </span>
-                                <div className="document-file-info">
-                                  <strong dir="auto">{document.originalName}</strong>
-                                  <span>
-                                    {formatFileSize(document.fileSize)} · {t.documentsPage.fileReady}
-                                  </span>
-                                </div>
-                              </div>
-                            ) : (
-                              <label
-                                className={`document-drop-zone ${
-                                  isDragActive ? "active" : ""
-                                }`}
-                                htmlFor={fileInputId}
-                              >
-                                <span className="document-upload-symbol" aria-hidden="true">
-                                  ⇧
-                                </span>
-                                <strong>{t.documentsPage.dragTitle}</strong>
-                                <p>{t.documentsPage.dragText}</p>
-                              </label>
-                            )}
-
-                            <div className="document-card-footer">
-                              <div className="document-file-rules">
-                                <span>{t.documentsPage.accepted}</span>
-                                <span>
-                                  {t.documentsPage.maxSize}: {document.maxSizeMb || 5} MB
-                                </span>
-                              </div>
-
-                              <div className="document-actions">
-                                {!isApproved && (
-                                  <>
-                                    <input
-                                      id={fileInputId}
-                                      className="document-file-input"
-                                      type="file"
-                                      accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-                                      disabled={isUploading}
-                                      onChange={(event) => {
-                                        const file = event.target.files?.[0];
-                                        if (file) handleDocumentUpload(document, file);
-                                        event.target.value = "";
-                                      }}
-                                    />
-                                    <label
-                                      className={`document-action primary ${
-                                        isUploading ? "disabled" : ""
-                                      }`}
-                                      htmlFor={fileInputId}
-                                    >
-                                      {isUploading
-                                        ? t.documentsPage.uploading
-                                        : hasFile
-                                          ? t.documentsPage.replace
-                                          : t.documentsPage.upload}
-                                    </label>
-                                  </>
-                                )}
-
-                                {hasFile && (
-                                  <button
-                                    type="button"
-                                    className="document-action"
-                                    onClick={() => handleDocumentDownload(document)}
-                                  >
-                                    {t.documentsPage.download}
-                                  </button>
-                                )}
-
-                                {hasFile && !isApproved && (
-                                  <button
-                                    type="button"
-                                    className="document-action danger"
-                                    disabled={isDeleting}
-                                    onClick={() => handleDocumentDelete(document)}
-                                  >
-                                    {isDeleting
-                                      ? t.documentsPage.removing
-                                      : t.documentsPage.remove}
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          </article>
-                        );
-                      })}
-                    </div>
-                  )}
+                  {documentsLoading ? <div className="portal-library-loading">{isArabic ? "جاري تحميل ملفات الشركة..." : "Loading company files..."}</div> : (() => {
+                    const filtered = documentItems.filter(doc => {
+                      const name = String(doc.title || doc.fileName || "");
+                      const fileType = String(doc.mimeType || "").toLowerCase();
+                      const ext = String(doc.fileName || "").split(".").pop().toLowerCase();
+                      const type = fileType.includes("pdf") || ext === "pdf" ? "pdf" : fileType.startsWith("image/") || ["png","jpg","jpeg","webp"].includes(ext) ? "image" : "other";
+                      return name.toLowerCase().includes(documentSearch.trim().toLowerCase()) && (documentTypeFilter === "all" || documentTypeFilter === type);
+                    });
+                    return filtered.length === 0 ? <div className="portal-empty portal-empty-inner"><span className="portal-empty-art"><FolderOpen size={30}/></span><h2>{documentItems.length ? (isArabic ? "لا توجد نتائج مطابقة" : "No matching files") : (isArabic ? "لم تُنشر وثائق بعد" : "No documents published yet")}</h2><p>{documentItems.length ? (isArabic ? "جرّب تغيير كلمات البحث أو نوع الملف." : "Try a different keyword or file type.") : (isArabic ? "عندما ينتهي الفريق من إعداد مستندات شركتك وينشرها، ستظهر هنا تلقائيًا." : "Once the team prepares and publishes your company files, they'll appear here automatically.")}</p></div> : <div className="portal-doc-list">
+                      {filtered.map(doc => <article className="portal-doc-row" key={doc.id}>
+                        <span className="portal-doc-icon"><FileText size={23}/></span>
+                        <div className="portal-doc-name"><h3 dir="auto">{doc.title || doc.fileName || (isArabic ? "وثيقة" : "Document")}</h3><p dir="auto">{doc.description || (isArabic ? "وثيقة خاصة بشركتك" : "Company document")}</p><small>{doc.fileName || ""}{doc.fileSize ? ` · ${formatFileSize(doc.fileSize)}` : ""}{doc.createdAt ? ` · ${formatDate(doc.createdAt)}` : ""}</small></div>
+                        <button className="portal-download" type="button" onClick={() => handleCompanyDocumentDownload(doc)}><Download size={17}/><span>{isArabic ? "تحميل" : "Download"}</span></button>
+                      </article>)}
+                    </div>;
+                  })()}
                 </section>
               )}
             </>

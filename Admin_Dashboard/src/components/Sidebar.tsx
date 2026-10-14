@@ -15,6 +15,7 @@ import {
   BadgeDollarSign,
   BriefcaseBusiness,
   Files,
+  FolderArchive,
 } from "lucide-react";
 
 import { useLanguage } from "../i18n/LanguageContext";
@@ -41,6 +42,11 @@ export const Sidebar: React.FC = () => {
         : "Applications",
       icon: Files,
     },
+    {
+  path: "/company-documents",
+  label: isArabic ? "وثائق الشركات" : "Company Documents",
+  icon: FolderArchive,
+},
     {
       path: "/messages",
       label: isArabic
