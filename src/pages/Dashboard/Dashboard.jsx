@@ -11,7 +11,7 @@ import {
 } from "../../api/documentApi.js";
 import { getCompanyDocumentsRequest, downloadCompanyDocumentRequest } from "../../api/companyDocumentsApi.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
-import PayPalSandboxPayment from "../../components/PayPalSandboxPayment.jsx";
+import PaymentMethodChooser from "../../components/PaymentMethodChooser.jsx";
 import { usePageContent } from "../../hooks/usePageContent.js";
 import { pricingFallbackContent } from "../Pricing/pricingFallbackContent.js";
 import { sendNewRequestEmailRequest } from "../../api/sendNewRequestEmail.js";
@@ -3005,7 +3005,7 @@ function Dashboard() {
                           </div>
                           {(status === "waiting_payment" || status === "paid" || application.paymentStatus === "paid") && (
                             <div className={`rita-payment-banner ${status === "paid" || application.paymentStatus === "paid" ? "rita-payment-done" : ""}`}>
-                              <div><strong>{status === "paid" || application.paymentStatus === "paid" ? (isArabic ? "تم تأكيد الدفع" : "Payment confirmed") : (isArabic ? "حان وقت الدفع" : "Payment required")}</strong><p>{status === "paid" || application.paymentStatus === "paid" ? (isArabic ? "تم تأكيد الدفع. لا تدفع مرة أخرى." : "Sandbox payment confirmed. Do not pay again.") : (isArabic ? "وافق الفريق على طلبك. افتح التفاصيل لإتمام الدفع عبر PayPal." : "Your application was accepted. Open details to pay with PayPal Sandbox.")}</p></div>
+                              <div><strong>{status === "paid" || application.paymentStatus === "paid" ? (isArabic ? "تم تأكيد الدفع" : "Payment confirmed") : (isArabic ? "حان وقت الدفع" : "Payment required")}</strong><p>{status === "paid" || application.paymentStatus === "paid" ? (isArabic ? "تم تأكيد الدفع. لا تدفع مرة أخرى." : "Payment confirmed. Do not pay again.") : (isArabic ? "وافق الفريق على طلبك. افتح التفاصيل لاختيار PayPal أو Stripe." : "Your application was approved. Open details to choose PayPal or Stripe.")}</p></div>
                               {status === "waiting_payment" && <button type="button" className="portal-primary" onClick={() => setExpandedServiceId(application.id)}>{isArabic ? "ادفع الآن" : "Pay now"}</button>}
                             </div>
                           )}
@@ -3021,7 +3021,7 @@ function Dashboard() {
                                 const ranks={draft:0,submitted:0,in_review:1,waiting_documents:1,waiting_payment:2,paid:2,processing:3,completed:4,rejected:-1};
                                 const rank=ranks[status] ?? 0;
                                 return <div key={step.k} className={`rita-journey-step ${rank>=i ? "is-reached" : ""} ${rank===i ? "is-current" : ""}`}><span>{rank>i ? "✓" : i+1}</span><small>{isArabic ? step.ar : step.en}</small></div>;
-                              })}</div><p>{status === "rejected" ? (isArabic ? "تم رفض الطلب. تواصل مع فريق Rita للمزيد من التفاصيل." : "Request rejected. Contact Rita for details.") : status === "submitted" ? (isArabic ? "تم استلام طلبك. ينتظر مراجعة الإدارة؛ الدفع غير متاح بعد." : "Request received. Awaiting admin review; payment is not yet available.") : status === "in_review" || status === "waiting_documents" ? (isArabic ? "تجري مراجعة معلوماتك ووثائقك. انتظر الموافقة على الدفع." : "Your information and documents are under review. Payment will become available after approval.") : status === "waiting_payment" ? (isArabic ? "يمكنك الآن إتمام الدفع بأمان عبر PayPal بسعر الباقة المختارة." : "Pay now through PayPal Sandbox using the selected package price.") : status === "paid" ? (isArabic ? "الدفع مؤكد. سيبدأ الفريق التنفيذ قريبًا." : "Payment confirmed. The team will begin processing.") : status === "processing" ? (isArabic ? "الفريق يعمل على خدمتك حاليًا." : "Your service is being processed.") : status === "completed" ? (isArabic ? "اكتملت الخدمة. يمكنك مراجعة وثائق الشركة." : "Service completed. Check your company documents.") : ""}</p></div>
+                              })}</div><p>{status === "rejected" ? (isArabic ? "تم رفض الطلب. تواصل مع فريق Rita للمزيد من التفاصيل." : "Request rejected. Contact Rita for details.") : status === "submitted" ? (isArabic ? "تم استلام طلبك. ينتظر مراجعة الإدارة؛ الدفع غير متاح بعد." : "Request received. Awaiting admin review; payment is not yet available.") : status === "in_review" || status === "waiting_documents" ? (isArabic ? "تجري مراجعة معلوماتك ووثائقك. انتظر الموافقة على الدفع." : "Your information and documents are under review. Payment will become available after approval.") : status === "waiting_payment" ? (isArabic ? "اختر PayPal للدفع المباشر، أو Stripe للدفع الخارجي وإرسال الإثبات." : "Choose direct PayPal checkout or external Stripe payment with proof upload.") : status === "paid" ? (isArabic ? "الدفع مؤكد. سيبدأ الفريق التنفيذ قريبًا." : "Payment confirmed. The team will begin processing.") : status === "processing" ? (isArabic ? "الفريق يعمل على خدمتك حاليًا." : "Your service is being processed.") : status === "completed" ? (isArabic ? "اكتملت الخدمة. يمكنك مراجعة وثائق الشركة." : "Service completed. Check your company documents.") : ""}</p></div>
                               <dl>
                                 <div><dt>{t.servicesPage.package}</dt><dd>{plan?.name || "—"}</dd></div>
                                 <div><dt>{t.servicesPage.price}</dt><dd>{plan ? formatPackagePrice(plan) : "—"}</dd></div>
@@ -3029,7 +3029,15 @@ function Dashboard() {
                                 <div><dt>{t.servicesPage.paymentNeeds}</dt><dd>{getPaymentNeeds(application).join(", ") || "—"}</dd></div>
                                 <div className="portal-full"><dt>{t.servicesPage.businessActivity}</dt><dd dir="auto">{application.intake?.businessActivity || "—"}</dd></div>
                               </dl>
-                              {status === "waiting_payment" && application.paymentStatus !== "paid" && <PayPalSandboxPayment applicationId={application.id} isArabic={isArabic} onPaid={() => { void refreshApplications({silent:false}); }} />}
+                              {status === "waiting_payment" && application.paymentStatus !== "paid" && (
+                                <PaymentMethodChooser
+                                  applicationId={application.id}
+                                  isArabic={isArabic}
+                                  plan={plan ? formatPackagePrice(plan) : null}
+                                  onPaid={() => { void refreshApplications({silent:false}); }}
+                                  onProofSubmitted={() => { void refreshApplications({silent:false}); }}
+                                />
+                              )}
                               <button className="portal-link" type="button" onClick={() => {setSelectedDocumentApplicationId(application.id); changePage("documents");}}>
                                 <FolderOpen size={17}/>{isArabic ? "عرض وثائق الشركة" : "View company documents"}<ArrowUpRight size={16}/>
                               </button>

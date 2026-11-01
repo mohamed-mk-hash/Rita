@@ -5514,3 +5514,28 @@
 .rita-journey-step.is-reached>span{background:#d9edfa;border-color:#79b5db}
 .rita-journey-step.is-current>span{background:#174b69;color:white;border-color:#174b69}
 @media(max-width:650px){.rita-journey{padding:12px}.rita-journey-step>span{width:27px;height:27px;font-size:12px}.rita-journey-step>small{font-size:10px}.rita-payment-banner{margin:0 12px 12px;padding:12px}}
+
+
+/* ===== External Stripe payment with manual proof review ===== */
+.rita-payment-methods{margin:22px 0 12px;padding:20px;background:#fff;border:1px solid #dce7ef;border-radius:18px}
+.rita-payment-methods h4{color:#173e56;font-size:17px;margin:0 0 15px}
+.rita-payment-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.rita-payment-options label{display:flex;align-items:start;gap:12px;cursor:pointer;border:1px solid #dce7ef;border-radius:13px;padding:15px;background:#fbfdff}
+.rita-payment-options label.chosen{background:#ecf4fb;border-color:#497e9e;box-shadow:0 0 0 2px rgba(37,99,235,.07)}
+.rita-payment-options input{width:18px;height:18px;flex:none;accent-color:#173e56;margin-top:2px}
+.rita-payment-options span{display:grid;gap:4px;min-width:0}.rita-payment-options strong{color:#173e56}.rita-payment-options small{color:#63798b;line-height:1.5}
+.rita-stripe-manual{border-radius:16px;border:1px solid #d7e4ee;background:#f8fbfd;padding:20px}
+.rita-stripe-header{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;color:#245775}
+.rita-stripe-header strong{display:block;font-size:17px}.rita-stripe-header p{color:#5a7485;line-height:1.6;margin:5px 0 0}
+.rita-stripe-amount{background:#fff;padding:13px 14px;border:1px solid #dce7ef;border-radius:10px;color:#28465d}
+.rita-stripe-warning,.rita-stripe-disclaimer{color:#895314;background:#fff6e7;border:1px solid #f5dca9;border-radius:10px;padding:12px;font-size:13px;line-height:1.7}
+.rita-stripe-open{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:10px 16px;background:#173e56;border-radius:10px;text-decoration:none;color:#fff;font-weight:800;margin:8px 0 16px}
+.rita-stripe-open:hover{background:#0e3149;color:#fff}
+.rita-stripe-form{display:grid;gap:15px;margin-top:14px}.rita-stripe-form>label{display:grid;gap:7px;color:#173e56;font-size:13px;font-weight:800}
+.rita-stripe-form input[type=text],.rita-stripe-form input[type=email]{width:100%;min-height:45px;border:1px solid #cbdae6;border-radius:9px;background:#fff;padding:10px 12px;outline:none}
+.rita-stripe-upload{background:#fff;border:1px dashed #a7bbcd;padding:17px;border-radius:12px}.rita-stripe-upload input{max-width:100%;font-size:13px}.rita-stripe-upload small{color:#557587}
+.rita-stripe-form button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:45px;border:0;border-radius:10px;background:#df3341;color:#fff;font-weight:800;cursor:pointer}
+.rita-stripe-form button:disabled{opacity:.5;cursor:not-allowed}.rita-stripe-state{display:flex;align-items:start;gap:10px;padding:15px;border-radius:12px;font-size:13px;line-height:1.6;margin-top:12px}
+.rita-stripe-state p{margin:4px 0 0}.rita-stripe-state.pending{background:#fff5df;color:#814e0e}.rita-stripe-state.approved{background:#e8f8ef;color:#16663e}.rita-stripe-state.rejected{background:#fff0f0;color:#a33238}
+.rita-stripe-error,.rita-stripe-success{padding:13px;border-radius:10px;font-size:13px;font-weight:700;line-height:1.6;margin:12px 0 0}.rita-stripe-error{background:#fff0f0;color:#b42b35}.rita-stripe-success{background:#e9f8ed;color:#136a3b}
+@media(max-width:650px){.rita-payment-methods{padding:13px}.rita-payment-options{grid-template-columns:1fr}.rita-stripe-manual{padding:14px}}

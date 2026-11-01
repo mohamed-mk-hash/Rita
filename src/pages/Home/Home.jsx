@@ -836,19 +836,6 @@ function Home() {
                 <a href="#services" className="btn btn-muted">
                   {t.hero.secondary}
                 </a>
-
-                {import.meta.env.DEV && (
-                  <button
-                    type="button"
-                    className="btn btn-muted"
-                    onClick={handleFirebaseSetup}
-                    disabled={setupLoading}
-                  >
-                    {setupLoading
-                      ? "Saving to Firebase..."
-                      : "Setup Firebase Data"}
-                  </button>
-                )}
               </motion.div>
 
               {import.meta.env.DEV && setupMessage && (

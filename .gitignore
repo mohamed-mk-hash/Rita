@@ -1,20 +1,33 @@
-# Environment secrets
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build
+dist/
+**/dist/
+
+# Environment variables
 .env
 .env.*
 !.env.example
-!.env.production.example
+**/.env
+**/.env.*
+!**/.env.example
 
-# Firebase private keys
+# Private credentials
 private-credentials/
-**/*service-account*.json
-**/*firebase-adminsdk*.json
+**/private-credentials/
+secure-credentials/
+**/secure-credentials/
+*serviceAccountKey*.json
+*firebase-adminsdk*.json
 
-# Dependencies and builds
-node_modules/
-dist/
-server/node_modules/
-server/.env
-Admin_Dashboard/.env
-
-# Local data and logs
+# Logs
 *.log
+logs/
+firebase-debug.log
+
+# Editor
+.vscode/
+.idea/
+.DS_Store
